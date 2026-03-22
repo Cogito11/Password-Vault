@@ -87,7 +87,8 @@ If no `package.json` is present, create one in the project source folder:
       "target": "dmg"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "Password Vault Logo 512.png"
     },
     "portable": {
       "artifactName": "PasswordVault.exe"

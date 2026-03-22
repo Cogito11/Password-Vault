@@ -14,8 +14,15 @@
     "appId": "com.bishop.passwordvault.app",
     "productName": "Password Vault",
     "win": {
-      "target": ["portable", "nsis"],
+      "target": [
+        "portable",
+        "nsis"
+      ],
       "icon": "passwordvault.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "Password Vault Logo 512.png"
     },
     "portable": {
       "artifactName": "PasswordVault.exe"
