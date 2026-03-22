@@ -190,7 +190,7 @@ Rules the parser follows:
 - A line with no leading whitespace is an entry name
 - Lines indented with whitespace are `Key: Value` attribute pairs
 - Lines starting with `-`, `=`, or the word `End` are ignored
-- The `(N attributes)` suffix on entry names is optional and stripped on read (This attribute is set to be changed to an ID number in a future update)
+- The `(N attributes)` suffix on entry names is optional and stripped on read
 
 ### Encrypted books
 
