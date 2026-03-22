@@ -1,0 +1,32 @@
+{
+  "name": "password-vault",
+  "productName": "Password Vault",
+  "artifactName": "PasswordVault-Setup.${ext}",
+  "version": "0.2.0",
+  "description": "A Local Password Manager",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.bishop.passwordvault.app",
+    "productName": "Password Vault",
+    "win": {
+      "target": "portable",
+      "sign": false,
+      "icon": "passwordvault.ico"
+    },
+    "portable": {
+      "artifactName": "PasswordVault.exe"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1"
+  }
+}
