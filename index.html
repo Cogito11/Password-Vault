@@ -1319,12 +1319,7 @@ openFolderBtn.addEventListener('click', async function() {
       var bookInfo = { name: entry.name, handle: entry, isEncrypted: false };
       /* Check for vault.enc (encrypted book) */
       try { await entry.getFileHandle('vault.enc'); bookInfo.isEncrypted = true; subBooks.push(bookInfo); continue; } catch(_) {}
-      /* Check for .txt files (plain book) */
-      var hasTxt = false;
-      for await (var sub of entry.values()) {
-        if (sub.kind === 'file' && sub.name.toLowerCase().endsWith('.txt')) { hasTxt = true; break; }
-      }
-      /* Include even empty sub-dirs so users can see newly created books */
+      /* Include all subdirectories as password books */
       subBooks.push(bookInfo);
     }
 
@@ -1411,12 +1406,12 @@ function addBookBtn(bookName, isEncrypted) {
       '<span class="book-meta" id="book-meta-' + esc(bookName) + '">' + (isEncrypted ? 'Encrypted' : 'Plain Text') + '</span>' +
     '</span>' +
     '<span class="book-actions">' +
-      '<button class="book-action-btn edit-book-btn" title="Edit book">' +
+      '<span role="button" tabindex="0" class="book-action-btn edit-book-btn" title="Edit book">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
-      '</button>' +
-      '<button class="book-action-btn del delete-book-btn" title="Delete book">' +
+      '</span>' +
+      '<span role="button" tabindex="0" class="book-action-btn del delete-book-btn" title="Delete book">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
-      '</button>' +
+      '</span>' +
     '</span>' +
     (isEncrypted
       ? '<span class="book-lock"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>'
@@ -1584,12 +1579,12 @@ function addCollBtn(filename, count) {
       '<span class="coll-n">' + count + ' password' + (count !== 1 ? 's' : '') + '</span>' +
     '</span>' +
     '<span class="coll-actions">' +
-      '<button class="coll-action-btn rename-coll-btn" title="Rename collection">' +
+      '<span role="button" tabindex="0" class="coll-action-btn rename-coll-btn" title="Rename collection">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
-      '</button>' +
-      '<button class="coll-action-btn del delete-coll-btn" title="Delete collection">' +
+      '</span>' +
+      '<span role="button" tabindex="0" class="coll-action-btn del delete-coll-btn" title="Delete collection">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
-      '</button>' +
+      '</span>' +
     '</span>';
 
   btn.addEventListener('click', function() { openCollection(filename, btn); });
@@ -1625,6 +1620,7 @@ function openCollection(filename, btn) {
   activeFile = filename;
 
   var entries = collections[filename];
+  if (!entries) { showToast('Collection not found'); return; }
   panelTitle.textContent = filename.replace(/\.txt$/i, '');
   panelCount.textContent = entries.length + ' entries';
   searchInput.value = '';
@@ -1673,6 +1669,8 @@ function renderPasswords(entries) {
     var card = document.createElement('div');
     card.className = 'pw-card';
     var canMutate = activeFile && activeFile !== '__all__';
+    /* Use the entry's true index in the full collection (not the filtered position) */
+    var trueIdx = (canMutate && collections[activeFile]) ? collections[activeFile].indexOf(entry) : idx;
     card.innerHTML =
       '<div class="pw-card-head">' +
         '<div class="pw-avatar">' + esc(init) + '</div>' +
@@ -1691,7 +1689,7 @@ function renderPasswords(entries) {
       (function(entryIdx) {
         card.querySelector('.card-edit-btn').addEventListener('click', function() { openEditModal(entryIdx); });
         card.querySelector('.card-del-btn').addEventListener('click', function() { deleteEntry(entryIdx); });
-      })(idx);
+      })(trueIdx);
     }
 
     pwList.appendChild(card);
@@ -1903,6 +1901,15 @@ async function deleteCollection(filename) {
     if (allBtnEl) {
       var total = Object.keys(collections).reduce(function(s,k){ return s + collections[k].length; }, 0);
       allBtnEl.querySelector('.coll-n').textContent = total + ' passwords total';
+    }
+
+    /* Update book meta count in multi-book panel */
+    if (isMultiBookMode && activeBookName) {
+      var bookMeta = document.getElementById('book-meta-' + activeBookName);
+      if (bookMeta) {
+        var cnt = Object.keys(collections).length;
+        bookMeta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + (bookIsEncrypted() ? ' \xb7 encrypted' : ' \xb7 plain text');
+      }
     }
 
     /* If this was the active collection, clear the panel */
@@ -2737,6 +2744,12 @@ async function saveNewCollection() {
   if (!collName) return;
 
   var filename = collName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim().replace(/\s+/g, '_') + '.txt';
+  if (collections[filename]) {
+    modalInfo.textContent = 'A collection with that name already exists.';
+    modalInfo.style.color = '#e05555';
+    setTimeout(function() { modalInfo.style.color = ''; }, 3000);
+    return;
+  }
   var newEntries = modalEntryList.slice();
   collections[filename] = newEntries;
 
