@@ -61,7 +61,7 @@ Or download and extract the ZIP, then open a terminal in the project folder.
 
 ### 2. Create `package.json`
 
-If no `package.json` is present, create one in the project root:
+If no `package.json` is present, create one in the project source folder:
 
 ```json
 {
