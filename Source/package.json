@@ -2,7 +2,7 @@
   "name": "password-vault",
   "productName": "Password Vault",
   "artifactName": "PasswordVault-Setup.${ext}",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A Local Password Manager",
   "main": "main.js",
   "scripts": {
