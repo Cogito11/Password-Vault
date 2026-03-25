@@ -16,6 +16,18 @@ A lightweight, offline first password manager built with Electron. All data live
 
 ---
 
+## Intended Usage
+
+While this project is yours to use however you'd like, I will outline my intended usage that I build it for so that anyone who is interested can follow a similar pattern.
+
+1. Create a main folder somewhere in your file system that will hold all of your password books, this will be named something like "Password Vault"
+2. Every password book you create within the Password Vault application itself should be inside this "Password Vault" folder and when the application is opened you should load the Vault folder instead of individual password books.
+3. Within each book you can create password collections that are sub categories like work, finance, social media accounts...
+
+Alternatively to the method above, if you don't have as many passwords/accounts, you can just have one password book and open that directly everytime you need it. The system with multiple books within a vault folder is intended to offer the maximum amount of organization if you have an abundance of accounts.
+
+---
+
 ## Project Structure
 
 ```
@@ -166,6 +178,14 @@ npm run build
 ```
 
 Output is placed in the `dist/` folder.
+
+### Distributable Naming Convention
+
+All distributable files should follow an informative naming convention for ease of use to the user.
+
+**Template:** `Application Name`_`Version Number`_`System`_`Architecture`
+
+**Example:** PasswordVaultInstaller_0.5.0_win64_x86_64.exe
 
 ---
 
