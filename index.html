@@ -1017,6 +1017,13 @@ body::before {
 .save-btn:hover { background: var(--amber-mid); border-color: var(--amber); }
 .save-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
+.no-results {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1633,7 +1640,7 @@ function openCollection(filename, btn) {
 }
 
 function renderPasswords(entries) {
-  pwList.innerHTML = '';
+  pwList._entries = entries;
 
   if (!entries.length) {
     pwList.innerHTML = '<div class="no-results">No entries found.</div>';
@@ -1646,24 +1653,24 @@ function renderPasswords(entries) {
     init = init.toUpperCase() || '??';
 
     var attrsHtml = entry.attrs.map(function(attr, ai) {
-      var uid = 'f' + idx + '_' + ai;
-      var isSecret = /pass(word)?|secret|pin|key|token/i.test(attr.key);
-      var safeVal  = esc(attr.val);
+    var uid = 'f' + idx + '_' + ai;
+    var isSecret = /pass(word)?|secret|pin|key|token/i.test(attr.key);
+    var safeVal  = esc(attr.val);
 
-      var valSpan = isSecret
-        ? '<span class="pw-attr-val masked" id="v_' + uid + '">••••••••••••</span>'
-        : '<span class="pw-attr-val" id="v_' + uid + '">' + safeVal + '</span>';
+    var valSpan = isSecret
+      ? '<span class="pw-attr-val masked" id="v_' + uid + '">••••••••••••</span>'
+      : '<span class="pw-attr-val" id="v_' + uid + '">' + safeVal + '</span>';
 
-      var showBtn = isSecret
-        ? '<button class="act-btn" data-uid="' + uid + '" data-val="' + safeVal + '" onclick="toggleReveal(this)">SHOW</button>'
-        : '';
+    var showBtn = isSecret
+      ? '<button class="act-btn" data-uid="' + uid + '" data-ei="' + idx + '" data-ai="' + ai + '" onclick="toggleReveal(this)">SHOW</button>'
+      : '';
 
-      return '<div class="pw-attr">' +
-        '<span class="pw-attr-key">' + esc(attr.key) + '</span>' +
-        valSpan +
-        '<div class="pw-attr-actions">' + showBtn +
-          '<button class="act-btn" data-val="' + safeVal + '" onclick="copyVal(this)">COPY</button>' +
-        '</div></div>';
+    return '<div class="pw-attr">' +
+      '<span class="pw-attr-key">' + esc(attr.key) + '</span>' +
+      valSpan +
+      '<div class="pw-attr-actions">' + showBtn +
+        '<button class="act-btn" data-ei="' + idx + '" data-ai="' + ai + '" onclick="copyVal(this)">COPY</button>' +
+      '</div></div>';
     }).join('');
 
     var card = document.createElement('div');
@@ -1719,7 +1726,9 @@ function toggleReveal(btn) {
   var el = document.getElementById('v_' + btn.dataset.uid);
   if (!el) return;
   if (el.classList.contains('masked')) {
-    el.textContent = btn.dataset.val;
+    var entry = pwList._entries[parseInt(btn.dataset.ei)];
+    var val = entry ? entry.attrs[parseInt(btn.dataset.ai)].val : '';
+    el.textContent = val;
     el.classList.remove('masked');
     btn.textContent = 'HIDE';
   } else {
@@ -1730,7 +1739,9 @@ function toggleReveal(btn) {
 }
 
 function copyVal(btn) {
-  navigator.clipboard.writeText(btn.dataset.val).then(function() {
+  var entry = pwList._entries[parseInt(btn.dataset.ei)];
+  var val = entry ? entry.attrs[parseInt(btn.dataset.ai)].val : '';
+  navigator.clipboard.writeText(val).then(function() {
     var prev = btn.textContent;
     btn.textContent = 'DONE';
     btn.classList.add('ok');
@@ -1815,11 +1826,17 @@ renameCollSaveBtn.addEventListener('click', async function() {
 
   try {
     if (bookIsEncrypted()) {
-      /* Encrypted: just rename the key and re-encrypt */
-      collections[newFilename] = entries;
-      delete collections[renamingFile];
-      if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
-      await reEncryptVault();
+      try {
+        collections[newFilename] = entries;
+        delete collections[renamingFile];
+        if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
+        await reEncryptVault();
+      } catch(e) {
+        delete collections[newFilename];
+        collections[renamingFile] = entries;
+        if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
+        throw e; // let the outer catch handle UI
+      }
     } else {
       /* Plain: write new file, delete old */
       var bh = getBookHandle();
@@ -1839,11 +1856,16 @@ renameCollSaveBtn.addEventListener('click', async function() {
       sideBtn.dataset.file = newFilename;
       sideBtn.querySelector('.coll-name').textContent = newName;
       /* Rewire click and action buttons */
-      var newBtn = sideBtn; // same DOM node, updated dataset
-      newBtn.onclick = null;
+      
+      var clone = sideBtn.cloneNode(true);
+      sideBtn.parentNode.replaceChild(clone, sideBtn);
+      var newBtn = clone;
+      newBtn.dataset.file = newFilename;
+      newBtn.querySelector('.coll-name').textContent = newName;
       newBtn.addEventListener('click', (function(fn, b) {
         return function() { openCollection(fn, b); };
       })(newFilename, newBtn));
+
       var renameBtn2 = newBtn.querySelector('.rename-coll-btn');
       var deleteBtn2 = newBtn.querySelector('.delete-coll-btn');
       if (renameBtn2) {
@@ -1884,9 +1906,16 @@ async function deleteCollection(filename) {
 
   try {
     if (bookIsEncrypted()) {
+      var deleted = collections[filename];
       delete collections[filename];
       if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
-      await reEncryptVault();
+      try {
+        await reEncryptVault();
+      } catch(e) {
+        collections[filename] = deleted;
+        if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
+        throw e;
+      }
     } else {
       await getBookHandle().removeEntry(filename);
       delete collections[filename];
@@ -2409,7 +2438,11 @@ async function doRenameBook(oldName, newName) {
     btn.dataset.book = newName;
     var nameEl = btn.querySelector('.book-name');
     if (nameEl) nameEl.textContent = newName;
-    btn.onclick = null;
+    var metaEl = btn.querySelector('.book-meta');
+    if (metaEl && metaEl.id) metaEl.id = 'book-meta-' + newName;
+    var newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    btn = newBtn;
     btn.addEventListener('click', (function(n, b) { return function() { selectBook(n, b); }; })(newName, btn));
     var eb = btn.querySelector('.edit-book-btn');
     var db = btn.querySelector('.delete-book-btn');
@@ -2763,12 +2796,11 @@ async function saveNewCollection() {
     return;
   }
   var newEntries = modalEntryList.slice();
-  collections[filename] = newEntries;
-
-  /* Keep bookHandles in sync for multi-book mode */
-  if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
 
   try {
+    collections[filename] = newEntries;
+    if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
+
     if (bookIsEncrypted()) {
       await reEncryptVault();
     } else {
@@ -2800,6 +2832,8 @@ async function saveNewCollection() {
     var newBtn = collList.querySelector('[data-file="' + filename + '"]');
     if (newBtn) openCollection(filename, newBtn);
   } catch(err) {
+    delete collections[filename];
+    if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
     modalInfo.textContent = 'Error: ' + err.message;
     modalInfo.style.color = '#e05555';
     setTimeout(function(){ modalInfo.style.color = ''; }, 3000);
