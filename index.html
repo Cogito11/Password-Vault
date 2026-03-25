@@ -862,6 +862,8 @@ body::before {
   outline: none;
   transition: border-color 0.15s;
   width: 100%;
+  user-select: auto !important; 
+  pointer-events: auto !important;
 }
 .modal-input:focus { border-color: var(--amber); }
 .modal-input::placeholder { color: var(--text-dim); }
@@ -1640,7 +1642,7 @@ function openCollection(filename, btn) {
 }
 
 function renderPasswords(entries) {
-  pwList._entries = entries;
+  pwList.innerHTML = '';
 
   if (!entries.length) {
     pwList.innerHTML = '<div class="no-results">No entries found.</div>';
@@ -1662,14 +1664,14 @@ function renderPasswords(entries) {
       : '<span class="pw-attr-val" id="v_' + uid + '">' + safeVal + '</span>';
 
     var showBtn = isSecret
-      ? '<button class="act-btn" data-uid="' + uid + '" data-ei="' + idx + '" data-ai="' + ai + '" onclick="toggleReveal(this)">SHOW</button>'
+      ? '<button class="act-btn" data-uid="' + uid + '" data-val="' + safeVal + '" onclick="toggleReveal(this)">SHOW</button>'
       : '';
 
     return '<div class="pw-attr">' +
       '<span class="pw-attr-key">' + esc(attr.key) + '</span>' +
       valSpan +
       '<div class="pw-attr-actions">' + showBtn +
-        '<button class="act-btn" data-ei="' + idx + '" data-ai="' + ai + '" onclick="copyVal(this)">COPY</button>' +
+        '<button class="act-btn" data-val="' + safeVal + '" onclick="copyVal(this)">COPY</button>' +
       '</div></div>';
     }).join('');
 
@@ -1726,9 +1728,7 @@ function toggleReveal(btn) {
   var el = document.getElementById('v_' + btn.dataset.uid);
   if (!el) return;
   if (el.classList.contains('masked')) {
-    var entry = pwList._entries[parseInt(btn.dataset.ei)];
-    var val = entry ? entry.attrs[parseInt(btn.dataset.ai)].val : '';
-    el.textContent = val;
+    el.textContent = btn.dataset.val;
     el.classList.remove('masked');
     btn.textContent = 'HIDE';
   } else {
@@ -1739,9 +1739,7 @@ function toggleReveal(btn) {
 }
 
 function copyVal(btn) {
-  var entry = pwList._entries[parseInt(btn.dataset.ei)];
-  var val = entry ? entry.attrs[parseInt(btn.dataset.ai)].val : '';
-  navigator.clipboard.writeText(val).then(function() {
+  navigator.clipboard.writeText(btn.dataset.val).then(function() {
     var prev = btn.textContent;
     btn.textContent = 'DONE';
     btn.classList.add('ok');
@@ -1807,7 +1805,7 @@ function openRenameCollModal(filename) {
   renameCollSaveBtn.disabled = false;
   renameCollSaveBtn.textContent = 'Rename';
   renameCollOverlay.classList.add('open');
-  setTimeout(function() { renameCollInput.focus(); renameCollInput.select(); }, 50);
+  setTimeout(function() { renameCollInput.focus(); renameCollInput.select(); }, 100);
 }
 
 renameCollSaveBtn.addEventListener('click', async function() {
@@ -2009,7 +2007,7 @@ function openEditModal(idx) {
   entry.attrs.forEach(function(a) { addEditAttrRow(a.key, a.val); });
   editModalInfo.textContent = '';
   editModalOverlay.classList.add('open');
-  setTimeout(function() { editEntryName.focus(); }, 50);
+  setTimeout(function() { editEntryName.focus(); }, 100);
 }
 
 function addEditAttrRow(key, val) {
@@ -2146,7 +2144,7 @@ function openEditBookModal(bookName) {
   buildEditBookBody(isEnc, isUnlocked, bookName);
   editBookOverlay.classList.add('open');
   var nameInput = document.getElementById('ebNameInput');
-  setTimeout(function() { var ni = document.getElementById('ebNameInput'); if (ni) { ni.focus(); ni.select(); } }, 50);
+  setTimeout(function() { var ni = document.getElementById('ebNameInput'); if (ni) { ni.focus(); ni.select(); } }, 100);
 }
 
 function buildEditBookBody(isEnc, isUnlocked, bookName) {
@@ -2663,7 +2661,7 @@ function openEntryModal() {
   document.querySelector('#modalOverlay .modal-field').style.display = 'none';
   addDefaultAttrRows();
   modalOverlay.classList.add('open');
-  setTimeout(function() { entryNameInput.focus(); }, 50);
+  setTimeout(function() { entryNameInput.focus(); }, 100);
 }
 
 function openModal() {
@@ -2681,7 +2679,7 @@ function openModal() {
   document.querySelector('#modalOverlay .modal-field').style.display = '';
   addDefaultAttrRows();
   modalOverlay.classList.add('open');
-  setTimeout(function() { collNameInput.focus(); }, 50);
+  setTimeout(function() { collNameInput.focus(); }, 100);
 }
 
 function closeModal() {
@@ -2840,6 +2838,13 @@ async function saveNewCollection() {
   }
 }
 
+collNameInput.addEventListener('keydown', function(e) { 
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveCollBtn.click(); 
+  }
+});
+
 async function saveNewEntries() {
   if (!modalEntryList.length || !activeFile || activeFile === '__all__') return;
 
@@ -2954,7 +2959,7 @@ function openVaultUnlockModal(bookName) {
   vaultUnlockBtn.textContent = 'Unlock';
   vaultUnlockInfo.textContent = '';
   vaultUnlockOverlay.classList.add('open');
-  setTimeout(function() { vaultUnlockPw.focus(); }, 80);
+  setTimeout(function() { vaultUnlockPw.focus(); }, 100);
 }
 
 vaultUnlockClose.addEventListener('click', function() {
@@ -3072,11 +3077,17 @@ newBookBtn.addEventListener('click', function() {
   bookModalInfo.textContent = 'Choose a name and location.';
   chosenParentHandle = null;
   bookModalOverlay.classList.add('open');
-  setTimeout(function() { bookNameInput.focus(); }, 50);
+  setTimeout(function() { bookNameInput.focus(); }, 100);
 });
 
 bookModalClose.addEventListener('click', function() { bookModalOverlay.classList.remove('open'); });
 bookModalOverlay.addEventListener('click', function(e) { if (e.target === bookModalOverlay) bookModalOverlay.classList.remove('open'); });
+bookNameInput.addEventListener('keydown', function(e) { 
+  if (e.key === 'Enter') {
+    e.preventDefault(); 
+    saveBookBtn.click(); 
+  }
+});
 
 pickLocationBtn.addEventListener('click', async function() {
   try {
@@ -3127,6 +3138,35 @@ function validateBookForm() {
   saveBookBtn.disabled = false;
 }
 
+async function rescanVaultFolder() {
+  var subBooks = [];
+  for await (var entry of dirHandle.values()) {
+    if (entry.kind !== 'directory') continue;
+    var bookInfo = { name: entry.name, handle: entry, isEncrypted: false };
+    try { await entry.getFileHandle('vault.enc'); bookInfo.isEncrypted = true; subBooks.push(bookInfo); continue; } catch(_) {}
+    subBooks.push(bookInfo);
+  }
+
+  var oldHandles = bookHandles;  // preserve existing unlock state
+  bookHandles = {};
+  subBooks.forEach(function(b) {
+    var existing = oldHandles[b.name];
+    bookHandles[b.name] = existing || { handle: b.handle, isEncrypted: b.isEncrypted, isUnlocked: false, key: null, collections: {} };
+    bookHandles[b.name].handle = b.handle; // always refresh the handle
+  });
+
+  booksList.innerHTML = '';
+  subBooks.sort(function(a,b){ return a.name.localeCompare(b.name); });
+  subBooks.forEach(function(b) {
+    addBookBtn(b.name, bookHandles[b.name].isEncrypted);
+    if (bookHandles[b.name].isUnlocked) injectRelockBtn(b.name);
+  });
+
+  var total = subBooks.length;
+  booksPanelCount.textContent = total + ' book' + (total !== 1 ? 's' : '');
+  statusTxt.textContent = total + ' password book' + (total !== 1 ? 's' : '') + ' found';
+}
+
 saveBookBtn.addEventListener('click', async function() {
   var name = bookNameInput.value.trim().replace(/[^a-zA-Z0-9 _\-]/g, '').trim();
   if (!name || !chosenParentHandle) return;
@@ -3148,6 +3188,11 @@ saveBookBtn.addEventListener('click', async function() {
       await w2.write(buildFileText(defaultCollEntries));
       await w2.close();
       showToast('"' + name + '" created');
+    }
+    /* If we're in multi-book mode and the new book was created inside
+      the currently open vault folder, register and show it immediately */
+    if (isMultiBookMode) {
+      await rescanVaultFolder();
     }
     bookModalOverlay.classList.remove('open');
     saveBookBtn.textContent = 'Create Book';
