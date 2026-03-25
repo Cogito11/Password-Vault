@@ -185,7 +185,7 @@ All distributable files should follow an informative naming convention for ease 
 
 **Template:** `Application Name` _ `Version Number` _ `System` _ `Architecture`
 
-**Example:** PasswordVaultInstaller_0.5.0_win64_x86_64.exe
+**Example:** PasswordVaultSetup_0.5.0_win64_x86_64.exe
 
 ---
 
