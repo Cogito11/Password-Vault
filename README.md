@@ -183,7 +183,7 @@ Output is placed in the `dist/` folder.
 
 All distributable files should follow an informative naming convention for ease of use to the user.
 
-**Template:** `Application Name`_`Version Number`_`System`_`Architecture`
+**Template:** `Application Name` _ `Version Number` _ `System` _ `Architecture`
 
 **Example:** PasswordVaultInstaller_0.5.0_win64_x86_64.exe
 
