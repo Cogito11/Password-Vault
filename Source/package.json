@@ -1,7 +1,6 @@
 {
   "name": "password-vault",
-  "productName": "Password Vault",
-  "artifactName": "PasswordVault-Setup.${ext}",
+  "productName": "PasswordVault",
   "version": "0.2.3",
   "description": "A Local Password Manager",
   "main": "main.js",
@@ -12,7 +11,8 @@
   },
   "build": {
     "appId": "com.bishop.passwordvault.app",
-    "productName": "Password Vault",
+    "productName": "PasswordVault",
+    "artifactName": "${productName}Setup_${version}_${os}_${arch}.${ext}",
     "win": {
       "target": [
         "portable",
@@ -25,7 +25,7 @@
       "icon": "Password Vault Logo 512.png"
     },
     "portable": {
-      "artifactName": "PasswordVault.exe"
+      "artifactName": "${productName}Portable_${version}_${os}_${arch}.${ext}"
     }
   },
   "keywords": [],
