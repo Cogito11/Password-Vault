@@ -2,9 +2,17 @@ const { contextBridge, ipcRenderer } = require('electron');
 const fs   = require('fs');
 const path = require('path');
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  // Config & Path exposed to the frontend
+  createDefaultVault: () => ipcRenderer.invoke('create-default-vault'),
+  getDefaultPath:     () => ipcRenderer.invoke('get-default-path'),
+  setDefaultPath:     (targetPath) => ipcRenderer.invoke('set-default-path', targetPath),
+  /** Scan a vault folder by absolute path; returns structure or null */
+  scanVaultPath:      (vaultPath) => ipcRenderer.invoke('scan-vault-path', vaultPath),
+});
 contextBridge.exposeInMainWorld('vault', {
   /** Open a native folder-picker dialog; resolves to a path string or null if cancelled */
-  openFolder:   ()        => ipcRenderer.invoke('open-folder'),
+  openFolder: () => ipcRenderer.invoke('open-folder'),
 
   /**
    * Read a directory synchronously.
@@ -29,8 +37,14 @@ contextBridge.exposeInMainWorld('vault', {
   /** Read a binary file synchronously; returns a Buffer */
   readFileBin:  (p)       => fs.readFileSync(p),
 
-  /** Create a directory (and any missing parents) synchronously */
-  mkdir:        (p)       => fs.mkdirSync(p, { recursive: true }),
+  /** Delete a file */
+  deleteFile:   (p)       => fs.unlinkSync(p),
+
+  /** Delete a directory recursively */
+  deleteDir:    (p)       => fs.rmSync(p, { recursive: true, force: true }),
+
+  /** Rename / move a file or directory */
+  rename:       (oldP, newP) => fs.renameSync(oldP, newP),
 
   /** Return true if the path exists */
   exists:       (p)       => fs.existsSync(p),
