@@ -37,6 +37,9 @@ contextBridge.exposeInMainWorld('vault', {
   /** Read a binary file synchronously; returns a Buffer */
   readFileBin:  (p)       => fs.readFileSync(p),
 
+  /** Create a directory (and any missing parents) synchronously */
+  mkdir:        (p)       => fs.mkdirSync(p, { recursive: true }),
+
   /** Delete a file */
   deleteFile:   (p)       => fs.unlinkSync(p),
 
