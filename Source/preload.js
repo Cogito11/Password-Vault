@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /** Scan a vault folder by absolute path; returns structure or null */
   scanVaultPath:      (vaultPath) => ipcRenderer.invoke('scan-vault-path', vaultPath),
 });
+
 contextBridge.exposeInMainWorld('vault', {
   /** Open a native folder-picker dialog; resolves to a path string or null if cancelled */
   openFolder: () => ipcRenderer.invoke('open-folder'),

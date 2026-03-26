@@ -1,7 +1,7 @@
 {
   "name": "password-vault",
   "productName": "PasswordVault",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A Local Password Manager",
   "main": "main.js",
   "scripts": {
