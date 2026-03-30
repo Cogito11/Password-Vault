@@ -20,7 +20,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     title: "Password Vault",
-    icon: path.join(__dirname, 'Assets/PasswordVault.ico'),
+    icon: path.join(__dirname, 'PasswordVault/assets/logos/PasswordVault.ico'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -29,7 +29,7 @@ function createWindow() {
       sandbox: false
     },
   });
-  win.loadFile('Password Vault.html');
+  win.loadFile('PasswordVault/index.html');
 }
 
 app.whenReady().then(() => {
