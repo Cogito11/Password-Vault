@@ -19,9 +19,16 @@ function openAllCollections(btn) {
 	activeFile = '__all__';
 
 	// Combine all entries from all collections into one array
+	// Wrap each entry with its home collection + true index so
+	// renderPasswords can wire up edit/delete without activeFile
 	var allEntries = [];
 	Object.keys(collections).forEach(function (k) {
-		collections[k].forEach(function (e) { allEntries.push(e); });
+		collections[k].forEach(function (e, i) {
+			allEntries.push(Object.assign({}, e, {
+				_homeCollection : k,
+				_trueIdx        : i
+			}));
+		});
 	});
 
 	// Update UI
@@ -39,7 +46,7 @@ function openAllCollections(btn) {
 	rightPanel.style.display = 'flex';
 
 	// Render combined entries
-	renderPasswords(allEntries);
+	renderPasswords();
 }
 
 
@@ -83,7 +90,7 @@ function openCollection(filename, btn) {
 	rightPanel.style.display = 'flex';
 
 	// Render entries in UI
-	renderPasswords(entries);
+	renderPasswords();
 }
 
 // Delete a collection (file) permanently. 

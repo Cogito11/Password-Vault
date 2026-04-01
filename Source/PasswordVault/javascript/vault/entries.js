@@ -70,7 +70,7 @@ async function saveNewEntries() {
 		panelCount.textContent = combined.length + ' entries';
 		
 		// Re-render visible entries in UI
-		renderPasswords(combined);
+		renderPasswords();
 
 	} catch (err) {
 

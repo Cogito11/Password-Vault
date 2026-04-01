@@ -127,7 +127,28 @@ function resetVaultState() {
 // - Builds card UI for each entry
 // - Masks sensitive values (passwords, tokens...)
 // - Adds COPY / SHOW / EDIT / DELETE actions
-function renderPasswords(entries) {
+function renderPasswords() {
+
+	// Build the entries array based on current view
+	var entries;
+	if (activeFile === '__all__') {
+		entries = [];
+		Object.keys(collections).forEach(function (k) {
+			collections[k].forEach(function (e, i) {
+				entries.push(Object.assign({}, e, {
+					_homeCollection: k,
+					_trueIdx: i
+				}));
+			});
+		});
+	} else if (activeFile && collections[activeFile]) {
+		entries = collections[activeFile];
+	} else {
+		entries = [];
+	}
+
+	// Update panel count
+	panelCount.textContent = entries.length + ' entries';
 
 	// Clear previous results
 	pwList.innerHTML = '';
@@ -181,12 +202,22 @@ function renderPasswords(entries) {
 		var card = document.createElement('div');
 		card.className = 'pw-card';
 
-		// Can we edit/delete? Not allowed in all collections view
-		var canMutate = activeFile && activeFile !== '__all__';
-		
-		// Find real index inside collection (Needed for edit and delete function)
-		var trueIdx = (canMutate && collections[activeFile]) ? collections[activeFile].indexOf(entry) : idx;
+		var homeCollection, trueIdx, canMutate;
 
+		if (activeFile && activeFile !== '__all__') {
+			// Normal single-collection view
+			homeCollection = activeFile;
+			trueIdx        = collections[activeFile] ? collections[activeFile].indexOf(entry) : idx;
+			canMutate      = true;
+		} else if (entry._homeCollection != null && entry._trueIdx != null) {
+			// All-passwords view — use stamps applied in openAllCollections
+			homeCollection = entry._homeCollection;
+			trueIdx        = entry._trueIdx;
+			canMutate      = true;
+		} else {
+			canMutate = false;
+		}
+		
 		card.innerHTML =
 			'<div class="pw-card-head">' +
 				// Avatar
@@ -210,13 +241,14 @@ function renderPasswords(entries) {
 		
 		// Attach edit and delete handlers
 		if (canMutate) {
-			(function (entryIdx) {
-				// Edit entry
-				card.querySelector('.card-edit-btn').addEventListener('click', function () { openEditModal(entryIdx); });
-				
-				// Delete entry
-				card.querySelector('.card-del-btn').addEventListener('click', function () { deleteEntry(entryIdx); });
-			})(trueIdx);
+			(function (entryIdx, collName) {
+				card.querySelector('.card-edit-btn').addEventListener('click', function () {
+					openEditModal(entryIdx, collName);  // pass home collection
+				});
+				card.querySelector('.card-del-btn').addEventListener('click', function () {
+					deleteEntry(entryIdx, collName);    // pass home collection
+				});
+			})(trueIdx, homeCollection);
 		}
 
 		// Add Card to DOM
@@ -246,7 +278,7 @@ function toggleReveal(btn) {
 		// Mask again
 		el.textContent = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
 		el.classList.add('masked');
-		
+
 		btn.textContent = 'SHOW';
 	}
 }

@@ -27,12 +27,15 @@ editModalOverlay.addEventListener('keydown', function (e) {
 
 /* ── Open ── */
 
+var editingCollName;
 /** Open the edit modal pre-filled with an existing entry's data. */
-function openEditModal(idx) {
-  var entry = collections[activeFile][idx];
+function openEditModal(idx, collName) {
+  collName = collName || activeFile;
+  var entry = collections[collName][idx];
   if (!entry) return;
   editingIdx = idx;
-  editEntryName.value    = entry.name;
+  editingCollName = collName;
+  editEntryName.value = entry.name;
   editAttrRows.innerHTML = '';
   entry.attrs.forEach(function (a) { addEditAttrRow(a.key, a.val); });
   editModalInfo.textContent = '';
@@ -70,7 +73,7 @@ saveEditBtn.addEventListener('click', async function () {
     if (k) attrs.push({ key: k, val: v });
   });
 
-  collections[activeFile][editingIdx] = { name: name, attrs: attrs };
+  collections[editingCollName][editingIdx] = { name: name, attrs: attrs };  // ← editingCollName
   if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
 
   saveEditBtn.disabled    = true;
@@ -80,13 +83,15 @@ saveEditBtn.addEventListener('click', async function () {
     if (bookIsEncrypted()) {
       await reEncryptVault();
     } else {
-      await bookWriteFile(activeFile, buildFileText(collections[activeFile]));
+      await bookWriteFile(editingCollName, buildFileText(collections[editingCollName]));  // ← editingCollName
     }
-    var sideBtn = collList.querySelector('[data-file="' + activeFile + '"]');
-    if (sideBtn) sideBtn.querySelector('.coll-n').textContent = collections[activeFile].length + ' password' + (collections[activeFile].length !== 1 ? 's' : '');
+    var sideBtn = collList.querySelector('[data-file="' + editingCollName + '"]');  // ← editingCollName
+    if (sideBtn) sideBtn.querySelector('.coll-n').textContent = collections[editingCollName].length + ' password' + (collections[editingCollName].length !== 1 ? 's' : '');
     editModalOverlay.classList.remove('open');
     showToast('Entry updated');
-    renderPasswords(collections[activeFile]);
+
+    // Re-render passwords
+    renderPasswords();
   } catch (err) {
     editModalInfo.textContent = 'Error: ' + err.message;
     editModalInfo.style.color = '#e05555';
@@ -100,8 +105,9 @@ saveEditBtn.addEventListener('click', async function () {
 /* ── Delete entry ── */
 
 /** Confirm and permanently delete a single entry from the active collection. */
-async function deleteEntry(idx) {
-  var entry = collections[activeFile][idx];
+async function deleteEntry(idx, collName) {
+  collName = collName || activeFile;
+  var entry = collections[collName][idx];
   if (!entry) return;
 
   var confirmed = await showConfirm(
@@ -110,18 +116,18 @@ async function deleteEntry(idx) {
   );
   if (!confirmed) return;
 
-  collections[activeFile].splice(idx, 1);
+  collections[collName].splice(idx, 1); 
   if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
 
   try {
     if (bookIsEncrypted()) {
       await reEncryptVault();
     } else {
-      await bookWriteFile(activeFile, buildFileText(collections[activeFile]));
+      await bookWriteFile(collName, buildFileText(collections[collName]));
     }
 
-    var remaining = collections[activeFile].length;
-    var sideBtn   = collList.querySelector('[data-file="' + activeFile + '"]');
+    var remaining = collections[collName].length;
+    var sideBtn   = collList.querySelector('[data-file="' + collName + '"]');
     if (sideBtn) sideBtn.querySelector('.coll-n').textContent = remaining + ' password' + (remaining !== 1 ? 's' : '');
 
     var allBtnEl = collList.querySelector('.all-btn');
@@ -132,9 +138,9 @@ async function deleteEntry(idx) {
 
     panelCount.textContent = remaining + ' entries';
     showToast('"' + entry.name + '" deleted');
-    renderPasswords(collections[activeFile]);
+    renderPasswords();
   } catch (err) {
-    collections[activeFile].splice(idx, 0, entry);
+    collections[collName].splice(idx, 0, entry);
     if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
     showToast('Error: ' + err.message);
   }

@@ -243,17 +243,12 @@ async function doEncryptBook(bookName, password) {
 	info.isUnlocked  = true;
 
 	/* Update book button */
+	var cnt = Object.keys(info.collections).length;
+
 	var btn = booksList.querySelector('[data-book="' + bookName + '"]');
 	if (btn) {
 		var meta = btn.querySelector('.book-meta');
-		var cnt  = Object.keys(info.collections).length;
 		if (meta) meta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + ' \xb7 encrypted';
-		if (!btn.querySelector('.book-lock')) {
-			var lk = document.createElement('span');
-			lk.className = 'book-lock';
-			lk.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
-			btn.insertBefore(lk, btn.querySelector('.book-actions'));
-		}
 		injectRelockBtn(bookName);
 	}
 
