@@ -53,7 +53,7 @@ async function loadPlainFolder() {
 	vaultKey = null;
 
 	// Ask Electron to scan folder and return file contents
-	var data = await window.electronAPI.scanVaultPath(_electronVaultPath);
+	var data = await window.electronAPI.readVaultFiles(_electronVaultPath);
 
 	var results = [];
 
@@ -93,7 +93,7 @@ async function loadFromElectronPath(vaultPath) {
 	try {
 
 		// Ask Electron to scan folder structure + contents
-		var data = await window.electronAPI.scanVaultPath(vaultPath);
+		var data = await window.electronAPI.scanVaultStructure(vaultPath);
 		
 		// If folder missing or unreadable
 		if (!data) {
@@ -226,48 +226,31 @@ async function loadFromElectronPath(vaultPath) {
 // Loads a SINGLE book inside a multi-book vault.
 // Only used for NON-encrypted books.
 async function loadPlainBook(bookName) {
+  var info = bookHandles[bookName];
 
-	var info = bookHandles[bookName];
-	var results = [];
+  // Read files on demand via IPC — no sync fs blocking
+  var txtFiles = await window.electronAPI.readBookFiles(info.path);
 
-	// Read files directly using Electron filesystem helpers
-	window.vault.readDir(info.path)
-		.filter(function (e) {
-			return e.isFile && e.name.toLowerCase().endsWith('.txt');
-		})
-		.forEach(function (e) {
+  var results = txtFiles.map(function (f) {
+    return { name: f.name, entries: parseFile(f.text) };
+  });
 
-			var text = window.vault.readFile(
-				window.vault.joinPath(info.path, e.name)
-			);
+  results.sort(function (a, b) { return a.name.localeCompare(b.name); });
 
-			results.push({
-				name: e.name,
-				entries: parseFile(text)
-			});
-		});
+  info.collections = {};
+  results.forEach(function (r) {
+    info.collections[r.name] = r.entries;
+  });
 
-	// Sort collections
-	results.sort(function (a, b) {
-		return a.name.localeCompare(b.name);
-	});
+  info.isUnlocked = true;
 
-	// Store in memory
-	info.collections = {};
-	results.forEach(function (r) {
-		info.collections[r.name] = r.entries;
-	});
-
-	info.isUnlocked = true;
-
-	// Update UI metadata
-	var meta = document.getElementById('book-meta-' + bookName);
-	if (meta) {
-		meta.textContent =
-			results.length + ' collection' +
-			(results.length !== 1 ? 's' : '') +
-			' · plain text';
-	}
+  var meta = document.getElementById('book-meta-' + bookName);
+  if (meta) {
+    meta.textContent =
+      results.length + ' collection' +
+      (results.length !== 1 ? 's' : '') +
+      ' \xb7 plain text';
+  }
 }
 
 // Vault folder re-scan

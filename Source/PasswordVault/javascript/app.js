@@ -194,7 +194,9 @@ document.addEventListener('mousedown', function () {
 }, true);
 
 // Startup auto-load, try loading default folder when app starts
-document.addEventListener('DOMContentLoaded', tryAutoLoadDefault);
+document.addEventListener('DOMContentLoaded', function () {
+  setTimeout(tryAutoLoadDefault, 100); 
+});
 
 // If DOM already loaded (Edge Case), run immediately
 if (document.readyState !== 'loading') {
