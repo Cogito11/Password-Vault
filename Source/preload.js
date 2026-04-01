@@ -7,8 +7,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createDefaultVault: () => ipcRenderer.invoke('create-default-vault'),
   getDefaultPath:     () => ipcRenderer.invoke('get-default-path'),
   setDefaultPath:     (targetPath) => ipcRenderer.invoke('set-default-path', targetPath),
-  /** Scan a vault folder by absolute path; returns structure or null */
-  scanVaultPath:      (vaultPath) => ipcRenderer.invoke('scan-vault-path', vaultPath),
+  
+  scanVaultStructure:  (vaultPath) => ipcRenderer.invoke('scan-vault-structure', vaultPath),
+
+    // On-demand file reads
+    readBookFiles:       (bookPath)  => ipcRenderer.invoke('read-book-files', bookPath),
+    readVaultFiles:      (vaultPath) => ipcRenderer.invoke('read-vault-files', vaultPath),
 });
 
 contextBridge.exposeInMainWorld('vault', {

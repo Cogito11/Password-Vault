@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Vault</title>
+
+<link rel="stylesheet" href="styles/styles.css">
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="topbar-logo-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    Password Vault
+  </div>
+  <div class="topbar-div"></div>
+  <div class="open-btn-wrap" id="openBtnWrap">
+    <button class="open-btn-main" id="openFolderBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+      Open Folder
+    </button>
+    <button class="open-btn-arrow" id="openBtnArrow" title="Folder options">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
+    <div class="open-btn-menu" id="openBtnMenu">
+      <button class="open-menu-item" id="menuOpenFolder">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span>Open Folder…<span class="menu-item-sub">Browse for a vault folder</span></span>
+      </button>
+      <button class="open-menu-item" id="menuSetDefault">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span id="menuSetDefaultLabel">Set Default Location…<span class="menu-item-sub" id="menuSetDefaultSub">No default set</span></span>
+      </button>
+      <div class="open-menu-divider" id="menuClearDivider" style="display:none;"></div>
+      <button class="open-menu-item" id="menuLoadDefault" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M12 11v6M9 14h6"/></svg>
+        <span>Load Default Folder<span class="menu-item-sub" id="menuLoadDefaultSub"></span></span>
+      </button>
+      <button class="open-menu-item danger" id="menuClearDefault" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Clear Default Location
+      </button>
+    </div>
+  </div>
+  <button class="eject-btn" id="ejectBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 4 20 15 4 15"/>
+      <rect x="4" y="18" width="16" height="2.5" rx="1"/>
+    </svg>
+    Eject Folder
+  </button>
+  <button class="eject-btn" id="lockVaultBtn" style="display:none;" title="Lock this encrypted vault — clears the key from memory">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <span id="lockVaultBtnLabel">Lock Vault</span>
+  </button>
+  <div class="topbar-status">
+    <div class="dot" id="dot"></div>
+    <span id="statusTxt">No folder loaded, awaiting input</span>
+  </div>
+</div>
+
+<!-- Startup banner: shown when no default folder is set -->
+<div id="resumeBanner" role="button" tabindex="0" aria-label="Create default folder">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+    <path d="M12 11v6M9 14h6"/>
+  </svg>
+  <span id="resumeBannerText">No default folder set — click to automatically create a Password Vault folder in Documents</span>
+  <button id="resumeBannerDismiss" title="Dismiss" tabindex="0">✕</button>
+</div>
+
+<div class="body">
+
+  <div class="col-left">
+    <div class="col-head">
+      <div class="col-head-label" id="colHeadLabel">Password Book</div>
+      <div class="col-head-title" id="bookNameEl">No book open</div>
+    </div>
+    <!-- Multi-book panel: appears when a parent folder with books is opened -->
+    <div class="books-panel" id="booksPanel">
+      <div class="books-panel-head">
+        <span class="books-panel-label">Password Books</span>
+        <span class="books-panel-count" id="booksPanelCount"></span>
+      </div>
+      <div class="books-list" id="booksList"></div>
+    </div>
+    <!-- Collections sub-head: shown in multi-book mode -->
+    <div class="coll-section-head" id="collSectionHead">
+      <div class="coll-section-label">Collections</div>
+      <div class="coll-section-name" id="collSectionName">Select a book above</div>
+    </div>
+    <div class="coll-list" id="collList">
+      <div class="left-hint" id="leftHint">Open a folder to<br>load collections.</div>
+    </div>
+    <button class="new-coll-btn hidden" id="newCollBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      New Collection
+    </button>
+    <button class="new-coll-btn new-book-btn" id="newBookBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        <path d="M12 11v6M9 14h6"/>
+      </svg>
+      New Password Book
+    </button>
+  </div>
+
+  <div class="col-right">
+    <div id="rightEmpty" class="right-empty">
+      <div class="right-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2>Select a collection</h2>
+      <p>Choose a file on the left to view its passwords.</p>
+    </div>
+    <div id="rightPanel" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+      <div class="pw-toolbar">
+        <div class="pw-toolbar-title" id="panelTitle"></div>
+        <div class="pw-toolbar-count" id="panelCount"></div>
+        <button class="new-entry-btn" id="newEntryBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          New Entry
+        </button>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input id="searchInput" type="text" placeholder="Search…">
+        </div>
+      </div>
+      <div class="pw-list" id="pwList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title" id="confirmTitle">Confirm</div>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-msg" id="confirmMsg"></div>
+    </div>
+    <div class="confirm-footer">
+      <button class="confirm-cancel-btn" id="confirmCancelBtn">Cancel</button>
+      <button class="confirm-ok-btn" id="confirmOkBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename Collection Modal -->
+<div class="modal-overlay" id="renameCollOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <div class="modal-head-title">Rename Collection</div>
+      <button class="modal-close" id="renameCollClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="gap:14px;">
+      <div class="modal-field">
+        <div class="modal-label">New Name</div>
+        <input class="modal-input" id="renameCollInput" type="text" placeholder="Collection name…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="renameCollInfo"></div>
+      <button class="save-btn" id="renameCollSaveBtn">Rename</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Entry Modal -->
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">Edit Entry</div>
+      <button class="modal-close" id="editModalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <div class="modal-label">Entry Name</div>
+        <input class="modal-input" id="editEntryName" type="text" placeholder="e.g. Gmail, Netflix…">
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Attributes</div>
+        <div id="editAttrRows" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+      <button class="mini-btn" id="editAddAttrBtn" style="align-self:flex-start;">+ Add Attribute</button>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="editModalInfo"></div>
+      <button class="save-btn" id="saveEditBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Book Modal -->
+<div class="modal-overlay" id="editBookOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">Edit Password Book</div>
+      <button class="modal-close" id="editBookClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="editBookBody"></div>
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="editBookInfo"></div>
+      <button class="save-btn" id="saveEditBookBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vault Unlock Modal -->
+<div class="modal-overlay" id="vaultUnlockOverlay">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-head">
+      <div class="modal-head-title">Encrypted Password Book</div>
+      <button class="modal-close" id="vaultUnlockClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="gap:14px;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:4px 0;">
+        <div style="width:52px;height:52px;border:1px solid rgba(232,162,48,0.3);border-radius:13px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;stroke:var(--amber);"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div id="vaultUnlockBookName" style="font-size:15px;font-weight:700;color:var(--text);"></div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-muted);text-align:center;">This book is encrypted. Enter the password to unlock it.</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Password</div>
+        <input class="modal-input" id="vaultUnlockPw" type="password" placeholder="Book password…" autocomplete="current-password">
+      </div>
+      <div id="vaultUnlockError" style="display:none;font-family:var(--mono);font-size:11px;color:#e05555;text-align:center;">
+        Incorrect password — please try again.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="vaultUnlockInfo"></div>
+      <button class="save-btn" style="background:var(--amber-dim);border-color:rgba(232,162,48,0.4);color:var(--amber);" id="vaultUnlockBtn">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Password Book Modal -->
+<div class="modal-overlay" id="bookModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title">New Password Book</div>
+      <button class="modal-close" id="bookModalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <div class="modal-label">Book Name</div>
+        <input class="modal-input" id="bookNameInput" type="text" placeholder="e.g. Personal, Work, Finance…">
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Location</div>
+        <div class="location-row">
+          <input class="modal-input" id="bookLocationDisplay" type="text" placeholder="Choose where to create this book…" readonly>
+          <button class="pick-btn" id="pickLocationBtn">Browse…</button>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-label-group">
+          <div class="toggle-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Encrypt this book
+          </div>
+          <div class="toggle-sub">All data stored in a single encrypted binary — no readable files</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="encryptToggle">
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+      <div class="encrypt-fields" id="encryptFields">
+        <div class="modal-field">
+          <div class="modal-label">Password</div>
+          <input class="modal-input" id="bookPw" type="password" placeholder="Enter book password…" autocomplete="new-password">
+          <div class="pw-strength-track"><div class="pw-strength-bar" id="pwStrBar"></div></div>
+          <div class="pw-strength-label" id="pwStrLabel"></div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-label">Confirm Password</div>
+          <input class="modal-input" id="bookPwConfirm" type="password" placeholder="Confirm password…" autocomplete="new-password">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="bookModalInfo">Choose a name and location.</div>
+      <button class="save-btn blue" id="saveBookBtn" disabled>Create Book</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Collection Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title" id="collModalTitle">New Collection</div>
+      <button class="modal-close" id="modalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <div class="modal-label">Collection Name</div>
+        <input class="modal-input" id="collNameInput" type="text" placeholder="e.g. Social Media, Work Accounts…">
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Entries &nbsp;<span id="entryCountLabel" style="color:var(--text-muted);font-size:9px;">0 added</span></div>
+        <div class="modal-entries" id="modalEntries"></div>
+      </div>
+      <div class="entry-builder">
+        <div class="entry-builder-title">Add Entry</div>
+        <div class="modal-field">
+          <div class="modal-label">Entry Name</div>
+          <input class="modal-input" id="entryNameInput" type="text" placeholder="e.g. Gmail, Netflix…">
+        </div>
+        <div id="attrRows" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div class="builder-actions">
+          <button class="mini-btn" id="addAttrBtn">+ Add Attribute</button>
+          <button class="mini-btn primary" id="addEntryBtn">Add Entry</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="modalInfo">Name the collection and optionally add entries.</div>
+      <button class="save-btn" id="saveCollBtn" disabled>Save File</button>
+    </div>
+  </div>
+</div>
+
+  <script src="javascript/core/state.js"></script>
+  <script src="javascript/core/dom.js"></script>
+  <script src="javascript/core/utils.js"></script>
+
+  <script src="javascript/storage/db.js"></script>
+  <script src="javascript/storage/crypto.js"></script>
+  <script src="javascript/storage/vault-io.js"></script>
+
+  <script src="javascript/vault/loader.js"></script>
+  <script src="javascript/vault/books.js"></script>
+  <script src="javascript/vault/collections.js"></script>
+
+  <script src="javascript/ui/sidebar.js"></script>
+  <script src="javascript/ui/panel.js"></script>
+
+  <script src="javascript/confirm.js"></script>
+  <script src="javascript/vault/entries.js"></script>
+
+  <script src="javascript/modals/unlock.js"></script>
+  <script src="javascript/modals/collection.js"></script>
+  <script src="javascript/modals/edit-entry.js"></script>
+  <script src="javascript/modals/rename.js"></script>
+
+  <script src="javascript/modals/book-create.js"></script>
+  <script src="javascript/modals/edit-book.js"></script>
+
+  <script src="javascript/app.js"></script>
+
+</body>
+</html>
