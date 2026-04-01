@@ -1,106 +1,197 @@
-/* ═══════════════════════════════
-   VAULT / COLLECTIONS  —  open and delete password collections
-═══════════════════════════════ */
+// ═══════════════════════════════
+// VAULT / COLLECTIONS
+// Handles opening and deleting password collections (files)
+// ═══════════════════════════════
 
-/** Activate the synthetic "All Passwords" view across every collection. */
+// Activate the synthetic "All Passwords" view.
+// PURPOSE:
+// - Combine entries from ALL collections into one list
+// - Disable "new entry" (since this is not a real file)
 function openAllCollections(btn) {
-  document.querySelectorAll('.coll-btn').forEach(function (b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-  activeFile = '__all__';
 
-  var allEntries = [];
-  Object.keys(collections).forEach(function (k) {
-    collections[k].forEach(function (e) { allEntries.push(e); });
-  });
+	// Remove active state from all sidebar buttons
+	document.querySelectorAll('.coll-btn').forEach(function (b) { b.classList.remove('active'); });
+	
+	// Mark this button as active
+	btn.classList.add('active');
 
-  panelTitle.textContent = 'All Passwords';
-  panelCount.textContent = allEntries.length + ' entries';
-  searchInput.value = '';
-  newEntryBtn.classList.remove('visible');
+	// Special identifier meaning "aggregate view"
+	activeFile = '__all__';
 
-  rightEmpty.style.display = 'none';
-  rightPanel.style.display = 'flex';
+	// Combine all entries from all collections into one array
+	var allEntries = [];
+	Object.keys(collections).forEach(function (k) {
+		collections[k].forEach(function (e) { allEntries.push(e); });
+	});
 
-  renderPasswords(allEntries);
+	// Update UI
+	panelTitle.textContent = 'All Passwords';
+	panelCount.textContent = allEntries.length + ' entries';
+
+	// Reset search field
+	searchInput.value = '';
+
+	// Hide new entry button since all isnt a specific collection
+	newEntryBtn.classList.remove('visible');
+
+	// Show right panel (Hide empty state)
+	rightEmpty.style.display = 'none';
+	rightPanel.style.display = 'flex';
+
+	// Render combined entries
+	renderPasswords(allEntries);
 }
 
-/** Activate a single named collection and render its entries. */
+
+// Open a single collection (file) and display its entries.
+// @param {string} filename - The collection file name (Ex: "School Passwords.txt")
+// @param {HTMLElement} btn - The sidebar button clicked
 function openCollection(filename, btn) {
-  document.querySelectorAll('.coll-btn').forEach(function (b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-  activeFile = filename;
 
-  var entries = collections[filename];
-  if (!entries) { showToast('Collection not found'); return; }
+	// Clear active state from all buttons
+	document.querySelectorAll('.coll-btn').forEach(function (b) { b.classList.remove('active'); });
+	
+	// Highlight selected buttons
+	btn.classList.add('active');
 
-  panelTitle.textContent = filename.replace(/\.txt$/i, '');
-  panelCount.textContent = entries.length + ' entries';
-  searchInput.value = '';
-  newEntryBtn.classList.add('visible');
+	// Set active file (used globally)
+	activeFile = filename;
 
-  rightEmpty.style.display = 'none';
-  rightPanel.style.display = 'flex';
+	// Get entries for this collection
+	var entries = collections[filename];
 
-  renderPasswords(entries);
+	// Saftey check
+	if (!entries) { 
+		showToast('Collection not found'); 
+		return; 
+	}
+
+	// Update UI title by removing txt extension
+	panelTitle.textContent = filename.replace(/\.txt$/i, '');
+
+	// Show number of entries
+	panelCount.textContent = entries.length + ' entries';
+
+	// Reset search input
+	searchInput.value = '';
+
+	// Show new entry button as its valid for real collections
+	newEntryBtn.classList.add('visible');
+
+	// Show main panel
+	rightEmpty.style.display = 'none';
+	rightPanel.style.display = 'flex';
+
+	// Render entries in UI
+	renderPasswords(entries);
 }
 
-/** Confirm and permanently delete a collection. */
+// Delete a collection (file) permanently. 
+// FLOW:
+// 1. Ask user for confirmation
+// 2. Remove from memory
+// 3. Persist deletion (encrypted or plain)
+// 4. Update UI (sidebar, counts, panels)
 async function deleteCollection(filename) {
-  var displayName = filename.replace(/\.txt$/i, '');
-  var count       = (collections[filename] || []).length;
-  var confirmed   = await showConfirm(
-    'Delete Collection',
-    'Delete "' + displayName + '" (' + count + ' entr' + (count === 1 ? 'y' : 'ies') + ')?\n\nThis cannot be undone.'
-  );
-  if (!confirmed) return;
 
-  try {
-    if (bookIsEncrypted()) {
-      var deleted = collections[filename];
-      delete collections[filename];
-      if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
-      try {
-        await reEncryptVault();
-      } catch (e) {
-        collections[filename] = deleted;
-        if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
-        throw e;
-      }
-    } else {
-      await bookDeleteFile(filename);
-      delete collections[filename];
-    }
+	// Remove txt extension
+	var displayName = filename.replace(/\.txt$/i, '');
 
-    /* Remove sidebar button */
-    var sideBtn = collList.querySelector('[data-file="' + filename + '"]');
-    if (sideBtn) sideBtn.remove();
+	// Count the entries in this collection
+	var count = (collections[filename] || []).length;
 
-    /* Update "All" count */
-    var allBtnEl = collList.querySelector('.all-btn');
-    if (allBtnEl) {
-      var total = Object.keys(collections).reduce(function (s, k) { return s + collections[k].length; }, 0);
-      allBtnEl.querySelector('.coll-n').textContent = total + ' passwords total';
-    }
+	// Show confirmation dialog
+	var confirmed = await showConfirm(
+		'Delete Collection',
+		'Delete "' + displayName + '" (' + count + ' entr' + (count === 1 ? 'y' : 'ies') + ')?\n\nThis cannot be undone.'
+	);
 
-    /* Update book meta count */
-    if (isMultiBookMode && activeBookName) {
-      var bookMeta = document.getElementById('book-meta-' + activeBookName);
-      if (bookMeta) {
-        var cnt = Object.keys(collections).length;
-        bookMeta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + (bookIsEncrypted() ? ' \xb7 encrypted' : ' \xb7 plain text');
-      }
-    }
+	// Abort if the user cancels
+	if (!confirmed) return;
 
-    /* Clear right panel if this was active */
-    if (activeFile === filename) {
-      activeFile = null;
-      rightPanel.style.display = 'none';
-      rightEmpty.style.display = '';
-      newEntryBtn.classList.remove('visible');
-    }
+	try {
+		// Handle Deletion
+		if (bookIsEncrypted()) {
 
-    showToast('"' + displayName + '" deleted');
-  } catch (err) {
-    showToast('Error: ' + err.message);
-  }
+			// Save backup incase re-encrption fails
+			var deleted = collections[filename];
+
+			// Remove from memory
+			delete collections[filename];
+
+			// Sync to active book if in multi book mode
+			if (isMultiBookMode && activeBookName) {
+				bookHandles[activeBookName].collections = collections;
+			}
+
+			try {
+				// Re-encrypt entire vault 
+				await reEncryptVault();
+			} catch (e) {
+				// Rollback if the encryption failed
+				collections[filename] = deleted;
+
+				if (isMultiBookMode && activeBookName) {
+					bookHandles[activeBookName].collections = collections;
+				}
+
+				// Throw error
+				throw e;
+			}
+
+		} else {
+
+			// Plain text mode, delete file directly
+			await bookDeleteFile(filename);
+
+			// Remove from memory
+			delete collections[filename];
+		}
+
+		// UI Updates
+
+		// Remove collection button from sidebar
+		var sideBtn = collList.querySelector('[data-file="' + filename + '"]');
+		if (sideBtn) sideBtn.remove();
+
+		// Update all passwords total count
+		var allBtnEl = collList.querySelector('.all-btn');
+		if (allBtnEl) {
+			var total = Object.keys(collections).reduce(function (s, k) { return s + collections[k].length; }, 0);
+			allBtnEl.querySelector('.coll-n').textContent = total + ' passwords total';
+		}
+
+		// Update book meta data
+		if (isMultiBookMode && activeBookName) {
+			var bookMeta = document.getElementById('book-meta-' + activeBookName);
+			
+			if (bookMeta) {
+				var cnt = Object.keys(collections).length;
+
+				bookMeta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + (bookIsEncrypted() ? ' \xb7 encrypted' : ' \xb7 plain text');
+			}
+		}
+
+		// If deleted collection was currently open + reset UI
+		if (activeFile === filename) {
+			activeFile = null;
+
+			// Hide main panel
+			rightPanel.style.display = 'none';
+
+			// Show empty state
+			rightEmpty.style.display = '';
+
+			// Hide new entry button
+			newEntryBtn.classList.remove('visible');
+		}
+
+		// Success feedback
+		showToast('"' + displayName + '" deleted');
+
+	} catch (err) {
+
+		// Error feedback
+		showToast('Error: ' + err.message);
+	}
 }

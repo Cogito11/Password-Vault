@@ -1,292 +1,339 @@
-/* ═══════════════════════════════
-   VAULT / LOADER  —  open, scan, and load vault folders
-   Covers single-book, multi-book, Electron path, and Web FS API modes.
-═══════════════════════════════ */
+// ═══════════════════════════════
+// VAULT / LOADER
+// Handles opening, scanning, and loading vault folders (Electron only).
+// Supports:
+// - Single-book vaults (one folder of .txt files)
+// - Multi-book vaults (subfolders = separate vaults)
+// ═══════════════════════════════
 
-/* ── Startup auto-load ── */
 
-/**
- * Called once on startup. Checks for a stored default vault path/handle
- * and loads it automatically if permission is already granted, or shows
- * the resume banner if a prompt is needed.
- */
+// Auto-load Default folder on start up 
+// Runs once when the app starts. 
+// PURPOSE:
+// - Check if the user has a saved "default vault folder"
+// - If yes then automatically load it
+// - If not then show "resume banner" prompting user action
 async function tryAutoLoadDefault() {
-  if (_autoLoadDone) return;
-  _autoLoadDone = true;
 
-  /* Electron path-based auto-load (Node fs — no picker needed) */
-  if (window.electronAPI && window.electronAPI.getDefaultPath) {
-    var storedPath = await window.electronAPI.getDefaultPath();
-    if (storedPath) {
-      var folderName = storedPath.split(/[\/\\]/).filter(Boolean).pop() || storedPath;
-      updateDefaultUI(folderName);
-      statusTxt.textContent = 'Loading default folder\u2026';
-      await loadFromElectronPath(storedPath);
-      return;
-    }
-    document.getElementById('resumeBanner').classList.add('visible');
-    return;
-  }
+	// Prevent running multiple times
+	if (_autoLoadDone) return;
+	_autoLoadDone = true;
 
-  /* Fallback: Web File System Access API */
-  var savedName = getDefaultName();
-  if (savedName) updateDefaultUI(savedName);
+	// Ask Electron (main process) for stored default path
+	var storedPath = await window.electronAPI.getDefaultPath();
 
-  var handle = await getDefaultDirHandle();
-  if (!handle) {
-    document.getElementById('resumeBanner').classList.add('visible');
-    return;
-  }
+	if (storedPath) {
+		// Extract just the folder name from full path
+		var folderName = storedPath.split(/[\/\\]/).filter(Boolean).pop() || storedPath;
+		
+		// Update UI to show current default
+		updateDefaultUI(folderName);
 
-  var perm;
-  try { perm = await handle.queryPermission({ mode: 'readwrite' }); } catch (_) { return; }
-  if (perm === 'denied') return;
-  if (perm === 'granted') { await loadHandleNow(handle); return; }
-  try {
-    var granted = await handle.requestPermission({ mode: 'readwrite' });
-    if (granted === 'granted') await loadHandleNow(handle);
-  } catch (_) {}
+		// Show loading status
+		statusTxt.textContent = 'Loading default folder…';
+
+		// Load vault contents from disk
+		await loadFromElectronPath(storedPath);
+	} else {
+		// If no default set then show banner prompting user to choose/create one
+		document.getElementById('resumeBanner').classList.add('visible');
+	}
 }
 
-/**
- * Core load logic for a FileSystemHandle — called either when permission
- * is already granted or after the resume banner provides the user gesture.
- */
-async function loadHandleNow(handle) {
-  saveDefaultName(handle.name);
-  updateDefaultUI(handle.name);
-  statusTxt.textContent = 'Loading default folder\u2026';
-
-  try {
-    var subBooks = [];
-    for await (var entry of handle.values()) {
-      if (entry.kind !== 'directory') continue;
-      var bookInfo = { name: entry.name, handle: entry, isEncrypted: false };
-      try { await entry.getFileHandle('vault.enc'); bookInfo.isEncrypted = true; subBooks.push(bookInfo); continue; } catch (_) {}
-      subBooks.push(bookInfo);
-    }
-
-    if (subBooks.length > 0) {
-      dirHandle = handle;
-      isMultiBookMode = true;
-      bookHandles = {};
-      subBooks.forEach(function (b) {
-        bookHandles[b.name] = { handle: b.handle, isEncrypted: b.isEncrypted, isUnlocked: false, key: null, collections: {} };
-      });
-      enterMultiBookMode(subBooks);
-    } else {
-      var hasVault = false;
-      try { await handle.getFileHandle('vault.enc'); hasVault = true; } catch (_) {}
-      dirHandle = handle;
-      isMultiBookMode = false;
-      if (hasVault) {
-        openVaultUnlockModal(null);
-      } else {
-        await loadPlainFolder();
-      }
-    }
-  } catch (err) {
-    statusTxt.textContent = 'Could not load default folder: ' + err.message;
-  }
-}
-
-/* ── Plain-text folder load ── */
-
-/** Read all .txt files from the active folder and populate the sidebar. */
+// Plain-text folder load 
+// Loads a SINGLE vault folder that contains plain `.txt` files.
+// FLOW:
+// 1. Scan folder via Electron
+// 2. Parse each .txt file
+// 3. Store results in `collections`
+// 4. Build sidebar UI
 async function loadPlainFolder() {
-  isEncryptedVault = false;
-  vaultKey = null;
-  var results = [];
+	// Mark vault as NOT encrypted
+	isEncryptedVault = false;
+	vaultKey = null;
 
-  if (isElectronPathMode && _electronVaultPath) {
-    var data = await window.electronAPI.scanVaultPath(_electronVaultPath);
-    if (data) {
-      (data.txtFiles || []).forEach(function (f) {
-        results.push({ name: f.name, entries: parseFile(f.text) });
-      });
-    }
-  } else {
-    for await (var entry of dirHandle.values()) {
-      if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.txt')) {
-        var file = await entry.getFile();
-        var text = await file.text();
-        results.push({ name: entry.name, entries: parseFile(text) });
-      }
-    }
-  }
+	// Ask Electron to scan folder and return file contents
+	var data = await window.electronAPI.scanVaultPath(_electronVaultPath);
 
-  results.sort(function (a, b) { return a.name.localeCompare(b.name); });
-  collections = {};
-  collList.innerHTML = '';
-  leftHint.style.display = 'none';
-  results.forEach(function (r) { collections[r.name] = r.entries; });
-  buildSidebar(results);
+	var results = [];
+
+	if (data) {
+		// Convert each file into structured entries
+		(data.txtFiles || []).forEach(function (f) {
+			results.push({ 
+				name: f.name, 
+				// Convert raw text into structured data
+				entries: parseFile(f.text) 
+			});
+		});
+	}
+
+	// Sort files alphabetically
+	results.sort((a, b) => a.name.localeCompare(b.name));
+
+	// Reset global state
+	collections = {};
+	collList.innerHTML = '';
+	leftHint.style.display = 'none';
+
+	// Store parsed results in collections object
+	results.forEach(function (r) {
+		collections[r.name] = r.entries;
+	});
+
+	// Build UI sidebar with collections
+	buildSidebar(results);
 }
 
-/* ── Electron path-mode load ── */
-
-/**
- * Load a vault folder by absolute path using Node fs via the Electron
- * main process. No Web FS API picker is needed.
- */
+// Electron path-mode load 
+// CORE LOADER FUNCTION 
+// Loads a vault from a filesystem path using Electron (Node fs).
+// Determines if Multi-book vault (subfolders), Single-book vault (flat .txt files) or Empty vault
 async function loadFromElectronPath(vaultPath) {
-  try {
-    var data = await window.electronAPI.scanVaultPath(vaultPath);
-    if (!data) {
-      statusTxt.textContent = 'Default folder not found: ' + vaultPath;
-      document.getElementById('resumeBanner').classList.add('visible');
-      return;
-    }
+	try {
 
-    saveDefaultName(data.name);
-    updateDefaultUI(data.name);
+		// Ask Electron to scan folder structure + contents
+		var data = await window.electronAPI.scanVaultPath(vaultPath);
+		
+		// If folder missing or unreadable
+		if (!data) {
+			statusTxt.textContent = 'Default folder not found: ' + vaultPath;
+			document.getElementById('resumeBanner').classList.add('visible');
+			return;
+		}
 
-    if (data.subBooks && data.subBooks.length > 0) {
-      /* Multi-book mode */
-      _electronVaultPath = vaultPath;
-      isMultiBookMode    = true;
-      isElectronPathMode = true;
-      dirHandle          = null;
-      bookHandles        = {};
+		// Save/display folder name
+		saveDefaultName(data.name);
+		updateDefaultUI(data.name);
 
-      var subBooks = data.subBooks.map(function (b) {
-        return { name: b.name, path: b.path, isEncrypted: b.isEncrypted };
-      });
-      subBooks.forEach(function (b) {
-        bookHandles[b.name] = {
-          handle:      null,
-          path:        b.path,
-          isEncrypted: b.isEncrypted,
-          isUnlocked:  false,
-          key:         null,
-          collections: {}
-        };
-        /* Pre-load plain books from scan data */
-        if (!b.isEncrypted) {
-          var scanBook = data.subBooks.filter(function (s) { return s.name === b.name; })[0];
-          if (scanBook) {
-            var results = (scanBook.txtFiles || []).map(function (f) {
-              return { name: f.name, entries: parseFile(f.text) };
-            });
-            results.sort(function (a, b2) { return a.name.localeCompare(b2.name); });
-            bookHandles[b.name].collections = {};
-            results.forEach(function (r) { bookHandles[b.name].collections[r.name] = r.entries; });
-            bookHandles[b.name].isUnlocked = true;
-          }
-        }
-      });
+		// MULTI-BOOK MODE
+		if (data.subBooks && data.subBooks.length > 0) {
+			/* Multi-book mode */
+			_electronVaultPath = vaultPath;
+			isMultiBookMode = true;
+			isElectronPathMode = true;
+			dirHandle = null; // unused in Electron, kept for compatibility
+			bookHandles = {};
 
-      enterMultiBookMode(subBooks);
+			// Convert scan results into internal structure
+			var subBooks = data.subBooks.map(function (b) {
+				return { 
+					name: b.name, 
+					path: b.path, 
+					isEncrypted: b.isEncrypted
+				};
+			});
 
-    } else if (data.subBooks.length === 0 && data.txtFiles && data.txtFiles.length > 0) {
-      /* Single-book plain mode */
-      _electronVaultPath = vaultPath;
-      isElectronPathMode = true;
-      isMultiBookMode    = false;
-      isEncryptedVault   = false;
-      dirHandle          = null;
-      var results = data.txtFiles.map(function (f) { return { name: f.name, entries: parseFile(f.text) }; });
-      results.sort(function (a, b) { return a.name.localeCompare(b.name); });
-      collections = {};
-      results.forEach(function (r) { collections[r.name] = r.entries; });
-      buildSidebar(results);
-      ejectBtn.classList.add('visible');
-      bookNameEl.textContent = data.name;
+			// Initialize each "book"
+			subBooks.forEach(function (b) {
+				bookHandles[b.name] = {
+					handle:      null,
+					path:        b.path,
+					isEncrypted: b.isEncrypted,
+					isUnlocked:  false,
+					key:         null,
+					collections: {}
+				};
 
-    } else {
-      /* Empty vault folder — enter multi-book mode so user can add books */
-      _electronVaultPath = vaultPath;
-      isElectronPathMode = true;
-      isMultiBookMode    = true;
-      dirHandle          = null;
-      bookHandles        = {};
-      enterMultiBookMode([]);
-    }
-  } catch (err) {
-    statusTxt.textContent = 'Could not load default folder: ' + err.message;
-  }
+
+				// If NOT encrypted → preload immediately
+				if (!b.isEncrypted) {
+
+					// Find matching scan result
+					var scanBook = data.subBooks.filter(function (s) { 
+						return s.name === b.name; 
+					})[0];
+
+					if (scanBook) {
+						var results = (scanBook.txtFiles || []).map(function (f) {
+							return { name: f.name, entries: parseFile(f.text) };
+						});
+
+						// Sort collections
+						results.sort(function (a, b2) { 
+							return a.name.localeCompare(b2.name); 
+						});
+
+						// Store parsed data
+						bookHandles[b.name].collections = {};
+						results.forEach(function (r) { 
+							bookHandles[b.name].collections[r.name] = r.entries; 
+						});
+
+						// Mark as already unlocked (since not encrypted)
+						bookHandles[b.name].isUnlocked = true;
+					}
+				}
+			});
+
+			// Render multi-book UI
+			enterMultiBookMode(subBooks);
+
+			// SINGLE BOOK MODE
+		} else if (data.subBooks.length === 0 && data.txtFiles && data.txtFiles.length > 0) {
+			
+			_electronVaultPath = vaultPath;
+			isElectronPathMode = true;
+			isMultiBookMode    = false;
+			isEncryptedVault   = false;
+			dirHandle          = null;
+
+			// Parse all files
+			var results = data.txtFiles.map(function (f) { 
+				return { 
+					name: f.name, 
+					entries: parseFile(f.text) 
+				}; 
+			});
+
+			results.sort(function (a, b) { 
+				return a.name.localeCompare(b.name); 
+			});
+
+			// Store collections
+			collections = {};
+			results.forEach(function (r) { 
+				collections[r.name] = r.entries; 
+			});
+
+			// Build UI
+			buildSidebar(results);
+
+			// Show eject button
+			ejectBtn.classList.add('visible');
+
+			// Update UI label
+			bookNameEl.textContent = data.name;
+
+			// EMPTY VAULT
+		} else {
+
+			// No files or books, treat as empty multi-book container
+			_electronVaultPath = vaultPath;
+			isElectronPathMode = true;
+			isMultiBookMode    = true;
+			dirHandle          = null;
+			bookHandles        = {};
+
+			enterMultiBookMode([]);
+		}
+	} catch (err) {
+		statusTxt.textContent = 'Could not load default folder: ' + err.message;
+	}
 }
 
-/* ── Plain book load (single book inside a multi-book vault) ── */
-
-/** Read all .txt files from a plain (non-encrypted) sub-book and cache them. */
+// Plain book load 
+// Loads a SINGLE book inside a multi-book vault.
+// Only used for NON-encrypted books.
 async function loadPlainBook(bookName) {
-  var info    = bookHandles[bookName];
-  var results = [];
 
-  if (isElectronPathMode) {
-    window.vault.readDir(info.path)
-      .filter(function (e) { return e.isFile && e.name.toLowerCase().endsWith('.txt'); })
-      .forEach(function (e) {
-        var text = window.vault.readFile(window.vault.joinPath(info.path, e.name));
-        results.push({ name: e.name, entries: parseFile(text) });
-      });
-  } else {
-    for await (var entry of info.handle.values()) {
-      if (entry.kind === 'file' && entry.name.toLowerCase().endsWith('.txt')) {
-        var file = await entry.getFile();
-        var text = await file.text();
-        results.push({ name: entry.name, entries: parseFile(text) });
-      }
-    }
-  }
+	var info = bookHandles[bookName];
+	var results = [];
 
-  results.sort(function (a, b) { return a.name.localeCompare(b.name); });
-  info.collections = {};
-  results.forEach(function (r) { info.collections[r.name] = r.entries; });
-  info.isUnlocked = true;
+	// Read files directly using Electron filesystem helpers
+	window.vault.readDir(info.path)
+		.filter(function (e) {
+			return e.isFile && e.name.toLowerCase().endsWith('.txt');
+		})
+		.forEach(function (e) {
 
-  var meta = document.getElementById('book-meta-' + bookName);
-  if (meta) {
-    meta.textContent = results.length + ' collection' + (results.length !== 1 ? 's' : '') + ' \xb7 plain text';
-  }
+			var text = window.vault.readFile(
+				window.vault.joinPath(info.path, e.name)
+			);
+
+			results.push({
+				name: e.name,
+				entries: parseFile(text)
+			});
+		});
+
+	// Sort collections
+	results.sort(function (a, b) {
+		return a.name.localeCompare(b.name);
+	});
+
+	// Store in memory
+	info.collections = {};
+	results.forEach(function (r) {
+		info.collections[r.name] = r.entries;
+	});
+
+	info.isUnlocked = true;
+
+	// Update UI metadata
+	var meta = document.getElementById('book-meta-' + bookName);
+	if (meta) {
+		meta.textContent =
+			results.length + ' collection' +
+			(results.length !== 1 ? 's' : '') +
+			' · plain text';
+	}
 }
 
-/* ── Vault folder re-scan (multi-book mode) ── */
-
-/**
- * Re-read the vault folder and refresh the books panel without losing
- * the unlock state of books that are already open.
- */
+// Vault folder re-scan
+// Re-scans the vault folder to detect: New books added and Removed books
+// IMPORTANT: Preserves unlock state of already-open books.
 async function rescanVaultFolder() {
-  var subBooks = [];
 
-  if (isElectronPathMode && _electronVaultPath) {
-    var data = await window.electronAPI.scanVaultPath(_electronVaultPath);
-    if (data) {
-      data.subBooks.forEach(function (b) {
-        subBooks.push({ name: b.name, path: b.path, handle: null, isEncrypted: b.isEncrypted });
-      });
-    }
-  } else {
-    for await (var entry of dirHandle.values()) {
-      if (entry.kind !== 'directory') continue;
-      var bookInfo = { name: entry.name, handle: entry, isEncrypted: false };
-      try { await entry.getFileHandle('vault.enc'); bookInfo.isEncrypted = true; } catch (_) {}
-      subBooks.push(bookInfo);
-    }
-  }
+	var subBooks = [];
 
-  /* Preserve existing unlock state */
-  var oldHandles = bookHandles;
-  bookHandles = {};
-  subBooks.forEach(function (b) {
-    var existing = oldHandles[b.name];
-    bookHandles[b.name] = existing || {
-      handle: b.handle || null, path: b.path || null,
-      isEncrypted: b.isEncrypted, isUnlocked: false, key: null, collections: {}
-    };
-    if (!isElectronPathMode) bookHandles[b.name].handle = b.handle;
-  });
+	// Re-scan folder using Electron
+	var data = await window.electronAPI.scanVaultPath(_electronVaultPath);
 
-  booksList.innerHTML = '';
-  subBooks.sort(function (a, b) { return a.name.localeCompare(b.name); });
-  subBooks.forEach(function (b) {
-    addBookBtn(b.name, bookHandles[b.name].isEncrypted);
-    if (bookHandles[b.name].isUnlocked) injectRelockBtn(b.name);
-  });
+	if (data) {
+		data.subBooks.forEach(function (b) {
+			subBooks.push({
+				name: b.name,
+				path: b.path,
+				handle: null,
+				isEncrypted: b.isEncrypted
+			});
+		});
+	}
 
-  var total = subBooks.length;
-  booksPanelCount.textContent = total + ' book' + (total !== 1 ? 's' : '');
-  statusTxt.textContent = total + ' password book' + (total !== 1 ? 's' : '') + ' found';
+	// Preserve existing unlock state
+	var oldHandles = bookHandles;
+	bookHandles = {};
+
+	subBooks.forEach(function (b) {
+
+		var existing = oldHandles[b.name];
+
+		// Reuse existing state if present
+		bookHandles[b.name] = existing || {
+			handle: null,
+			path: b.path,
+			isEncrypted: b.isEncrypted,
+			isUnlocked: false,
+			key: null,
+			collections: {}
+		};
+	});
+
+	// Rebuild UI list
+	booksList.innerHTML = '';
+
+	subBooks.sort(function (a, b) {
+		return a.name.localeCompare(b.name);
+	});
+
+	subBooks.forEach(function (b) {
+		addBookBtn(b.name, bookHandles[b.name].isEncrypted);
+
+		// If already unlocked, re-add relock button
+		if (bookHandles[b.name].isUnlocked) {
+			injectRelockBtn(b.name);
+		}
+	});
+
+	// Update UI counters
+	var total = subBooks.length;
+
+	booksPanelCount.textContent =
+		total + ' book' + (total !== 1 ? 's' : '');
+
+	statusTxt.textContent =
+		total + ' password book' +
+		(total !== 1 ? 's' : '') +
+		' found';
 }
