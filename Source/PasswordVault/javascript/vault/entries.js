@@ -1,5 +1,5 @@
 /* ═══════════════════════════════
-   ENTRIES  —  append staged entries to an existing collection
+   VAULT / ENTRIES  —  append staged entries to an existing collection
 ═══════════════════════════════ */
 
 /** Persist all entries staged in modalEntryList into the currently open collection. */
