@@ -48,41 +48,25 @@ async function tryAutoLoadDefault() {
 // 3. Store results in `collections`
 // 4. Build sidebar UI
 async function loadPlainFolder() {
-	// Mark vault as NOT encrypted
-	isEncryptedVault = false;
-	vaultKey = null;
+    isEncryptedVault = false;
+    vaultKey         = null;
 
-	// Ask Electron to scan folder and return file contents
-	var data = await window.electronAPI.readVaultFiles(_electronVaultPath);
+    // readVaultFiles returns the array directly, not { txtFiles: [...] }
+    var txtFiles = await window.electronAPI.readVaultFiles(_electronVaultPath);
 
-	var results = [];
+    var results = (txtFiles || []).map(function (f) {
+        return { name: f.name, entries: parseFile(f.text) };
+    });
 
-	if (data) {
-		// Convert each file into structured entries
-		(data.txtFiles || []).forEach(function (f) {
-			results.push({ 
-				name: f.name, 
-				// Convert raw text into structured data
-				entries: parseFile(f.text) 
-			});
-		});
-	}
+    results.sort(function (a, b) { return a.name.localeCompare(b.name); });
 
-	// Sort files alphabetically
-	results.sort((a, b) => a.name.localeCompare(b.name));
+    collections        = {};
+    collList.innerHTML = '';
+    leftHint.style.display = 'none';
 
-	// Reset global state
-	collections = {};
-	collList.innerHTML = '';
-	leftHint.style.display = 'none';
+    results.forEach(function (r) { collections[r.name] = r.entries; });
 
-	// Store parsed results in collections object
-	results.forEach(function (r) {
-		collections[r.name] = r.entries;
-	});
-
-	// Build UI sidebar with collections
-	buildSidebar(results);
+    buildSidebar(results);
 }
 
 // Electron path-mode load 
@@ -134,36 +118,6 @@ async function loadFromElectronPath(vaultPath) {
 					key:         null,
 					collections: {}
 				};
-
-
-				// If NOT encrypted → preload immediately
-				if (!b.isEncrypted) {
-
-					// Find matching scan result
-					var scanBook = data.subBooks.filter(function (s) { 
-						return s.name === b.name; 
-					})[0];
-
-					if (scanBook) {
-						var results = (scanBook.txtFiles || []).map(function (f) {
-							return { name: f.name, entries: parseFile(f.text) };
-						});
-
-						// Sort collections
-						results.sort(function (a, b2) { 
-							return a.name.localeCompare(b2.name); 
-						});
-
-						// Store parsed data
-						bookHandles[b.name].collections = {};
-						results.forEach(function (r) { 
-							bookHandles[b.name].collections[r.name] = r.entries; 
-						});
-
-						// Mark as already unlocked (since not encrypted)
-						bookHandles[b.name].isUnlocked = true;
-					}
-				}
 			});
 
 			// Render multi-book UI
@@ -179,11 +133,10 @@ async function loadFromElectronPath(vaultPath) {
 			dirHandle          = null;
 
 			// Parse all files
-			var results = data.txtFiles.map(function (f) { 
-				return { 
-					name: f.name, 
-					entries: parseFile(f.text) 
-				}; 
+			var txtFiles = await window.electronAPI.readVaultFiles(vaultPath);
+
+			var results = txtFiles.map(function (f) {
+				return { name: f.name, entries: parseFile(f.text) };
 			});
 
 			results.sort(function (a, b) { 
@@ -261,7 +214,7 @@ async function rescanVaultFolder() {
 	var subBooks = [];
 
 	// Re-scan folder using Electron
-	var data = await window.electronAPI.scanVaultPath(_electronVaultPath);
+	var data = await window.electronAPI.scanVaultStructure(_electronVaultPath);
 
 	if (data) {
 		data.subBooks.forEach(function (b) {

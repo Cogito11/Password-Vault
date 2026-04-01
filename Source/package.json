@@ -22,11 +22,14 @@
       "icon": "PasswordVault/assets/logos/passwordvault.ico"
     },
     "linux": {
-      "target": "AppImage",
+      "target": "appImage",
       "icon": "PasswordVault/assets/logos/Password Vault Logo 512.png"
     },
     "portable": {
       "artifactName": "${productName}Portable_${version}_${os}_${arch}.${ext}"
+    },
+    "appImage": {
+      "artifactName": "${productName}_${version}_${os}_${arch}.${ext}"
     }
   },
   "keywords": [],
