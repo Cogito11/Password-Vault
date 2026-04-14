@@ -127,11 +127,17 @@ function resetVaultState() {
 // - Builds card UI for each entry
 // - Masks sensitive values (passwords, tokens...)
 // - Adds COPY / SHOW / EDIT / DELETE actions
-function renderPasswords() {
+function renderPasswords(overrideEntries) {
 
 	// Build the entries array based on current view
 	var entries;
-	if (activeFile === '__all__') {
+
+	if (overrideEntries) 
+	{
+        entries = overrideEntries;
+    } 
+	else if (activeFile === '__all__') 
+	{
 		entries = [];
 		Object.keys(collections).forEach(function (k) {
 			collections[k].forEach(function (e, i) {
@@ -141,9 +147,13 @@ function renderPasswords() {
 				}));
 			});
 		});
-	} else if (activeFile && collections[activeFile]) {
+	} 
+	else if (activeFile && collections[activeFile]) 
+	{
 		entries = collections[activeFile];
-	} else {
+	} 
+	else
+	{
 		entries = [];
 	}
 
