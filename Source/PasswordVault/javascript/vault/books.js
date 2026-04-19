@@ -258,6 +258,11 @@ async function doRenameBook(oldName, newName) {
 async function doChangeBookPassword(bookName, newPassword) {
 	var info  = bookHandles[bookName];
 
+	if (!isMultiBookMode) 
+	{
+        info.collections = collections;
+    }
+
 	// Repack encrypted data with new password
 	var bytes = await packEncrypted({ collections: info.collections }, newPassword);
 	
@@ -270,6 +275,10 @@ async function doChangeBookPassword(bookName, newPassword) {
 // Encrypt a plain book into vault.enc
 async function doEncryptBook(bookName, password) {
 	var info = bookHandles[bookName];
+
+	if (!isMultiBookMode) {
+        info.collections = collections;
+    }
 
 	// Ensure data is loaded
 	if (!info.isUnlocked) await loadPlainBook(bookName);
@@ -302,7 +311,8 @@ async function doEncryptBook(bookName, password) {
 	}
 
 	// Sync active state
-	if (activeBookName === bookName) {
+	if (activeBookName === bookName || !isMultiBookMode) 
+	{
 		isEncryptedVault = true;
 		vaultKey = info.key;
 	}
@@ -341,9 +351,20 @@ async function doDecryptBook() {
 	}
 
 	// Sync active state
-	if (activeBookName === editingBookName) {
+	if (activeBookName === editingBookName || !isMultiBookMode) 
+	{
 		isEncryptedVault = false;
-		vaultKey         = null;
+		vaultKey = null;
+	}
+
+	if (!isMultiBookMode)
+	{
+		info.isUnlocked  = true;
+		info.isEncrypted = false;
+		var results = Object.keys(collections).sort().map(function (k) {
+			return { name: k, entries: collections[k] };
+		});
+		buildSidebar(results);
 	}
 
 	showToast('"' + editingBookName + '" decrypted');
