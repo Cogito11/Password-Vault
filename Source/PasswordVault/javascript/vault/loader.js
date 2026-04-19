@@ -140,6 +140,14 @@ async function loadFromElectronPath(vaultPath) {
 			isEncryptedVault = false;
 			dirHandle = null;
 
+			bookHandles = {};
+			bookHandles[data.name] = {
+				handle: null,
+				path: vaultPath,
+				key: null,
+				collections: {}
+			};
+
 			// Parse all files
 			var txtFiles = await window.electronAPI.readVaultFiles(vaultPath);
 
