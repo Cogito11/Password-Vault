@@ -110,15 +110,26 @@ vaultUnlockBtn.addEventListener('click', async function () {
 			isEncryptedVault = true;
 			collections = payload.collections || {};
 
+			var info = bookHandles[vaultName()];
+			if (info) 
+			{
+				info.key = key;
+				info.collections = collections;
+				info.isUnlocked = true;
+
+				var bookBtn = booksList.querySelector('[data-book="' + vaultName() + '"]');
+				if (bookBtn) 
+				{
+					var lk = bookBtn.querySelector('.book-lock');
+					if (lk) lk.remove();
+				}
+			}
+
 			var results = Object.keys(collections).sort().map(function (k) {
 				return { name: k, entries: collections[k] };
 			});
 
 			buildSidebar(results);
-			singleBookLocked = false;
-			lockVaultBtnLabel.textContent = 'Lock Vault';
-			lockVaultBtn.title = 'Lock this encrypted vault \u2014 clears the key from memory';
-			lockVaultBtn.style.display = 'flex';
 			showToast(vaultName() + ' unlocked');
 		}
 		

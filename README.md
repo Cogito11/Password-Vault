@@ -6,13 +6,13 @@ A lightweight, offline first password manager built with Electron. All data live
 
 ## Features
 
-- **Password Books** — organize credentials into separate books (folders), each with its own collections
-- **Collections** — group related passwords within a book (For example, *Social Media*, *Work Accounts*, *Finance Accounts*...)
-- **Plain text or encrypted storage** — each password book can be plain text or encrypted independently, you choose during the creation process
-- **AES-256-GCM encryption** — encrypted books are stored as a single binary `vault.enc` file. No readable data is written to disk
-- **Per-book locking** — unlock and relock individual encrypted books without ejecting the whole vault
-- **Search** — filter entries from the active collection or from the entire password book with ease
-- **Copy to clipboard** — copy any field value with one click, sensitive fields (password, token, PIN...) are masked by default
+- **Password Books** - organize credentials into separate books (folders), each with its own collections
+- **Collections** - group related passwords within a book (For example, *Social Media*, *Work Accounts*, *Finance Accounts*...)
+- **Plain text or encrypted storage** - each password book can be plain text or encrypted independently, you choose during the creation process
+- **AES-256-GCM encryption** - encrypted books are stored as a single binary `vault.enc` file. No readable data is written to disk
+- **Per-book locking** - unlock and relock individual encrypted books without ejecting the whole vault
+- **Search** - filter entries from the active collection or from the entire password book with ease
+- **Copy to clipboard** - copy any field value with one click, sensitive fields (password, token, PIN...) are masked by default
 
 ---
 
@@ -32,8 +32,8 @@ Alternatively to the method above, if you don't have as many passwords/accounts,
 
 ```
 source/
-├── main.js                 # Electron main process — creates the window, handles IPC
-├── preload.js              # Context bridge — exposes Node fs/path to the renderer safely
+├── main.js                 # Electron main process - creates the window, handles IPC
+├── preload.js              # Context bridge - exposes Node fs/path to the renderer safely
 ├── Password Vault.html     # Entire UI and application logic (renderer process)
 └── package.json            # Project manifest and dependencies
 ```
@@ -41,7 +41,7 @@ source/
 ### How the three files relate
 
 ```
-main.js  ──IPC──▶  preload.js  ──window.vault.*──▶  Password Vault.html
+main.js  ──IPC──▶  preload.js  ──window.vault.*──▶  index.html
 (Node/Electron)    (Node bridge)                     (renderer UI)
 ```
 

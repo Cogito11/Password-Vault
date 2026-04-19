@@ -8,10 +8,13 @@
 // Handle a click on a book button in the sidebar
 // Loads plain books immediately; shows unlock modal for encrypted books
 async function selectBook(bookName, btn) {
+	
 	// Lookup metadata for this book
 	var info = bookHandles[bookName];
 	// Abort if book doesn't exist
 	if (!info) return;
+
+	if (!isMultiBookMode && info.isUnlocked) return;
 
 	// If already unlocked OR not encrypted, load immediately
 	if (info.isUnlocked || !info.isEncrypted) {
@@ -111,6 +114,20 @@ function relockBook(bookName) {
 		newCollBtn.classList.add('hidden');
 		collSectionName.textContent = 'Select a book above';
 		if (btn) btn.classList.remove('active');
+	} 
+	else if (!isMultiBookMode) 
+	{
+		// single book mode reset
+		collections = {};
+		vaultKey = null;
+		isEncryptedVault = false;
+		activeFile = null;
+		collList.innerHTML = '';
+		leftHint.style.display = '';
+		rightPanel.style.display = 'none';
+		rightEmpty.style.display = '';
+		newCollBtn.classList.add('hidden');
+		booksPanel.classList.add('visible');
 	}
 
 	// Notify user
@@ -119,7 +136,7 @@ function relockBook(bookName) {
 
 // Permanently delete a book and all its files
 async function deleteBook(bookName) {
-	var info      = bookHandles[bookName];
+	var info = bookHandles[bookName];
 	var collCount = Object.keys((info && info.collections) || {}).length;
 
 	// Build confirmation message based on state
@@ -145,9 +162,16 @@ async function deleteBook(bookName) {
 		if (btn) btn.remove();
 
 		// Update counts
-		var remaining = Object.keys(bookHandles).length;
-		booksPanelCount.textContent = remaining + ' book' + (remaining !== 1 ? 's' : '');
-		statusTxt.textContent = remaining + ' password book' + (remaining !== 1 ? 's' : '') + ' found';
+		if (isMultiBookMode) 
+		{
+			var remaining = Object.keys(bookHandles).length;
+			booksPanelCount.textContent = remaining + ' book' + (remaining !== 1 ? 's' : '');
+			statusTxt.textContent = remaining + ' password book' + (remaining !== 1 ? 's' : '') + ' found';
+		} 
+		else 
+		{
+			resetVaultState();
+		}
 
 		// Reset UI if deleted book was active
 		if (activeBookName === bookName) {
@@ -179,8 +203,17 @@ async function doRenameBook(oldName, newName) {
 	var info = bookHandles[oldName];
 
 	// Direct filesystem rename
-	var newPath = window.vault.joinPath(_electronVaultPath, newName);
+	var basePath = isMultiBookMode
+		? _electronVaultPath
+		: info.path.substring(0, Math.max(info.path.lastIndexOf('/'), info.path.lastIndexOf('\\')));
+	var newPath = window.vault.joinPath(basePath, newName);
+
 	window.vault.rename(info.path, newPath);
+
+	if (!isMultiBookMode) 
+	{
+		_electronVaultPath = newPath;
+	}
 
 	bookHandles[newName] = info;
 	bookHandles[newName].path = newPath;
@@ -225,6 +258,11 @@ async function doRenameBook(oldName, newName) {
 async function doChangeBookPassword(bookName, newPassword) {
 	var info  = bookHandles[bookName];
 
+	if (!isMultiBookMode) 
+	{
+        info.collections = collections;
+    }
+
 	// Repack encrypted data with new password
 	var bytes = await packEncrypted({ collections: info.collections }, newPassword);
 	
@@ -237,6 +275,10 @@ async function doChangeBookPassword(bookName, newPassword) {
 // Encrypt a plain book into vault.enc
 async function doEncryptBook(bookName, password) {
 	var info = bookHandles[bookName];
+
+	if (!isMultiBookMode) {
+        info.collections = collections;
+    }
 
 	// Ensure data is loaded
 	if (!info.isUnlocked) await loadPlainBook(bookName);
@@ -269,7 +311,8 @@ async function doEncryptBook(bookName, password) {
 	}
 
 	// Sync active state
-	if (activeBookName === bookName) {
+	if (activeBookName === bookName || !isMultiBookMode) 
+	{
 		isEncryptedVault = true;
 		vaultKey = info.key;
 	}
@@ -308,9 +351,20 @@ async function doDecryptBook() {
 	}
 
 	// Sync active state
-	if (activeBookName === editingBookName) {
+	if (activeBookName === editingBookName || !isMultiBookMode) 
+	{
 		isEncryptedVault = false;
-		vaultKey         = null;
+		vaultKey = null;
+	}
+
+	if (!isMultiBookMode)
+	{
+		info.isUnlocked  = true;
+		info.isEncrypted = false;
+		var results = Object.keys(collections).sort().map(function (k) {
+			return { name: k, entries: collections[k] };
+		});
+		buildSidebar(results);
 	}
 
 	showToast('"' + editingBookName + '" decrypted');

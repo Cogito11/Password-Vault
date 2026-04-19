@@ -20,8 +20,6 @@ var dot = document.getElementById('dot');
 var statusTxt = document.getElementById('statusTxt');
 var toast = document.getElementById('toast');
 var ejectBtn = document.getElementById('ejectBtn');
-var lockVaultBtn = document.getElementById('lockVaultBtn');
-var lockVaultBtnLabel = document.getElementById('lockVaultBtnLabel');
 
 // Left panel - book / collection list
 var colHeadLabel = document.getElementById('colHeadLabel');

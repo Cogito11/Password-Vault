@@ -97,36 +97,6 @@ openFolderBtn.addEventListener('click', async function () {
 // Eject Folder Button Listener
 ejectBtn.addEventListener('click', resetVaultState);
 
-// Single book Lock/Unlock Vault button
-lockVaultBtn.addEventListener('click', function () {
-	// Lock
-	if (!singleBookLocked) {
-		vaultKey = null;
-		collections = {};
-		activeFile = null;
-		singleBookLocked = true;
-
-		// Reset UI
-		collList.innerHTML = '';
-		leftHint.style.display  = '';
-		rightPanel.style.display = 'none';
-		rightEmpty.style.display = '';
-		newCollBtn.classList.add('hidden');
-
-		lockVaultBtnLabel.textContent = 'Unlock Vault';
-		lockVaultBtn.title = 'Unlock this vault';
-
-		bookNameEl.textContent = vaultName() + ' \uD83D\uDD12';
-		statusTxt.textContent  = vaultName() + ' locked';
-
-		showToast(vaultName() + ' locked');
-
-	} else {
-		// Unlock
-		openVaultUnlockModal(null);
-	}
-});
-
 // Search input event listener
 searchInput.addEventListener('input', function () {
 	if (!activeFile) return;

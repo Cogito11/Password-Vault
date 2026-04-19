@@ -79,23 +79,31 @@ app.whenReady().then(() => {
   ipcMain.handle('scan-vault-structure', async (event, vaultPath) => {
     if (!vaultPath || !fs.existsSync(vaultPath)) return null;
 
-    const name    = path.basename(vaultPath);
+    const name = path.basename(vaultPath);
     const entries = fs.readdirSync(vaultPath, { withFileTypes: true });
 
     const subBooks = [];
-    const hasTxt   = [];
+    const hasTxt = [];
+    let hasEnc = false;
 
     for (const entry of entries) {
-      if (entry.isDirectory()) {
-        const bookPath    = path.join(vaultPath, entry.name);
+      if (entry.isDirectory()) 
+      {
+        const bookPath = path.join(vaultPath, entry.name);
         const isEncrypted = fs.existsSync(path.join(bookPath, 'vault.enc'));
         subBooks.push({ name: entry.name, path: bookPath, isEncrypted });
-      } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.txt')) {
+      } 
+      else if (entry.isFile() && entry.name.toLowerCase().endsWith('.txt')) 
+      {
         hasTxt.push(entry.name);
+      } 
+      else if (entry.isFile() && entry.name.toLowerCase().endsWith('.enc')) 
+      {
+        hasEnc = true;
       }
     }
 
-    return { name, path: vaultPath, subBooks, hasTxt };
+    return { name, path: vaultPath, subBooks, hasTxt, hasEnc };
   });
 
   // On-demand file read — only called when user opens a book/collection

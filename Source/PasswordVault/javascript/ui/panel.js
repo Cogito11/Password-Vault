@@ -92,9 +92,6 @@ function resetVaultState() {
 	// Hide eject button
 	ejectBtn.classList.remove('visible');
 
-	// Hide lock button
-	lockVaultBtn.style.display = 'none';
-
 	// Reset lock state
 	singleBookLocked = false;
 
