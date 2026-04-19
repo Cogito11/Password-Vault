@@ -26,7 +26,7 @@ function createWindow() {
     show: false,
     title: "Password Vault",
     icon: path.join(__dirname, 'PasswordVault/assets/logos/PasswordVault.ico'),
-    ///autoHideMenuBar: true,
+    autoHideMenuBar: true,
     backgroundColor: '#1a1a1a',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
