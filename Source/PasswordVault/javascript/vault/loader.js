@@ -144,6 +144,8 @@ async function loadFromElectronPath(vaultPath) {
 			bookHandles[data.name] = {
 				handle: null,
 				path: vaultPath,
+				isEncrypted: false,
+    			isUnlocked: true,
 				key: null,
 				collections: {}
 			};

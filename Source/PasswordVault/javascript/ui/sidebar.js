@@ -210,15 +210,24 @@ function buildSidebar(results) {
 		booksPanel.classList.add('visible');
 		booksList.innerHTML = '';
 		var bookInfo = bookHandles[vaultName()];
-		var isLocked = isEncryptedVault && !(bookInfo && bookInfo.isUnlocked);
 
-		// only shows static lock icon if still locked
-		addBookBtn(vaultName(), isLocked);
-
-		if (bookInfo && bookInfo.isUnlocked) 
+		if (isEncryptedVault)
 		{
-			// only shows clickable relock if unlocked
-			injectRelockBtn(vaultName());
+			var isLocked = !(bookInfo && bookInfo.isUnlocked);
+
+			// only shows static lock icon if still locked
+			addBookBtn(vaultName(), isLocked);
+
+			if (bookInfo && bookInfo.isUnlocked) 
+			{
+				// only shows clickable relock if unlocked
+				injectRelockBtn(vaultName());
+			}
+		} 
+		else 
+		{
+			// plain book, no lock EVER
+			addBookBtn(vaultName(), false);
 		}
 
 		// Turn on status indicator

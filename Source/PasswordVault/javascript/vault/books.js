@@ -8,10 +8,13 @@
 // Handle a click on a book button in the sidebar
 // Loads plain books immediately; shows unlock modal for encrypted books
 async function selectBook(bookName, btn) {
+	
 	// Lookup metadata for this book
 	var info = bookHandles[bookName];
 	// Abort if book doesn't exist
 	if (!info) return;
+
+	if (!isMultiBookMode && info.isUnlocked) return;
 
 	// If already unlocked OR not encrypted, load immediately
 	if (info.isUnlocked || !info.isEncrypted) {
@@ -111,6 +114,20 @@ function relockBook(bookName) {
 		newCollBtn.classList.add('hidden');
 		collSectionName.textContent = 'Select a book above';
 		if (btn) btn.classList.remove('active');
+	} 
+	else if (!isMultiBookMode) 
+	{
+		// single book mode reset
+		collections = {};
+		vaultKey = null;
+		isEncryptedVault = false;
+		activeFile = null;
+		collList.innerHTML = '';
+		leftHint.style.display = '';
+		rightPanel.style.display = 'none';
+		rightEmpty.style.display = '';
+		newCollBtn.classList.add('hidden');
+		booksPanel.classList.add('visible');
 	}
 
 	// Notify user
