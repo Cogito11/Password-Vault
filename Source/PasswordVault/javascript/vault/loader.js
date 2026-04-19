@@ -78,7 +78,8 @@ async function loadFromElectronPath(vaultPath) {
 
 		// Ask Electron to scan folder structure + contents
 		var data = await window.electronAPI.scanVaultStructure(vaultPath);
-		
+		console.log('scan result:', JSON.stringify(data, null, 2));
+
 		// If folder missing or unreadable
 		if (!data) {
 			statusTxt.textContent = 'Default folder not found: ' + vaultPath;
@@ -124,13 +125,13 @@ async function loadFromElectronPath(vaultPath) {
 			enterMultiBookMode(subBooks);
 
 			// SINGLE BOOK MODE
-		} else if (data.subBooks.length === 0 && data.txtFiles && data.txtFiles.length > 0) {
+		} else if (data.subBooks.length === 0 && data.hasTxt && data.hasTxt.length > 0) {
 			
 			_electronVaultPath = vaultPath;
 			isElectronPathMode = true;
-			isMultiBookMode    = false;
-			isEncryptedVault   = false;
-			dirHandle          = null;
+			isMultiBookMode = false;
+			isEncryptedVault = false;
+			dirHandle = null;
 
 			// Parse all files
 			var txtFiles = await window.electronAPI.readVaultFiles(vaultPath);
@@ -164,9 +165,9 @@ async function loadFromElectronPath(vaultPath) {
 			// No files or books, treat as empty multi-book container
 			_electronVaultPath = vaultPath;
 			isElectronPathMode = true;
-			isMultiBookMode    = true;
-			dirHandle          = null;
-			bookHandles        = {};
+			isMultiBookMode = true;
+			dirHandle = null;
+			bookHandles = {};
 
 			enterMultiBookMode([]);
 		}

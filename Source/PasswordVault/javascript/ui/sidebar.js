@@ -207,6 +207,10 @@ function buildSidebar(results) {
 	// Single book mode UI adjustments
 	if (!isMultiBookMode) {
 
+		booksPanel.classList.add('visible');
+		booksList.innerHTML = '';
+		addBookBtn(vaultName(), isEncryptedVault); 
+
 		// Turn on status indicator
 		dot.classList.add('on');
 
@@ -218,7 +222,7 @@ function buildSidebar(results) {
 		newCollBtn.classList.remove('hidden');
 		
 		// Update vault name (add lock if encrypted)
-		bookNameEl.textContent = vaultName() + (isEncryptedVault ? ' \uD83D\uDD12' : '');
+		bookNameEl.textContent = vaultName();
 	}
 }
 

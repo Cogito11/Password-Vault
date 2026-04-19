@@ -116,9 +116,6 @@ vaultUnlockBtn.addEventListener('click', async function () {
 
 			buildSidebar(results);
 			singleBookLocked = false;
-			lockVaultBtnLabel.textContent = 'Lock Vault';
-			lockVaultBtn.title = 'Lock this encrypted vault \u2014 clears the key from memory';
-			lockVaultBtn.style.display = 'flex';
 			showToast(vaultName() + ' unlocked');
 		}
 		
