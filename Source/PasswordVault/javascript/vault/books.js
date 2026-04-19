@@ -119,7 +119,7 @@ function relockBook(bookName) {
 
 // Permanently delete a book and all its files
 async function deleteBook(bookName) {
-	var info      = bookHandles[bookName];
+	var info = bookHandles[bookName];
 	var collCount = Object.keys((info && info.collections) || {}).length;
 
 	// Build confirmation message based on state
@@ -145,9 +145,16 @@ async function deleteBook(bookName) {
 		if (btn) btn.remove();
 
 		// Update counts
-		var remaining = Object.keys(bookHandles).length;
-		booksPanelCount.textContent = remaining + ' book' + (remaining !== 1 ? 's' : '');
-		statusTxt.textContent = remaining + ' password book' + (remaining !== 1 ? 's' : '') + ' found';
+		if (isMultiBookMode) 
+		{
+			var remaining = Object.keys(bookHandles).length;
+			booksPanelCount.textContent = remaining + ' book' + (remaining !== 1 ? 's' : '');
+			statusTxt.textContent = remaining + ' password book' + (remaining !== 1 ? 's' : '') + ' found';
+		} 
+		else 
+		{
+			resetVaultState();
+		}
 
 		// Reset UI if deleted book was active
 		if (activeBookName === bookName) {
@@ -179,8 +186,17 @@ async function doRenameBook(oldName, newName) {
 	var info = bookHandles[oldName];
 
 	// Direct filesystem rename
-	var newPath = window.vault.joinPath(_electronVaultPath, newName);
+	var basePath = isMultiBookMode
+		? _electronVaultPath
+		: info.path.substring(0, Math.max(info.path.lastIndexOf('/'), info.path.lastIndexOf('\\')));
+	var newPath = window.vault.joinPath(basePath, newName);
+
 	window.vault.rename(info.path, newPath);
+
+	if (!isMultiBookMode) 
+	{
+		_electronVaultPath = newPath;
+	}
 
 	bookHandles[newName] = info;
 	bookHandles[newName].path = newPath;
