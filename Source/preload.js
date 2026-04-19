@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDefaultPath: () => ipcRenderer.invoke('get-default-path'),
   setDefaultPath: (targetPath) => ipcRenderer.invoke('set-default-path', targetPath),
   
-  scanVaultStructure:  (vaultPath) => ipcRenderer.invoke('scan-vault-structure', vaultPath),
+  scanVaultStructure: (vaultPath) => ipcRenderer.invoke('scan-vault-structure', vaultPath),
 
     // On-demand file reads
     readBookFiles: (bookPath)  => ipcRenderer.invoke('read-book-files', bookPath),

@@ -209,7 +209,17 @@ function buildSidebar(results) {
 
 		booksPanel.classList.add('visible');
 		booksList.innerHTML = '';
-		addBookBtn(vaultName(), isEncryptedVault); 
+		var bookInfo = bookHandles[vaultName()];
+		var isLocked = isEncryptedVault && !(bookInfo && bookInfo.isUnlocked);
+
+		// only shows static lock icon if still locked
+		addBookBtn(vaultName(), isLocked);
+
+		if (bookInfo && bookInfo.isUnlocked) 
+		{
+			// only shows clickable relock if unlocked
+			injectRelockBtn(vaultName());
+		}
 
 		// Turn on status indicator
 		dot.classList.add('on');
