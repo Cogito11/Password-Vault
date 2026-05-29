@@ -3,7 +3,7 @@
 @font-face {
   font-family: 'Syne';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 500;
   font-display: swap;
   src: url('../assets/fonts/syne-v24-latin-regular.woff2') format('woff2');
 }
@@ -31,7 +31,7 @@
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 500;
   font-display: swap;
   src: url('../assets/fonts/jetbrains-mono-v24-latin-regular.woff2') format('woff2');
 }
@@ -69,6 +69,9 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body::before {
@@ -161,7 +164,7 @@ body::before {
   border-radius: 6px;
   color: var(--text-muted);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   padding: 6px 14px;
   cursor: pointer;
@@ -176,7 +179,7 @@ body::before {
 .topbar-status {
   margin-left: auto;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
   display: flex;
   align-items: center;
@@ -197,7 +200,7 @@ body::before {
 
 /* LEFT COLUMN */
 .col-left {
-  width: 260px;
+  width: 300px;
   flex-shrink: 0;
   border-right: 1px solid var(--divider);
   display: flex;
@@ -213,7 +216,7 @@ body::before {
 
 .col-head-label {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -248,14 +251,14 @@ body::before {
 }
 .books-panel-label {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 .books-panel-count {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text-dim);
 }
 
@@ -302,8 +305,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   border: 1px solid transparent;
   background: transparent;
@@ -323,7 +326,7 @@ body::before {
   color: #e05555;
   background: rgba(224,85,85,0.08);
 }
-.book-action-btn svg { width: 11px; height: 11px; stroke: currentColor; }
+.book-action-btn svg { width: 14px; height: 14px; stroke: currentColor; }
 .book-btn.active {
   background: var(--amber-dim);
   border-color: rgba(232,162,48,0.35);
@@ -344,7 +347,7 @@ body::before {
 .book-icon svg { width: 11px; height: 11px; stroke: currentColor; }
 .book-text { flex: 1; min-width: 0; }
 .book-name { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
-.book-meta { display: block; font-family: var(--mono); font-size: 9px; color: var(--text-dim); margin-top: 1px; }
+.book-meta { display: block; font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 .book-btn.active .book-meta { color: rgba(232,162,48,0.45); }
 .book-lock {
   width: 14px;
@@ -359,8 +362,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   border: 1px solid transparent;
   background: transparent;
@@ -375,7 +378,7 @@ body::before {
   color: var(--amber);
   background: var(--amber-dim);
 }
-.book-relock-btn svg { width: 11px; height: 11px; stroke: currentColor; }
+.book-relock-btn svg { width: 14px; height: 14px; stroke: currentColor; }
 
 /* Collections sub-section head */
 .coll-section-head {
@@ -386,7 +389,7 @@ body::before {
 .coll-section-head.visible { display: block; }
 .coll-section-label {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -411,7 +414,7 @@ body::before {
   text-align: center;
   padding: 2rem 1rem;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-dim);
   line-height: 1.6;
 }
@@ -460,7 +463,7 @@ body::before {
 
 .coll-text { flex: 1; min-width: 0; }
 .coll-name { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.coll-n { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+.coll-n { display: block; font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 1px; }
 .coll-btn.active .coll-n { color: rgba(232,162,48,0.45); }
 
 .coll-divider {
@@ -492,8 +495,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   border: 1px solid transparent;
   background: transparent;
@@ -513,7 +516,7 @@ body::before {
   color: #e05555;
   background: rgba(224,85,85,0.08);
 }
-.coll-action-btn svg { width: 11px; height: 11px; stroke: currentColor; }
+.coll-action-btn svg { width: 14px; height: 14px; stroke: currentColor; }
 
 
 /* RIGHT COLUMN */
@@ -642,7 +645,7 @@ body::before {
 
 .pw-badge {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text-dim);
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -663,7 +666,7 @@ body::before {
 
 .pw-attr-key {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -688,7 +691,7 @@ body::before {
 
 .act-btn {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.08em;
   border: 1px solid var(--border-hover);
@@ -712,7 +715,7 @@ body::before {
   border-radius: 6px;
   color: var(--amber);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   padding: 5px 12px;
   cursor: pointer;
@@ -771,7 +774,7 @@ body::before {
 }
 .location-row .modal-input.chosen { color: var(--text); }
 .pick-btn {
-  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
   letter-spacing: 0.06em; border: 1px solid var(--border-hover);
   border-radius: 6px; background: transparent; color: var(--text-muted);
   padding: 8px 12px; cursor: pointer; transition: all 0.13s; flex-shrink: 0;
@@ -788,7 +791,7 @@ body::before {
 .toggle-label-group { display: flex; flex-direction: column; gap: 2px; }
 .toggle-label { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
 .toggle-label svg { width: 14px; height: 14px; stroke: var(--amber); }
-.toggle-sub { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+.toggle-sub { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
 .toggle-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; cursor: pointer; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
 .toggle-track { position: absolute; inset: 0; background: var(--surface); border: 1px solid var(--border-hover); border-radius: 11px; transition: all 0.2s; }
@@ -801,7 +804,7 @@ body::before {
 
 .pw-strength-track { height: 3px; border-radius: 2px; background: var(--surface2); overflow: hidden; margin-top: 5px; }
 .pw-strength-bar { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0; background: var(--text-dim); }
-.pw-strength-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); margin-top: 4px; }
+.pw-strength-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 4px; }
 
 .save-btn.blue {
   background: rgba(74,158,255,0.10); border-color: rgba(74,158,255,0.4); color: #4a9eff;
@@ -879,7 +882,7 @@ body::before {
 
 .modal-label {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -952,7 +955,7 @@ body::before {
   font-size: 11px;
 }
 .modal-entry-attr:last-child { border-bottom: none; }
-.modal-entry-attr-key { color: var(--text-dim); width: 80px; flex-shrink: 0; text-transform: uppercase; font-size: 10px; }
+.modal-entry-attr-key { color: var(--text-dim); width: 80px; flex-shrink: 0; text-transform: uppercase; font-size: 11px; }
 .modal-entry-attr-val { color: var(--text); flex: 1; }
 
 /* New entry builder */
@@ -968,7 +971,7 @@ body::before {
 
 .entry-builder-title {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--amber);
@@ -1006,7 +1009,7 @@ body::before {
 
 .mini-btn {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.06em;
   border: 1px solid var(--border-hover);
@@ -1033,13 +1036,13 @@ body::before {
 
 .modal-footer-info {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 .save-btn {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.06em;
   background: var(--amber-dim);
@@ -1148,7 +1151,7 @@ body::before {
   border-radius: 6px 0 0 6px;
   color: var(--amber);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   padding: 6px 14px;
   cursor: pointer;
@@ -1202,7 +1205,7 @@ body::before {
   background: transparent;
   color: var(--text-muted);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -1214,11 +1217,11 @@ body::before {
 .open-menu-item.danger:hover { background: rgba(224,85,85,0.08); color: #e05555; }
 .open-menu-item svg { width: 13px; height: 13px; stroke: currentColor; flex-shrink: 0; }
 .open-menu-item .menu-item-sub {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--text-dim);
   display: block;
   margin-top: 1px;
-  font-weight: 400;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1259,7 +1262,7 @@ body::before {
 }
 #resumeBannerDismiss {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(232,162,48,0.5);
   background: none;
   border: none;

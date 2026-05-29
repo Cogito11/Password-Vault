@@ -1,7 +1,7 @@
 {
   "name": "password-vault",
   "productName": "PasswordVault",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "homepage": "https://github.com/Cogito11/Password-Vault",
   "author": {
     "name": "Cole Bishop",
@@ -22,11 +22,11 @@
     "win": {
       "target": [
         "portable", "nsis"],
-      "icon": "PasswordVault/assets/logos/passwordvault.ico"
+      "icon": "PasswordVault/assets/logos/Password Vault Logo.ico"
     },
     "linux": {
       "target": ["appImage", "deb"],
-      "icon": "PasswordVault/assets/logos/Password Vault Logo 512.png",
+      "icon": "PasswordVault/assets/logos/icons",
       "category": "Utility",
       "maintainer": "Cole Bishop <cdbishop2005@gmail.com>"
     },
