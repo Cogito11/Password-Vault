@@ -1,6 +1,6 @@
 {
   "name": "password-vault",
-  "productName": "PasswordVault",
+  "productName": "Password Vault",
   "version": "0.5.5",
   "homepage": "https://github.com/Cogito11/Password-Vault",
   "author": {
@@ -20,8 +20,7 @@
     "artifactName": "${productName}Setup_${version}_${os}_${arch}.${ext}",
     "asar": true,
     "win": {
-      "target": [
-        "portable", "nsis"],
+      "target": ["portable", "nsis"],
       "icon": "PasswordVault/assets/logos/Password Vault Logo.ico"
     },
     "linux": {
@@ -38,7 +37,7 @@
     }
   },
   "keywords": [],
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "electron": "^41.0.3",
     "electron-builder": "^26.8.1"
