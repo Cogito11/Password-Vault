@@ -16,8 +16,7 @@
   },
   "build": {
     "appId": "com.bishop.passwordvault.app",
-    "productName": "PasswordVault",
-    "artifactName": "${productName}Setup_${version}_${os}_${arch}.${ext}",
+    "artifactName": "PasswordVault_Setup_${version}_${os}_${arch}.${ext}",
     "asar": true,
     "win": {
       "target": ["portable", "nsis"],
@@ -30,10 +29,10 @@
       "maintainer": "Cole Bishop <cdbishop2005@gmail.com>"
     },
     "portable": {
-      "artifactName": "${productName}Portable_${version}_${os}_${arch}.${ext}"
+      "artifactName": "PasswordVault_Portable_${version}_${os}_${arch}.${ext}"
     },
     "appImage": {
-      "artifactName": "${productName}_${version}_${os}_${arch}.${ext}"
+      "artifactName": "PasswordVault_${version}_${os}_${arch}.${ext}"
     }
   },
   "keywords": [],
