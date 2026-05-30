@@ -6,6 +6,15 @@ const configPath = path.join(app.getPath('userData'), 'vault-config.json');
 
 let _config = null;
 
+function getIconPath() {
+  const base = path.join(__dirname, 'PasswordVault/assets/logos');
+  switch (process.platform) {
+    case 'win32': return path.join(base, 'Password Vault Logo.ico');
+    case 'linux': return path.join(base, 'icons', '256x256.png');
+    default: return path.join(base, 'PasswordVault.png');
+  }
+}
+
 function getConfig() {
   if (_config) return _config;
   try { _config = JSON.parse(fs.readFileSync(configPath, 'utf8')); }
@@ -23,9 +32,8 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    show: false,
     title: "Password Vault",
-    icon: path.join(__dirname, 'PasswordVault/assets/logos/PasswordVault.ico'),
+    icon: getIconPath(),
     autoHideMenuBar: true,
     backgroundColor: '#1a1a1a',
     webPreferences: {
