@@ -600,6 +600,7 @@ body.sidebar-collapsed .col-left { display: none; }
   background: var(--amber-dim);
 }
 .sidebar-toggle-btn svg { width: 15px; height: 15px; stroke: currentColor; }
+.sidebar-close-btn { display: none; }
 .sidebar-toggle-empty {
   position: absolute;
   top: 12px;
@@ -1374,7 +1375,7 @@ body.sidebar-collapsed .col-left { display: none; }
 
   .pw-toolbar {
     display: grid;
-    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-columns: 32px minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
     padding: 12px;
@@ -1387,13 +1388,14 @@ body.sidebar-collapsed .col-left { display: none; }
   }
 
   .pw-toolbar-count {
-    grid-column: 1 / -1;
-    grid-row: 3;
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .new-entry-btn.visible {
     grid-column: 1 / -1;
-    grid-row: 4;
+    grid-row: 3;
     display: flex;
     width: 100%;
     justify-content: center;
