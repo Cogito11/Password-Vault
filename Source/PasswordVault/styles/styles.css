@@ -1332,8 +1332,25 @@ body.sidebar-collapsed .col-left { display: none; }
 
   .open-btn-main,
   .eject-btn {
-    padding-left: 10px;
-    padding-right: 10px;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  .open-btn-main svg,
+  .eject-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .open-btn-menu {
+    left: auto;
+    right: 0;
+    max-width: calc(100vw - 24px);
   }
 
   .body {
