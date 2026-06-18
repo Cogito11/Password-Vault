@@ -62,6 +62,8 @@ main.js  ──IPC──▶  preload.js  ──window.vault.*──▶  index.ht
 
 ## Getting Started
 
+To easily download the app and start using it on your computer, visit the releases section and download the latest release for your system.
+
 ### 1. Clone or download the project
 
 ```bash
