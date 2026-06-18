@@ -23,14 +23,14 @@
 
   <div class="open-btn-wrap" id="openBtnWrap">
 
-    <button class="open-btn-main" id="openFolderBtn">
+    <button class="open-btn-main" id="openFolderBtn" title="Open folder" aria-label="Open folder">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
       </svg>
       Open Folder
     </button>
 
-    <button class="open-btn-arrow" id="openBtnArrow" title="Folder options">
+    <button class="open-btn-arrow" id="openBtnArrow" title="Folder options" aria-label="Folder options">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="6 9 12 15 18 9"/>
       </svg>
@@ -64,7 +64,7 @@
 
   </div>
 
-  <button class="eject-btn" id="ejectBtn">
+  <button class="eject-btn" id="ejectBtn" title="Eject folder" aria-label="Eject folder">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="12 4 20 15 4 15"/>
       <rect x="4" y="18" width="16" height="2.5" rx="1"/>
@@ -91,11 +91,19 @@
 
 <div class="body">
 
-  <div class="col-left">
+  <div class="col-left" id="sidebarPanel">
 
     <div class="col-head">
-      <div class="col-head-label" id="colHeadLabel">Password Book</div>
-      <div class="col-head-title" id="bookNameEl">No book open</div>
+      <div class="col-head-text">
+        <div class="col-head-label" id="colHeadLabel">Password Book</div>
+        <div class="col-head-title" id="bookNameEl">No book open</div>
+      </div>
+      <button class="sidebar-toggle-btn sidebar-close-btn" id="sidebarCloseBtn" title="Hide sidebar" aria-label="Hide sidebar" aria-controls="sidebarPanel">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <path d="M9 4v16"/>
+        </svg>
+      </button>
     </div>
 
     <!-- Multi-book panel: appears when a parent folder with books is opened -->
@@ -137,6 +145,12 @@
   <div class="col-right">
 
     <div id="rightEmpty" class="right-empty">
+      <button class="sidebar-toggle-btn sidebar-toggle-empty" id="sidebarToggleEmptyBtn" title="Show sidebar" aria-label="Show sidebar" aria-expanded="true" aria-controls="sidebarPanel">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <path d="M9 4v16"/>
+        </svg>
+      </button>
       <div class="right-empty-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="11" width="18" height="11" rx="2"/>
@@ -149,6 +163,12 @@
 
     <div id="rightPanel" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
       <div class="pw-toolbar">
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Collapse sidebar" aria-label="Collapse sidebar" aria-expanded="true" aria-controls="sidebarPanel">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <path d="M9 4v16"/>
+          </svg>
+        </button>
         <div class="pw-toolbar-title" id="panelTitle"></div>
         <div class="pw-toolbar-count" id="panelCount"></div>
 

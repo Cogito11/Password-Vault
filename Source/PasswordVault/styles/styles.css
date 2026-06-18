@@ -198,6 +198,8 @@ body::before {
   overflow: hidden;
 }
 
+body.sidebar-collapsed .col-left { display: none; }
+
 /* LEFT COLUMN */
 .col-left {
   width: 300px;
@@ -212,6 +214,14 @@ body::before {
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--divider);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.col-head-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .col-head-label {
@@ -230,6 +240,10 @@ body::before {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sidebar-close-btn {
+  display: none;
 }
 
 /* BOOKS PANEL — shown in multi-book mode */
@@ -529,6 +543,7 @@ body::before {
 }
 
 .right-empty {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -562,6 +577,34 @@ body::before {
   gap: 12px;
   flex-shrink: 0;
   background: rgba(13,13,15,0.4);
+}
+
+.sidebar-toggle-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border-hover);
+  background: var(--surface);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: all 0.15s;
+}
+.sidebar-toggle-btn:hover {
+  border-color: rgba(232,162,48,0.4);
+  color: var(--amber);
+  background: var(--amber-dim);
+}
+.sidebar-toggle-btn svg { width: 15px; height: 15px; stroke: currentColor; }
+.sidebar-close-btn { display: none; }
+.sidebar-toggle-empty {
+  position: absolute;
+  top: 12px;
+  left: 20px;
 }
 
 .pw-toolbar-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1272,3 +1315,178 @@ body::before {
   line-height: 1;
 }
 #resumeBannerDismiss:hover { color: var(--amber); }
+
+@media (max-width: 760px) {
+  .topbar {
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .topbar-logo {
+    font-size: 12px;
+  }
+
+  .topbar-status {
+    display: none;
+  }
+
+  .open-btn-main,
+  .eject-btn {
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  .open-btn-main svg,
+  .eject-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .open-btn-menu {
+    left: auto;
+    right: 0;
+    max-width: calc(100vw - 24px);
+  }
+
+  .body {
+    isolation: isolate;
+  }
+
+  .col-left {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    width: 100%;
+    max-width: none;
+    border-right: none;
+    background: rgba(13,13,15,0.98);
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.18s ease, visibility 0s linear 0.18s;
+  }
+
+  body.sidebar-open .col-left {
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+    transition: transform 0.18s ease;
+  }
+
+  body.sidebar-open .sidebar-close-btn {
+    display: flex;
+  }
+
+  body.sidebar-collapsed .col-left {
+    display: flex;
+  }
+
+  .col-right {
+    width: 100%;
+  }
+
+  .pw-toolbar {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .pw-toolbar-title {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+  }
+
+  .pw-toolbar-count {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .new-entry-btn.visible {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    height: 32px;
+  }
+
+  .search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    flex-shrink: 1;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pw-list {
+    padding: 12px;
+  }
+
+  .pw-card-head {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .pw-avatar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .pw-name {
+    grid-column: 2 / -1;
+    grid-row: 1;
+  }
+
+  .pw-badge {
+    grid-column: 1 / 3;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .card-edit-btn {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .card-del-btn {
+    grid-column: 4;
+    grid-row: 2;
+  }
+
+  .pw-attr {
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .pw-attr-key {
+    width: 100%;
+  }
+
+  .pw-attr-actions {
+    width: auto;
+  }
+
+  .pw-attr .act-btn {
+    flex: 0 0 auto;
+  }
+
+  .sidebar-toggle-empty {
+    top: 12px;
+    left: 12px;
+  }
+}

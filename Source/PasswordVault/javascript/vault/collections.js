@@ -47,6 +47,9 @@ function openAllCollections(btn) {
 
 	// Render combined entries
 	renderPasswords();
+
+	// In narrow layout the sidebar is an overlay.
+	closeSidebarOverlay();
 }
 
 
@@ -91,6 +94,9 @@ function openCollection(filename, btn) {
 
 	// Render entries in UI
 	renderPasswords();
+
+	// In narrow layout the sidebar is an overlay.
+	closeSidebarOverlay();
 }
 
 // Delete a collection (file) permanently. 
