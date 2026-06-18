@@ -1360,7 +1360,7 @@ body.sidebar-collapsed .col-left { display: none; }
     transition: transform 0.18s ease;
   }
 
-  .sidebar-close-btn {
+  body.sidebar-open .sidebar-close-btn {
     display: flex;
   }
 
@@ -1416,12 +1416,41 @@ body.sidebar-collapsed .col-left { display: none; }
     padding: 12px;
   }
 
-  .pw-card-head,
-  .pw-attr {
-    align-items: flex-start;
+  .pw-card-head {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .pw-avatar {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .pw-name {
+    grid-column: 2 / -1;
+    grid-row: 1;
+  }
+
+  .pw-badge {
+    grid-column: 1 / 3;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .card-edit-btn {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .card-del-btn {
+    grid-column: 4;
+    grid-row: 2;
   }
 
   .pw-attr {
+    align-items: center;
     flex-wrap: wrap;
   }
 
@@ -1430,11 +1459,11 @@ body.sidebar-collapsed .col-left { display: none; }
   }
 
   .pw-attr-actions {
-    width: 100%;
+    width: auto;
   }
 
-  .act-btn {
-    flex: 1;
+  .pw-attr .act-btn {
+    flex: 0 0 auto;
   }
 
   .sidebar-toggle-empty {
