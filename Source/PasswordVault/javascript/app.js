@@ -4,6 +4,59 @@
 // All heavy logic lives in the module folders, this file only wires them up.
 // ═══════════════════════════════
 
+var sidebarNarrowQuery = window.matchMedia('(max-width: 760px)');
+
+function isSidebarNarrow() {
+	return sidebarNarrowQuery.matches;
+}
+
+function isSidebarOpen() {
+	if (isSidebarNarrow()) return document.body.classList.contains('sidebar-open');
+	return !document.body.classList.contains('sidebar-collapsed');
+}
+
+function updateSidebarToggleUi() {
+	var open = isSidebarOpen();
+	var label = open ? 'Collapse sidebar' : 'Show sidebar';
+
+	[sidebarToggleBtn, sidebarToggleEmptyBtn].forEach(function (btn) {
+		if (!btn) return;
+		btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+		btn.setAttribute('aria-label', label);
+		btn.title = label;
+	});
+}
+
+function toggleSidebar() {
+	if (isSidebarNarrow()) {
+		document.body.classList.toggle('sidebar-open');
+	} else {
+		document.body.classList.toggle('sidebar-collapsed');
+		document.body.classList.remove('sidebar-open');
+	}
+
+	updateSidebarToggleUi();
+}
+
+function closeSidebarOverlay() {
+	if (!isSidebarNarrow()) return;
+
+	document.body.classList.remove('sidebar-open');
+	updateSidebarToggleUi();
+}
+
+if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
+if (sidebarToggleEmptyBtn) sidebarToggleEmptyBtn.addEventListener('click', toggleSidebar);
+if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebarOverlay);
+
+if (sidebarNarrowQuery.addEventListener) {
+	sidebarNarrowQuery.addEventListener('change', updateSidebarToggleUi);
+} else {
+	sidebarNarrowQuery.addListener(updateSidebarToggleUi);
+}
+
+updateSidebarToggleUi();
+
 // Toggle the droptown menu when clicking the arrow
 openBtnArrow.addEventListener('click', function (e) {
 	// Prevent document click from immediately closing it
@@ -24,6 +77,10 @@ openBtnArrow.addEventListener('click', function (e) {
 // Close dropdown if clicking anywhere outside the button wrapper
 document.addEventListener('click', function (e) {
 	if (!document.getElementById('openBtnWrap').contains(e.target)) closeOpenMenu();
+});
+
+document.addEventListener('keydown', function (e) {
+	if (e.key === 'Escape') closeSidebarOverlay();
 });
 
 // Clicking the dropdown open folder button triggers the same thing as the main open folder button

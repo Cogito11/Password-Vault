@@ -33,6 +33,10 @@ var collList = document.getElementById('collList');
 var leftHint = document.getElementById('leftHint');
 var newBookBtn = document.getElementById('newBookBtn');
 var newCollBtn = document.getElementById('newCollBtn');
+var sidebarPanel = document.getElementById('sidebarPanel');
+var sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+var sidebarToggleEmptyBtn = document.getElementById('sidebarToggleEmptyBtn');
+var sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 
 // Right panel - password entries 
 var rightEmpty = document.getElementById('rightEmpty');
