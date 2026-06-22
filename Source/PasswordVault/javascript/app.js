@@ -106,6 +106,11 @@ menuSetDefault.addEventListener('click', async function () {
 		saveDefaultName(folderName);
 		updateDefaultUI(folderName);
 		showToast('Default location set to "' + folderName + '"');
+
+		// Automatically load the folder that was just set as default
+		resetVaultState();
+		statusTxt.textContent = 'Loading default folder\u2026';
+		await loadFromElectronPath(chosenPath);
 		return;
 	}
 });
