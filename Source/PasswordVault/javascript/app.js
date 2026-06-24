@@ -170,7 +170,12 @@ searchInput.addEventListener('input', function () {
 	if (activeFile === '__all__') {
 		source = [];
 		Object.keys(collections).forEach(function (k) {
-			collections[k].forEach(function (e) { source.push(e); });
+			collections[k].forEach(function (e, i) {
+				source.push(Object.assign({}, e, {
+					_homeCollection: k,
+					_trueIdx: i
+				}));
+			});
 		});
 	} else {
 		source = collections[activeFile];
