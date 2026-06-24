@@ -115,7 +115,7 @@ saveEditBtn.addEventListener('click', async function () {
     showToast('Entry updated');
 
     // Re-render passwords
-    renderPasswords();
+    refreshActiveView();
 
   } catch (err) {
 
@@ -167,9 +167,8 @@ async function deleteEntry(idx, collName) {
       allBtnEl.querySelector('.coll-n').textContent = total + ' passwords total';
     }
 
-    panelCount.textContent = remaining + ' entries';
     showToast('"' + entry.name + '" deleted');
-    renderPasswords();
+    refreshActiveView();
     
   } catch (err) {
     collections[collName].splice(idx, 0, entry);

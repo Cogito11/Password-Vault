@@ -159,21 +159,22 @@ openFolderBtn.addEventListener('click', async function () {
 // Eject Folder Button Listener
 ejectBtn.addEventListener('click', resetVaultState);
 
-// Search input event listener
-searchInput.addEventListener('input', function () {
+// Re-render the active view, re-applying whatever is currently typed
+// in the search box (if anything). Call this instead of renderPasswords()
+// after any mutation, so edits/deletes don't reset an active filter.
+function refreshActiveView() {
 	if (!activeFile) return;
 
 	var q = searchInput.value.toLowerCase();
-	var source;
 
-	// If viewing all collections
-	if (activeFile === '__all__') {
-		source = getAllStampedEntries();
-	} else {
-		source = collections[activeFile];
+	// Nothing typed -> plain unfiltered render
+	if (!q) {
+		renderPasswords();
+		return;
 	}
 
-	// Filter entries by name or attributes
+	var source = activeFile === '__all__' ? getAllStampedEntries() : collections[activeFile];
+
 	var filtered = source.filter(function (e) {
 		return e.name.toLowerCase().includes(q) || e.attrs.some(function (a) {
 			return a.key.toLowerCase().includes(q) || a.val.toLowerCase().includes(q);
@@ -181,7 +182,9 @@ searchInput.addEventListener('input', function () {
 	});
 
 	renderPasswords(filtered);
-});
+}
+
+searchInput.addEventListener('input', refreshActiveView);
 
 // Resume Banner, now used to create default folder
 document.getElementById('resumeBanner').addEventListener('click', async function (e) {
