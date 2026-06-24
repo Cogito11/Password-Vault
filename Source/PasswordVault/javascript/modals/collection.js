@@ -212,7 +212,7 @@ async function saveNewCollection() {
 	var collName = collNameInput.value.trim();
 	if (!collName) return;
 
-	var filename = collName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim().replace(/\s+/g, '_') + '.txt';
+	var filename = collName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim() + '.txt';
 
 	if (collections[filename]) 
 	{

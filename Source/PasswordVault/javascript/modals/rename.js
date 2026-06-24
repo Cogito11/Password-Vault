@@ -31,7 +31,7 @@ renameCollSaveBtn.addEventListener('click', async function () {
 	var rawName = renameCollInput.value.trim();
 	if (!rawName) return;
 
-	var newName = rawName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim().replace(/\s+/g, '_');
+	var newName = rawName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim();
 	if (!newName) 
 	{
 		renameCollInfo.textContent = 'Invalid name.'; 

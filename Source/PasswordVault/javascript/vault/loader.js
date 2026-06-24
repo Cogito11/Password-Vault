@@ -310,11 +310,23 @@ async function rescanVaultFolder() {
 	});
 
 	subBooks.forEach(function (b) {
-		addBookBtn(b.name, bookHandles[b.name].isEncrypted);
-
-		// If already unlocked, re-add relock button
-		if (bookHandles[b.name].isUnlocked) {
+		var info = bookHandles[b.name];
+ 
+		// Static lock icon only belongs on books that are encrypted AND still locked. 
+		// Unlocked encrypted books get the clickable relock button instead - showing both would be redundant.
+		var showStaticLock = info.isEncrypted && !info.isUnlocked;
+		addBookBtn(b.name, showStaticLock);
+ 
+		if (info.isEncrypted && info.isUnlocked) {
 			injectRelockBtn(b.name);
+
+			// addBookBtn always writes the generic 'Encrypted' meta label.
+			// Override it with the real collection count, same as unlock.js does right after a successful unlock.
+			var meta = document.getElementById('book-meta-' + b.name);
+			if (meta) {
+				var cnt = Object.keys(info.collections || {}).length;
+				meta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + ' \xb7 encrypted';
+			}
 		}
 	});
 
