@@ -112,6 +112,21 @@ function resetVaultState() {
 
 // Password card list
 
+// Flatten every collection into one array, stamping each entry with
+// where it came from so edit/delete can locate it without activeFile.
+function getAllStampedEntries() {
+	var all = [];
+	Object.keys(collections).forEach(function (k) {
+		collections[k].forEach(function (e, i) {
+			all.push(Object.assign({}, e, {
+				_homeCollection: k,
+				_trueIdx: i
+			}));
+		});
+	});
+	return all;
+}
+
 // Render a list of entries as UI cards in the right panel.
 // @param {Array} entries
 // Each entry:
@@ -135,15 +150,7 @@ function renderPasswords(overrideEntries) {
     } 
 	else if (activeFile === '__all__') 
 	{
-		entries = [];
-		Object.keys(collections).forEach(function (k) {
-			collections[k].forEach(function (e, i) {
-				entries.push(Object.assign({}, e, {
-					_homeCollection: k,
-					_trueIdx: i
-				}));
-			});
-		});
+		entries = getAllStampedEntries();
 	} 
 	else if (activeFile && collections[activeFile]) 
 	{

@@ -168,15 +168,7 @@ searchInput.addEventListener('input', function () {
 
 	// If viewing all collections
 	if (activeFile === '__all__') {
-		source = [];
-		Object.keys(collections).forEach(function (k) {
-			collections[k].forEach(function (e, i) {
-				source.push(Object.assign({}, e, {
-					_homeCollection: k,
-					_trueIdx: i
-				}));
-			});
-		});
+		source = getAllStampedEntries();
 	} else {
 		source = collections[activeFile];
 	}
