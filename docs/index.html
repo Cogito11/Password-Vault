@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Vault - offline-first password manager</title>
+<meta name="description" content="Password Vault is an offline-first desktop password manager. Organize credentials into books and collections, store them as plain text or AES-256-GCM encrypted, and keep everything on your own disk.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ================= TOPBAR ================= -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      Password Vault
+    </div>
+    <nav class="topnav">
+      <a href="#organized">Organization</a>
+      <a href="#storage">Storage</a>
+      <a href="#features">Features</a>
+      <a href="#download" class="topnav-cta">Download</a>
+      <a href="https://github.com/Cogito11/Password-Vault" class="topnav-gh" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-1.94c-3.2.7-3.87-1.36-3.87-1.36-.53-1.33-1.29-1.69-1.29-1.69-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.4-5.25 5.68.42.36.78 1.07.78 2.16v3.2c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="eyebrow">OFFLINE-FIRST · LOCAL ONLY · NO ACCOUNTS</div>
+    <h1>Your passwords, <span class="amber">you in control</span></h1>
+    <p class="hero-sub">Password Vault is a desktop app for storing and organizing credentials without ever touching the cloud. Group them into books, split each book into collections, and decide per book whether it's saved as plain text or encrypted.</p>
+    <div class="hero-actions">
+      <a href="#download" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        Download
+      </a>
+      <a href="https://github.com/Cogito11/Password-Vault" class="btn btn-ghost" target="_blank" rel="noopener">View source</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="dot dot-amber"></span>AES-256 encryption</div>
+      <div class="hero-stat"><span class="dot dot-success"></span>Zero network calls</div>
+      <div class="hero-stat"><span class="dot dot-dim"></span>Windows · Linux · macOS Coming Soon</div>
+    </div>
+  </section>
+
+  <!-- ================= ORGANIZATION (signature element) ================= -->
+  <section class="section" id="organized">
+    <div class="section-head">
+      <div class="eyebrow">The ability to organize as much as you need</div>
+      <h2>Organization</h2>
+      <p class="section-sub">Password Vault revolves around three levels of organization. Click through the visualization below to see how we organize and how everything is saved in you files.</p>
+    </div>
+
+    <div class="tree-demo" id="treeDemo">
+
+      <div class="tree-node tree-root">
+        <button class="tree-toggle" data-target="vault-children" aria-expanded="true">
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Vault folder
+        </button>
+        <div class="tree-children" id="vault-children">
+
+          <div class="tree-node">
+            <button class="tree-toggle" data-target="book-finance" aria-expanded="true">
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              <svg class="tree-icon amber" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Finance <span class="tree-tag">book · encrypted</span>
+            </button>
+            <div class="tree-children" id="book-finance">
+              <div class="tree-node leaf"><svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Banking <span class="tree-tag muted">collection</span></div>
+              <div class="tree-node leaf"><svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Crypto <span class="tree-tag muted">collection</span></div>
+              <div class="tree-node leaf"><svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>Subscriptions <span class="tree-tag muted">collection</span></div>
+            </div>
+          </div>
+
+          <div class="tree-node">
+            <button class="tree-toggle" data-target="book-work" aria-expanded="true">
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              Work <span class="tree-tag">book · plain text</span>
+            </button>
+            <div class="tree-children" id="book-work">
+              <div class="tree-node leaf"><svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>VPN &amp; Servers <span class="tree-tag muted">collection</span></div>
+              <div class="tree-node leaf"><svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/></svg>SaaS Logins <span class="tree-tag muted">collection</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    <p class="tree-caption">Load the vault folder and every book inside it shows up on the left. Load a single book directly and you skip straight to its collections.</p>
+  </section>
+
+  <!-- ================= STORAGE ================= -->
+  <section class="section alt" id="storage">
+    <div class="section-head">
+      <div class="eyebrow">Plain text or encrypted, per book</div>
+      <h2>Storage</h2>
+      <p class="section-sub">Each password book can be encrypted or stored as plain text, this effects every collection within it</p>
+    </div>
+
+    <div class="storage-grid">
+
+      <div class="storage-card">
+        <div class="storage-card-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          Plain text book
+        </div>
+        <p>Each collection is saved as its own readable <code>.txt</code> file inside the book's folder. You can open it in any text editor. Fast, simple, no password to remember.</p>
+        <pre class="code-block">Gmail (2 attributes)
+    Email: name@example.com
+    Password: ••••••••••
+
+Netflix (2 attributes)
+    Email: name@example.com
+    Password: ••••••••••
+
+End</pre>
+        <div class="storage-note">These files are exactly as protected as anything else on your computer; which is to say, not very. Use an encrypted book for anything you'd be upset to have stolen.</div>
+      </div>
+
+      <div class="storage-card">
+        <div class="storage-card-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Encrypted book
+        </div>
+        <p>Every collection in the book gets scrambled and saved together as one file, <code>vault.enc</code>. Without the password, it just looks like random noise, there's nothing readable to find.</p>
+        <pre class="code-block">A password you create for the book
+      ↓
+  (Password turned into a key)
+      ↓
+Data inside the book → scrambled → vault.enc</pre>
+        <div class="storage-note">Your password isn't used as the key directly, it's passed through a slow process thousands of times first, so that someone trying to guess passwords can't brute-force their way in quickly. The key only exists in memory while the book is unlocked, and relocking the book erases it.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FEATURES ================= -->
+  <section class="section" id="features">
+    <div class="section-head">
+      <div class="eyebrow">What Password Vault Offers</div>
+      <h2>Features</h2>
+    </div>
+
+    <div class="feature-grid">
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <h3>Password books</h3>
+        <p>Separate folders for separate areas of your life, each book contains it's own collections and its own independent encryption settings.</p>
+      </div>
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+        <h3>Collections</h3>
+        <p>These are used to split a book into subcategories. A book called Personal Passwords would have collections for "Streaming Services", "Gaming", "Bank Accounts". All to give you as much control as possible.</p>
+      </div>
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <h3>Strong encryption</h3>
+        <p>Encrypted books are scrambled into one file using AES-256, a well-tested encryption standard. No readable fragments ever land on disk.</p>
+      </div>
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M12 11v6M9 14h6"/></svg>
+        <h3>Per-book locking</h3>
+        <p>Unlock and relock individual encrypted books without ejecting the whole vault folder.</p>
+      </div>
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <h3>Search</h3>
+        <p>Filter within a single collection or across the whole open book, instantly.</p>
+      </div>
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <h3>Copy to clipboard</h3>
+        <p>One click copies any field. Sensitive values like passwords, tokens, and PINs stay masked until you ask to see them.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECURITY NOTES ================= -->
+  <section class="section alt">
+    <div class="section-head">
+      <div class="eyebrow">Important to know</div>
+      <h2>Security notes</h2>
+    </div>
+    <ul class="notes-list">
+      <li><strong>Fully offline.</strong> The app makes no network calls. Nothing about your vault ever leaves your machine.</li>
+      <li><strong>Memory-only keys.</strong> Decryption keys exist only for the length of a session and are wiped the moment a book is relocked.</li>
+      <li><strong>Plain text means plain text.</strong> Unencrypted books rely entirely on your filesystem permissions for access. Use encrypted books for anything sensitive.</li>
+      <li><strong>Clipboard isn't auto-cleared.</strong> Copied values stay on your clipboard until you clear it or copy something else.</li>
+      <li><strong>Not independently audited.</strong> This is a personal tool, built and shared in the open; not a commercial product with a security team behind it.</li>
+    </ul>
+  </section>
+
+  <!-- ================= DOWNLOAD ================= -->
+  <section class="section download-section" id="download">
+    <div class="section-head">
+      <div class="eyebrow">GET IT</div>
+      <h2>Download Password Vault</h2>
+      <p class="section-sub" id="releaseMeta">Looking up the latest release…</p>
+    </div>
+
+    <div class="download-grid" id="downloadGrid">
+      <a class="download-card" data-os="windows" href="https://github.com/Cogito11/Password-Vault/releases/latest">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M3 9h18"/><path d="M8 20h8M12 17v3"/></svg>
+        <span class="download-os">Windows</span>
+        <span class="download-sub" data-sub>installer (.exe)</span>
+      </a>
+      <a class="download-card" data-os="linux" href="https://github.com/Cogito11/Password-Vault/releases/latest">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9.5 9.5 12 7 14.5"/><path d="M12 14.5h5"/></svg>
+        <span class="download-os">Linux</span>
+        <span class="download-sub" data-sub>AppImage</span>
+      </a>
+      <div class="download-card disabled" data-os="mac" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="12" rx="1.5"/><path d="M2 19h20"/><path d="M9 19v-2.5h6V19"/></svg>
+        <span class="download-os">macOS</span>
+        <span class="download-sub coming-soon">Coming soon</span>
+      </div>
+    </div>
+
+    <p class="download-fallback">Don't see your platform, or want an older version? <a href="https://github.com/Cogito11/Password-Vault/releases" target="_blank" rel="noopener">Browse all releases on GitHub →</a></p>
+
+    <div class="build-it">
+      <span class="eyebrow">PREFER TO BUILD IT YOURSELF?</span>
+      <pre class="code-block small">git clone https://github.com/Cogito11/Password-Vault
+cd Password-Vault/Source
+npm install
+npm run build</pre>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand-mark small" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      Password Vault
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/Cogito11/Password-Vault" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Cogito11/Password-Vault/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/Cogito11/Password-Vault/blob/main/README.md" target="_blank" rel="noopener">README</a>
+    </div>
+    <div class="footer-meta">MIT License · Built with Electron · Not independently audited</div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
