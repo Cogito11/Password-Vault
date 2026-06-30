@@ -1044,6 +1044,79 @@ body.sidebar-collapsed .col-left { display: none; }
 .attr-row-del:hover { color: #e05555; }
 .attr-row-del svg { width: 13px; height: 13px; stroke: currentColor; }
 
+/* Password generator */
+.attr-row-block { display: flex; flex-direction: column; gap: 6px; }
+
+.attr-row .attr-val-wrap { flex: 1; position: relative; display: flex; align-items: center; }
+.attr-val-wrap .attr-val { width: 100%; padding-right: 30px; }
+
+.attr-gen-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  padding: 3px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.13s, background 0.13s;
+}
+.attr-gen-btn:hover { color: var(--amber); background: var(--amber-dim); }
+.attr-gen-btn svg { width: 13px; height: 13px; stroke: currentColor; }
+
+.gen-panel {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface2);
+  border: 1px solid rgba(232,162,48,0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.gen-panel-row { display: flex; align-items: center; gap: 8px; }
+
+.gen-panel-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.gen-len-slider { flex: 1; accent-color: var(--amber); }
+.gen-len-val { font-family: var(--mono); font-size: 11px; color: var(--text); width: 22px; text-align: right; flex-shrink: 0; }
+
+.gen-panel-checks { display: flex; flex-wrap: wrap; gap: 12px; }
+.gen-panel-checks label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.gen-panel-checks input[type="checkbox"] { accent-color: var(--amber); cursor: pointer; }
+
+.gen-panel-preview {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  word-break: break-all;
+  letter-spacing: 0.03em;
+}
+.gen-panel-preview-empty { color: #e05555; }
+
+.gen-panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
 .builder-actions {
   display: flex;
   gap: 8px;
