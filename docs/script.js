@@ -37,21 +37,78 @@ function detectOS() {
 }
 
 const currentOS = detectOS();
+
 if (currentOS) {
-  const card = document.querySelector(`.download-card[data-os="${currentOS}"]`);
-  if (card) card.classList.add('recommended');
+    const card = document.querySelector(`.download-card[data-os="${currentOS}"]`);
+
+    if (card) {
+        card.classList.add("recommended");
+
+        const label = card.querySelector(".recommended-label");
+        if (label) {
+            label.hidden = false;
+        }
+    }
 }
 
 // ===== Pull latest release info + asset links from GitHub =====
 const REPO = 'Cogito11/Password-Vault';
 const metaEl = document.getElementById('releaseMeta');
 
-function matchAsset(assets, os) {
-  const patterns = {
-    windows: /\.exe$/i,
-    linux: /\.appimage$/i,
-  };
-  return assets.find((a) => patterns[os].test(a.name));
+function matchAsset(assets, pattern) {
+    const regex = new RegExp(pattern, "i");
+    return assets.find(asset => regex.test(asset.name));
+}
+
+function setDownloadButtons(card, os, releaseAssets, version) {
+  const installerBtn = card.querySelector('[data-type="installer"]');
+  const portableBtn = card.querySelector('[data-type="portable"]');
+  const otherBtn = card.querySelector('[data-type="package"]');
+  
+  // Installer (Windows .exe or Linux .deb)
+  if (installerBtn && releaseAssets) {
+    const asset = matchAsset(releaseAssets, os, installerBtn.dataset.pattern);
+    if (asset) {
+      installerBtn.href = asset.browser_download_url;
+      const sub = installerBtn.querySelector('.btn-sub');
+      if (sub) {
+        const sizeMb = (asset.size / (1024 * 1024)).toFixed(1);
+        sub.textContent = `Version ${version} • ${sizeMb} MB`;
+      }
+    } else {
+      installerBtn.setAttribute('disabled', 'true');
+    }
+  }
+
+  // Portable (Windows portable exe or Linux AppImage)
+  if (portableBtn && releaseAssets) {
+    const asset = matchAsset(releaseAssets, os, portableBtn.dataset.pattern);
+    if (asset) {
+      portableBtn.href = asset.browser_download_url;
+      const sub = portableBtn.querySelector('.btn-sub');
+      if (sub) {
+        const sizeMb = asset.size ? ` · ${(asset.size / (1024 * 1024)).toFixed(1)} MB` : '';
+        sub.textContent = `Version ${version} • ${sizeMb} MB`;
+      }
+    } else {
+      portableBtn.setAttribute('disabled', 'true');
+    }
+  }
+
+  // Other packages (Linux only)
+  if (otherBtn && releaseAssets) {
+    const asset = matchAsset(releaseAssets, os, otherBtn.dataset.pattern);
+    if (asset) {
+      otherBtn.href = asset.browser_download_url;
+      const sub = otherBtn.querySelector('.btn-sub');
+      if (sub) {
+        const sizeMb = asset.size ? ` · ${(asset.size / (1024 * 1024)).toFixed(1)} MB` : '';
+        sub.textContent = asset.name + sizeMb;
+      }
+    } else {
+      otherBtn.setAttribute('disabled', 'true');
+    }
+  }
 }
 
 fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
@@ -67,18 +124,14 @@ fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
     }
 
     const assets = release.assets || [];
+    
+    const version = (release.tag_name || '').replace(/^v/, '');
+
     ['windows', 'linux'].forEach((os) => {
-      const card = document.querySelector(`.download-card[data-os="${os}"]`);
-      if (!card) return;
-      const asset = matchAsset(assets, os);
-      if (asset) {
-        card.href = asset.browser_download_url;
-        const sub = card.querySelector('[data-sub]');
-        if (sub) {
-          const sizeMb = asset.size ? ` · ${(asset.size / (1024 * 1024)).toFixed(1)} MB` : '';
-          sub.textContent = `${asset.name}${sizeMb}`;
-        }
-      }
+        const card = document.querySelector(`.download-card[data-os="${os}"]`);
+        if (!card) return;
+
+        setDownloadButtons(card, os, assets, version);
     });
   })
   .catch(() => {
