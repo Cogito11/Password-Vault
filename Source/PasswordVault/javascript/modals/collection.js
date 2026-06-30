@@ -72,20 +72,29 @@ function addDefaultAttrRows() {
 addAttrBtn.addEventListener('click', function () { addAttrRow('', '', true); });
 
 function addAttrRow(key, val, shouldFocus) {
-	var row = document.createElement('div');
+	// Wrapper groups the row itself with its (initially hidden) generator panel,
+	// so removing one attribute removes both together.
+	var wrap = document.createElement('div');
+	wrap.className = 'attr-row-block';
 
+	var row = document.createElement('div');
 	row.className = 'attr-row';
 
 	row.innerHTML =
 		'<input class="modal-input attr-key" type="text" placeholder="Key (e.g. Email)" value="' + esc(key) + '">' +
-		'<input class="modal-input attr-val" type="text" placeholder="Value" value="' + esc(val) + '">' +
+		genAttrValHTML(val) +
 		'<button class="attr-row-del" title="Remove">' +
 			'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
 		'</button>';
 
-	row.querySelector('.attr-row-del').addEventListener('click', function () { attrRows.removeChild(row); });
+	wrap.appendChild(row);
+	wrap.insertAdjacentHTML('beforeend', genPanelHTML());
 
-	attrRows.appendChild(row);
+	row.querySelector('.attr-row-del').addEventListener('click', function () { attrRows.removeChild(wrap); });
+
+	wireAttrGenerator(wrap);
+
+	attrRows.appendChild(wrap);
 
 	if (shouldFocus) row.querySelector('.attr-key').focus();
 }
