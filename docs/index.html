@@ -107,6 +107,22 @@
 
     </div>
     <p class="tree-caption">Load the vault folder and every book inside it shows up on the left. Load a single book directly and you skip straight to its collections.</p>
+
+    <div class="org-grid">
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <h3>Password books</h3>
+        <p>Separate folders for separate areas of your life, each book contains its own collections and its own independent encryption settings.</p>
+      </div>
+
+      <div class="feature-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+        <h3>Collections</h3>
+        <p>These are used to split a book into subcategories. A book called Personal Passwords would have collections for "Streaming Services", "Gaming", "Bank Accounts". All to give you as much control as possible.</p>
+      </div>
+
+    </div>
   </section>
 
   <!-- ================= STORAGE ================= -->
@@ -165,14 +181,14 @@ Data inside the book → scrambled → vault.enc</pre>
 
       <div class="feature-card">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <h3>Password books</h3>
-        <p>Separate folders for separate areas of your life, each book contains it's own collections and its own independent encryption settings.</p>
+        <h3>In depth organization</h3>
+        <p>Group credentials into books, split each book into collections, and load a single book on its own when you don't need the whole vault. As much structure as you want, no more, no less.</p>
       </div>
 
       <div class="feature-card">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
-        <h3>Collections</h3>
-        <p>These are used to split a book into subcategories. A book called Personal Passwords would have collections for "Streaming Services", "Gaming", "Bank Accounts". All to give you as much control as possible.</p>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="22" y1="12" x2="2" y2="12"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>
+        <h3>Offline first design</h3>
+        <p>Password Vault makes no network calls. Every book, collection, and entry lives on your own disk, nothing is synced, uploaded, or phoned home.</p>
       </div>
 
       <div class="feature-card">
@@ -182,9 +198,9 @@ Data inside the book → scrambled → vault.enc</pre>
       </div>
 
       <div class="feature-card">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M12 11v6M9 14h6"/></svg>
-        <h3>Per-book locking</h3>
-        <p>Unlock and relock individual encrypted books without ejecting the whole vault folder.</p>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <h3>Password generation</h3>
+        <p>Generate strong, random passwords on the spot, with control over length and character types, so you're never stuck reusing the same password twice.</p>
       </div>
 
       <div class="feature-card">
@@ -242,7 +258,7 @@ Data inside the book → scrambled → vault.enc</pre>
         <a class="download-button primary"
           href="#"
           data-type="installer"
-          data-pattern=".exe$">
+          data-pattern="setup.*\.exe$">
           <div class="download-button-content">
             <span class="btn-label">Installer</span>
             <span class="btn-description">
@@ -255,7 +271,7 @@ Data inside the book → scrambled → vault.enc</pre>
         <a class="download-button secondary"
           href="#"
           data-type="portable"
-          data-pattern=".exe$">
+          data-pattern="portable\.exe$">
           <div class="download-button-content">
             <span class="btn-label">Portable</span>
             <span class="btn-description">
@@ -293,7 +309,7 @@ Data inside the book → scrambled → vault.enc</pre>
         <a class="download-button primary"
           href="#"
           data-type="installer"
-          data-pattern=".deb$">
+          data-pattern="\.deb$">
           <div class="download-button-content">
             <span class="btn-label">.deb Installer</span>
             <span class="btn-description">
@@ -306,7 +322,7 @@ Data inside the book → scrambled → vault.enc</pre>
         <a class="download-button secondary"
           href="#"
           data-type="portable"
-          data-pattern=".appimage$">
+          data-pattern="\.appimage$">
           <div class="download-button-content">
             <span class="btn-label">AppImage</span>
             <span class="btn-description">

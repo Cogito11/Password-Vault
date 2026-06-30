@@ -60,55 +60,57 @@ function matchAsset(assets, pattern) {
     return assets.find(asset => regex.test(asset.name));
 }
 
-function setDownloadButtons(card, os, releaseAssets, version) {
-  const installerBtn = card.querySelector('[data-type="installer"]');
-  const portableBtn = card.querySelector('[data-type="portable"]');
-  const otherBtn = card.querySelector('[data-type="package"]');
-  
-  // Installer (Windows .exe or Linux .deb)
-  if (installerBtn && releaseAssets) {
-    const asset = matchAsset(releaseAssets, os, installerBtn.dataset.pattern);
+// Windows ships two .exe files with no fixed naming convention, so instead of
+// relying purely on each button's own pattern, resolve them together: whichever
+// .exe matches "setup" is the installer, and any other .exe is the portable build.
+function resolveWindowsAssets(assets) {
+  const exeAssets = assets.filter((a) => /\.exe$/i.test(a.name));
+  const installer = exeAssets.find((a) => /setup/i.test(a.name)) || null;
+  const portable = exeAssets.find((a) => a !== installer) || null;
+  return { installer, portable };
+}
+
+function setDownloadButtons(card, releaseAssets, version) {
+  const releasesUrl = 'https://github.com/Cogito11/Password-Vault/releases';
+  const isWindows = card.dataset.os === 'windows';
+  const winAssets = isWindows ? resolveWindowsAssets(releaseAssets || []) : null;
+
+  // Wire up a single download button. For Windows, the installer/portable asset was
+  // already resolved above; for everything else, fall back to the button's own
+  // data-pattern. If nothing matches (e.g. a release without that asset type), fall
+  // back to the releases page rather than disabling the button, so it's never a dead end.
+  function wireBtn(btn) {
+    if (!btn || !releaseAssets) return;
+
+    const asset = isWindows
+      ? (btn.dataset.type === 'installer' ? winAssets.installer : winAssets.portable)
+      : matchAsset(releaseAssets, btn.dataset.pattern);
+
     if (asset) {
-      installerBtn.href = asset.browser_download_url;
-      const sub = installerBtn.querySelector('.btn-sub');
+      btn.href = asset.browser_download_url;
+      btn.removeAttribute('aria-disabled');
+      btn.classList.remove('btn-disabled');
+      const sub = btn.querySelector('.btn-sub');
       if (sub) {
-        const sizeMb = (asset.size / (1024 * 1024)).toFixed(1);
-        sub.textContent = `Version ${version} • ${sizeMb} MB`;
+        const sizeMb = asset.size ? (asset.size / (1024 * 1024)).toFixed(1) : null;
+        const sizeStr = sizeMb ? ` · ${sizeMb} MB` : '';
+        // "package" buttons (e.g. .rpm) show the raw filename; others show the version
+        sub.textContent = btn.dataset.type === 'package'
+          ? asset.name + sizeStr
+          : `Version ${version}${sizeStr}`;
       }
     } else {
-      installerBtn.setAttribute('disabled', 'true');
+      btn.href = releasesUrl;
+      btn.target = '_blank';
+      btn.rel = 'noopener';
+      const sub = btn.querySelector('.btn-sub');
+      if (sub) sub.textContent = 'Not in this release · see all releases';
     }
   }
 
-  // Portable (Windows portable exe or Linux AppImage)
-  if (portableBtn && releaseAssets) {
-    const asset = matchAsset(releaseAssets, os, portableBtn.dataset.pattern);
-    if (asset) {
-      portableBtn.href = asset.browser_download_url;
-      const sub = portableBtn.querySelector('.btn-sub');
-      if (sub) {
-        const sizeMb = asset.size ? ` · ${(asset.size / (1024 * 1024)).toFixed(1)} MB` : '';
-        sub.textContent = `Version ${version} • ${sizeMb} MB`;
-      }
-    } else {
-      portableBtn.setAttribute('disabled', 'true');
-    }
-  }
-
-  // Other packages (Linux only)
-  if (otherBtn && releaseAssets) {
-    const asset = matchAsset(releaseAssets, os, otherBtn.dataset.pattern);
-    if (asset) {
-      otherBtn.href = asset.browser_download_url;
-      const sub = otherBtn.querySelector('.btn-sub');
-      if (sub) {
-        const sizeMb = asset.size ? ` · ${(asset.size / (1024 * 1024)).toFixed(1)} MB` : '';
-        sub.textContent = asset.name + sizeMb;
-      }
-    } else {
-      otherBtn.setAttribute('disabled', 'true');
-    }
-  }
+  wireBtn(card.querySelector('[data-type="installer"]'));
+  wireBtn(card.querySelector('[data-type="portable"]'));
+  wireBtn(card.querySelector('[data-type="package"]'));
 }
 
 fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
@@ -131,7 +133,7 @@ fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
         const card = document.querySelector(`.download-card[data-os="${os}"]`);
         if (!card) return;
 
-        setDownloadButtons(card, os, assets, version);
+        setDownloadButtons(card, assets, version);
     });
   })
   .catch(() => {

@@ -195,6 +195,8 @@ h1, h2, h3 { font-family: var(--sans); color: #fff; letter-spacing: -0.01em; }
 .tree-children[hidden] { display: none; }
 .tree-caption { margin-top: 16px; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
 
+.org-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 28px; }
+
 /* ============ STORAGE ============ */
 .storage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 .storage-card {
@@ -374,6 +376,89 @@ h1, h2, h3 { font-family: var(--sans); color: #fff; letter-spacing: -0.01em; }
     font-weight:600;
 }
 
+/* ============ DOWNLOAD – missing pieces ============ */
+
+/* Disabled download buttons (<a> ignores the disabled attr, so we target aria + class) */
+.download-button.btn-disabled,
+.download-button[aria-disabled="true"] {
+  opacity: 0.38;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* macOS "coming soon" card */
+.download-card.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.download-card.disabled .download-os {
+  color: var(--text-muted);
+}
+
+/* Placeholder block inside the macOS card */
+.download-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 0 8px;
+}
+
+.download-placeholder h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.download-placeholder p {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
+
+/* Gap between stacked buttons inside each card */
+.download-card > .download-button + .download-button {
+  margin-top: 10px;
+}
+
+/* Fallback text below the grid */
+.download-fallback {
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.download-fallback a {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.download-fallback a:hover {
+  text-decoration: underline;
+}
+
+/* "Build it yourself" block */
+.build-it {
+  margin-top: 36px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.build-it .eyebrow {
+  margin-bottom: 0;
+}
+
+.build-it .code-block {
+  margin-bottom: 0;
+}
+
 /* ============ FOOTER ============ */
 .site-footer { border-top: 1px solid var(--border); padding: 32px 24px; }
 .footer-inner {
@@ -397,6 +482,7 @@ h1, h2, h3 { font-family: var(--sans); color: #fff; letter-spacing: -0.01em; }
 /* ============ RESPONSIVE ============ */
 @media (max-width: 900px) {
   .storage-grid { grid-template-columns: 1fr; }
+  .org-grid { grid-template-columns: 1fr; }
   .feature-grid { grid-template-columns: 1fr 1fr; }
   .download-grid { grid-template-columns: 1fr; }
   .topnav { gap: 14px; }
@@ -407,22 +493,8 @@ h1, h2, h3 { font-family: var(--sans); color: #fff; letter-spacing: -0.01em; }
   .hero h1 { font-size: 30px; }
   .hero-stats { flex-direction: column; align-items: center; }
   .feature-grid { grid-template-columns: 1fr; }
+  .download-button { padding: 14px; }
 }
 
-@media (max-width: 900px) {
-  .storage-grid { grid-template-columns: 1fr; }
-  .feature-grid { grid-template-columns: 1fr 1fr; }
-  .download-grid { grid-template-columns: 1fr; } /* stack vertically on mobile */
-}
 
-@media (max-width: 600px) {
-  .topnav a:not(.topnav-cta):not(.topnav-gh) { display: none; }
-  .hero { padding-top: 64px; }
-  .hero h1 { font-size: 30px; }
-  .hero-stats { flex-direction: column; align-items: center; }
-  .feature-grid { grid-template-columns: 1fr; }
-  
-  /* Adjust button sizes on small screens */
-  .download-button { padding: 10px 14px; font-size: 12.5px; }
-}
 
