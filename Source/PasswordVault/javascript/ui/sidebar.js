@@ -7,7 +7,42 @@
 // ═══════════════════════════════
 
 
-// Close the "Open Folder" dropdown menu.
+// ═══════════════════════════════
+// COLLAPSIBLE SECTIONS
+// Lets the user collapse/expand the "Password Books" list
+// and the "Collections" list independently, by clicking
+// their section headers (or the chevron button inside them).
+// ═══════════════════════════════
+
+var booksPanelHead = document.getElementById('booksPanelHead');
+
+// Generic toggle: flips aria-expanded on the header and
+// the 'panel-collapsed' class on the target list element.
+function toggleSectionCollapse(headerEl, listEl) {
+	var isExpanded = headerEl.getAttribute('aria-expanded') !== 'false';
+	headerEl.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+	listEl.classList.toggle('panel-collapsed', isExpanded);
+}
+
+// Wire up click + keyboard (Enter/Space) activation for a header element.
+function makeSectionHeaderToggleable(headerEl, listEl) {
+	if (!headerEl || !listEl) return;
+
+	headerEl.addEventListener('click', function () {
+		toggleSectionCollapse(headerEl, listEl);
+	});
+
+	// Support keyboard activation since the headers are role="button"
+	headerEl.addEventListener('keydown', function (e) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			toggleSectionCollapse(headerEl, listEl);
+		}
+	});
+}
+
+makeSectionHeaderToggleable(booksPanelHead, booksList);
+makeSectionHeaderToggleable(collSectionHead, collList);
 // Removes the 'open' class from both:
 // - The dropdown menu itself
 // - The arrow icon (used for rotation styling)
