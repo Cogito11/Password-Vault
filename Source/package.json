@@ -2,12 +2,12 @@
   "name": "password-vault",
   "productName": "Password Vault",
   "version": "0.8.0",
-  "homepage": "https://github.com/Cogito11/Password-Vault",
+  "homepage": "https://cogito11.github.io/Password-Vault/",
   "author": {
     "name": "Cole Bishop",
     "email": "cdbishop2005@gmail.com"
   },
-  "description": "A Local Password Manager",
+  "description": "A Local Password Manager centered around organization, data ownership, and security.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
