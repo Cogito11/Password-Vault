@@ -109,11 +109,22 @@
     <!-- Multi-book panel: appears when a parent folder with books is opened -->
     <div class="books-panel" id="booksPanel">
       <div class="books-panel-head" id="booksPanelHead" role="button" tabindex="0" aria-expanded="true" aria-controls="booksList" title="Collapse books list">
-        <span class="books-panel-label">Password Books</span>
-        <span class="books-panel-count" id="booksPanelCount"></span>
-        <button class="panel-collapse-btn" id="booksCollapseBtn" tabindex="-1" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
+        <div class="books-panel-head-row">
+          <span class="books-panel-titles">
+            <span class="books-panel-label">Password Books</span>
+            <span class="books-panel-count" id="booksPanelCount"></span>
+          </span>
+          <button class="new-coll-btn new-book-btn" id="newBookBtn" title="Create a new book">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            New
+          </button>
+          <button class="panel-collapse-btn" id="booksCollapseBtn" tabindex="-1" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <div class="books-panel-sub" id="booksPanelSub">Selected: None</div>
       </div>
       <div class="books-list" id="booksList"></div>
     </div>
@@ -121,7 +132,16 @@
     <!-- Collections sub-head: shown in multi-book mode -->
     <div class="coll-section-head" id="collSectionHead" role="button" tabindex="0" aria-expanded="true" aria-controls="collList" title="Collapse collections list">
       <div class="coll-section-head-row">
-        <div class="coll-section-label">Collections</div>
+        <span class="coll-section-titles">
+          <span class="coll-section-label">Collections</span>
+          <span class="coll-section-count" id="collSectionCount"></span>
+        </span>
+        <button class="new-coll-btn hidden" id="newCollBtn" title="Create a new collection">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          New
+        </button>
         <button class="panel-collapse-btn" id="collCollapseBtn" tabindex="-1" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -131,23 +151,6 @@
 
     <div class="coll-list" id="collList">
       <div class="left-hint" id="leftHint">Open a folder to<br>load collections.</div>
-    </div>
-
-    <div class="sidebar-footer">
-      <button class="new-coll-btn hidden" id="newCollBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        New Collection
-      </button>
-
-      <button class="new-coll-btn new-book-btn" id="newBookBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          <path d="M12 11v6M9 14h6"/>
-        </svg>
-        New Password Book
-      </button>
     </div>
 
   </div>

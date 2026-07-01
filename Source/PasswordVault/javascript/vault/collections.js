@@ -18,6 +18,9 @@ function openAllCollections(btn) {
 	// Special identifier meaning "aggregate view"
 	activeFile = '__all__';
 
+	// Reflect the live selection in the Collections header
+	setSelectedCollectionLabel('All Passwords');
+
 	// Combine all entries from all collections into one array
 	var allEntries = getAllStampedEntries();
 
@@ -67,7 +70,11 @@ function openCollection(filename, btn) {
 	}
 
 	// Update UI title by removing txt extension
-	panelTitle.textContent = filename.replace(/\.txt$/i, '');
+	var displayName = filename.replace(/\.txt$/i, '');
+	panelTitle.textContent = displayName;
+
+	// Reflect the live selection in the Collections header
+	setSelectedCollectionLabel(displayName);
 
 	// Show number of entries
 	panelCount.textContent = entries.length + ' entries';
@@ -164,6 +171,9 @@ async function deleteCollection(filename) {
 			allBtnEl.querySelector('.coll-n').textContent = total + ' passwords total';
 		}
 
+		// Refresh the "· N From "Book Name"" count in the Collections header
+		setCollSectionCount(Object.keys(collections).length, isMultiBookMode ? activeBookName : vaultName());
+
 		// Update book meta data
 		if (isMultiBookMode && activeBookName) {
 			var bookMeta = document.getElementById('book-meta-' + activeBookName);
@@ -187,6 +197,9 @@ async function deleteCollection(filename) {
 
 			// Hide new entry button
 			newEntryBtn.classList.remove('visible');
+
+			// Reset the Collections header's "Selected:" line
+			setSelectedCollectionLabel(null);
 		}
 
 		// Success feedback
