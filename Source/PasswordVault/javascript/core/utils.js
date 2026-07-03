@@ -27,6 +27,8 @@ var toastTimer;
 // Show a brief status toast notification.
 // Appears on screen and auto-hides after 1.8 seconds.
 function showToast(msg) {
+	if (!toast) return;
+
 	// Set message text
 	toast.textContent = msg;
 	// Trigger css visibility
@@ -45,24 +47,33 @@ function showToast(msg) {
 // Copy a value to the clipboard
 // Briefly flashes the button green.
 function copyVal(btn) {
-	// Copy the text from the buttons data attribute
-	navigator.clipboard.writeText(btn.dataset.val).then(function () {
-		
-		// Save original button label
-		var prev = btn.textContent;
+	if (!btn) return;
 
-		// Give visual feedback
-		btn.textContent = 'DONE';
-		btn.classList.add('ok');
+	var text = btn.dataset && btn.dataset.val ? btn.dataset.val : '';
 
-		showToast('Copied to clipboard');
+	if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+		// Copy the text from the buttons data attribute
+		navigator.clipboard.writeText(text).then(function () {
+			// Save original button label
+			var prev = btn.textContent;
 
-		// Restore original button after delay
-		setTimeout(function () { 
-			btn.textContent = prev; 
-			btn.classList.remove('ok'); 
-		}, 1600);
-	});
+			// Give visual feedback
+			btn.textContent = 'DONE';
+			btn.classList.add('ok');
+
+			showToast('Copied to clipboard');
+
+			// Restore original button after delay
+			setTimeout(function () { 
+				btn.textContent = prev; 
+				btn.classList.remove('ok'); 
+			}, 1600);
+		}).catch(function () {
+			showToast('Clipboard unavailable');
+		});
+	} else {
+		showToast('Clipboard unavailable');
+	}
 }
 
 // Function to convert an array of entries into a plain text file format
