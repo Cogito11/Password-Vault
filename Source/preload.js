@@ -1,8 +1,9 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  openExternal: (url) => shell.openExternal(url),
   // Config & Path exposed to the frontend
   createDefaultVault: () => ipcRenderer.invoke('create-default-vault'),
   getDefaultPath: () => ipcRenderer.invoke('get-default-path'),

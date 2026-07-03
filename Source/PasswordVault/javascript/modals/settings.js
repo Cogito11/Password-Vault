@@ -64,6 +64,23 @@
 		settingsInfo.textContent = 'Adjust app defaults and future generation behavior.';
 	}
 
+	function openExternalLink(url) {
+		if (!url) return;
+		if (window.electronAPI && window.electronAPI.openExternal) {
+			window.electronAPI.openExternal(url);
+			return;
+		}
+		window.open(url, '_blank', 'noopener,noreferrer');
+	}
+
+	var settingsLinks = document.querySelectorAll('[data-external-link]');
+	settingsLinks.forEach(function (link) {
+		link.addEventListener('click', function (e) {
+			e.preventDefault();
+			openExternalLink(link.getAttribute('data-external-link'));
+		});
+	});
+
 	if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
 	if (settingsClose) settingsClose.addEventListener('click', closeSettingsModal);
 	if (settingsOverlay) {
