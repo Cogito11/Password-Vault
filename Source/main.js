@@ -32,6 +32,11 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+
+    // Minimum size
+    minWidth: 380,
+    minHeight: 350,
+
     title: "Password Vault",
     icon: getIconPath(),
     autoHideMenuBar: true,

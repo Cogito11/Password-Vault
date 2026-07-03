@@ -87,9 +87,37 @@ function clearDefaultDirHandle() { return idbDelete(DEFAULT_KEY); }
 
 // localStorage key for the default directory's display name
 var LS_DEFAULT_NAME = 'pwvault_default_name';
+var APP_SETTINGS_KEY = 'pwvault_app_settings';
+
+var DEFAULT_APP_SETTINGS = {
+	generatorLength: 15,
+	generatorUpper: true,
+	generatorLower: true,
+	generatorNumbers: true,
+	generatorSymbols: true,
+	defaultBookEncrypted: false
+};
 
 // All three helpers swallow errors - localStorage can be blocked by private-browsing
 // policies, and a missing name is a cosmetic issue, not a functional one.
 function saveDefaultName(name) { try { localStorage.setItem(LS_DEFAULT_NAME, name); } catch (_) {} }
 function getDefaultName() { try { return localStorage.getItem(LS_DEFAULT_NAME); } catch (_) { return null; } }
 function clearDefaultName() { try { localStorage.removeItem(LS_DEFAULT_NAME); } catch (_) {} }
+
+function getAppSettings() {
+	try {
+		var raw = localStorage.getItem(APP_SETTINGS_KEY);
+		if (!raw) return Object.assign({}, DEFAULT_APP_SETTINGS);
+		var parsed = JSON.parse(raw);
+		return Object.assign({}, DEFAULT_APP_SETTINGS, parsed);
+	} catch (_) {
+		return Object.assign({}, DEFAULT_APP_SETTINGS);
+	}
+}
+
+function saveAppSettings(settings) {
+	try {
+		var merged = Object.assign({}, DEFAULT_APP_SETTINGS, getAppSettings(), settings || {});
+		localStorage.setItem(APP_SETTINGS_KEY, JSON.stringify(merged));
+	} catch (_) {}
+}

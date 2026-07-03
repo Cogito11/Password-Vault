@@ -7,7 +7,84 @@
 // ═══════════════════════════════
 
 
-// Close the "Open Folder" dropdown menu.
+// ═══════════════════════════════
+// COLLAPSIBLE SECTIONS
+// Lets the user collapse/expand the "Password Books" list
+// and the "Collections" list independently, by clicking
+// their section headers (or the chevron button inside them).
+// ═══════════════════════════════
+
+var booksPanelHead = document.getElementById('booksPanelHead');
+var booksPanelSub  = document.getElementById('booksPanelSub');
+var collSectionCount = document.getElementById('collSectionCount');
+
+// Update the "· N Books" count next to the Password Books label.
+function setBooksPanelCount(n) {
+	booksPanelCount.textContent = '(' + n + ')';
+}
+
+// Update the "Selected: None" / 'Selected: "BookName"' line under the Password Books header.
+// Call this whenever the currently-selected/open book changes — e.g. from
+// activateBook() / relockBook() in books.js — so the subtitle stays in sync.
+function setSelectedBookLabel(bookName) {
+	booksPanelSub.textContent = bookName ? ('Selected: \u201c' + bookName + '\u201d') : 'Selected: None';
+}
+
+// Show the count of collections
+function setCollSectionCount(count) {
+	collSectionCount.textContent = ' (' + count + ')';
+}
+
+// Update the "Selected: None" / 'Selected: "CollectionName"' line. Call this
+// from wherever a collection is actually opened — e.g. openCollection() /
+// openAllCollections() in collections.js — so it reflects the live selection.
+function setSelectedCollectionLabel(collName) {
+	collSectionName.textContent = collName ? ('Selected: \u201c' + collName + '\u201d') : 'Selected: None';
+}
+
+// Generic toggle: flips aria-expanded on the header and
+// the 'panel-collapsed' class on the target list element.
+function setSectionSubtitleVisibility(headerEl, subtitleEl) {
+	if (!headerEl || !subtitleEl) return;
+	var isCollapsed = headerEl.getAttribute('aria-expanded') === 'false';
+	subtitleEl.classList.toggle('visible', isCollapsed);
+	subtitleEl.classList.toggle('hidden', !isCollapsed);
+}
+
+function toggleSectionCollapse(headerEl, listEl, subtitleEl) {
+	var isExpanded = headerEl.getAttribute('aria-expanded') !== 'false';
+	headerEl.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+	listEl.classList.toggle('panel-collapsed', isExpanded);
+	setSectionSubtitleVisibility(headerEl, subtitleEl);
+}
+
+// Wire up click + keyboard (Enter/Space) activation for a header element.
+function makeSectionHeaderToggleable(headerEl, listEl) {
+	if (!headerEl || !listEl) return;
+
+	headerEl.addEventListener('click', function () {
+		toggleSectionCollapse(headerEl, listEl, headerEl.querySelector('.books-panel-sub, .coll-section-name'));
+	});
+
+	// Support keyboard activation since the headers are role="button"
+	headerEl.addEventListener('keydown', function (e) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			toggleSectionCollapse(headerEl, listEl, headerEl.querySelector('.books-panel-sub, .coll-section-name'));
+		}
+	});
+}
+
+makeSectionHeaderToggleable(booksPanelHead, booksList);
+makeSectionHeaderToggleable(collSectionHead, collList);
+setSectionSubtitleVisibility(booksPanelHead, booksPanelSub);
+setSectionSubtitleVisibility(collSectionHead, collSectionName);
+
+// newBookBtn / newCollBtn now live *inside* the clickable header rows above.
+// Stop their clicks from bubbling up and triggering the collapse toggle.
+[newBookBtn, newCollBtn].forEach(function (btn) {
+	if (btn) btn.addEventListener('click', function (e) { e.stopPropagation(); });
+});
 // Removes the 'open' class from both:
 // - The dropdown menu itself
 // - The arrow icon (used for rotation styling)
@@ -35,10 +112,14 @@ function enterMultiBookMode(subBooks) {
 	collSectionHead.classList.add('visible');
 
 	// Show number of books
-	booksPanelCount.textContent = subBooks.length + ' book' + (subBooks.length !== 1 ? 's' : '');
+	setBooksPanelCount(subBooks.length);
 	
 	// Prompt user to select a book
 	collSectionName.textContent = 'Select a book above';
+
+	// Nothing is open or selected yet in this mode
+	setSelectedBookLabel(null);
+	setCollSectionCount(0, null);
 	
 	// Show hint/empty state
 	leftHint.style.display = '';
@@ -167,6 +248,11 @@ function buildSidebar(results) {
 	// Hide hint (we now have content)
 	leftHint.style.display = 'none';
 
+	// A fresh set of collections just loaded, nothing specific is
+	// "open" yet until the user clicks one (openCollection/openAllCollections
+	// should call setSelectedCollectionLabel(name) when that happens).
+	setSelectedCollectionLabel(null);
+
 	// Compute total number of passwords
 	var totalCount = results.reduce(function (s, r) { 
 		return s + r.entries.length; 
@@ -208,6 +294,7 @@ function buildSidebar(results) {
 	if (!isMultiBookMode) {
 
 		booksPanel.classList.add('visible');
+		collSectionHead.classList.add('visible');
 		booksList.innerHTML = '';
 		var bookInfo = bookHandles[vaultName()];
 
@@ -242,6 +329,11 @@ function buildSidebar(results) {
 		
 		// Update vault name (add lock if encrypted)
 		bookNameEl.textContent = vaultName();
+
+		// Reflect the loaded book in both header subtitles
+		setBooksPanelCount(1);
+		setSelectedBookLabel(vaultName());
+		setCollSectionCount(results.length);
 	}
 }
 

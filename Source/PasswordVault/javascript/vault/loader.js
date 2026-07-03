@@ -333,8 +333,7 @@ async function rescanVaultFolder() {
 	// Update UI counters
 	var total = subBooks.length;
 
-	booksPanelCount.textContent =
-		total + ' book' + (total !== 1 ? 's' : '');
+	setBooksPanelCount(total);
 
 	statusTxt.textContent =
 		total + ' password book' +

@@ -50,13 +50,17 @@ function activateBook(bookName, btn) {
 	vaultKey = info.key;
 	isEncryptedVault = info.isEncrypted;
 
-	// Update UI Title
-	collSectionName.textContent = bookName;
-
 	// Build sidebar from sorted collection names
 	var results = Object.keys(collections).sort().map(function (k) {
 		return { name: k, entries: collections[k] };
 	});
+
+	// Update header subtitles: which book is selected, and how many
+	// collections it has (buildSidebar doesn't touch these in multi-book
+	// mode, since that branch is single-book-only)
+	setSelectedBookLabel(bookName);
+	setCollSectionCount(results.length, bookName);
+
 	buildSidebar(results);
 
 	// Show new collection button
@@ -113,6 +117,8 @@ function relockBook(bookName) {
 		rightEmpty.style.display = '';
 		newCollBtn.classList.add('hidden');
 		collSectionName.textContent = 'Select a book above';
+		setSelectedBookLabel(null);
+		setCollSectionCount(0, null);
 		if (btn) btn.classList.remove('active');
 	} 
 	else if (!isMultiBookMode) 
@@ -128,6 +134,9 @@ function relockBook(bookName) {
 		rightEmpty.style.display = '';
 		newCollBtn.classList.add('hidden');
 		booksPanel.classList.add('visible');
+		collSectionName.textContent = 'Select a book above';
+		setSelectedBookLabel(null);
+		setCollSectionCount(0, null);
 	}
 
 	// Notify user
@@ -165,7 +174,7 @@ async function deleteBook(bookName) {
 		if (isMultiBookMode) 
 		{
 			var remaining = Object.keys(bookHandles).length;
-			booksPanelCount.textContent = remaining + ' book' + (remaining !== 1 ? 's' : '');
+			setBooksPanelCount(remaining);
 			statusTxt.textContent = remaining + ' password book' + (remaining !== 1 ? 's' : '') + ' found';
 		} 
 		else 
@@ -190,6 +199,8 @@ async function deleteBook(bookName) {
 
 			newCollBtn.classList.add('hidden');
 			collSectionName.textContent = 'Select a book above';
+			setSelectedBookLabel(null);
+			setCollSectionCount(0, null);
 		}
 
 		showToast('"' + bookName + '" deleted');
@@ -249,7 +260,8 @@ async function doRenameBook(oldName, newName) {
 	// Update active book name if needed
 	if (activeBookName === oldName) {
 		activeBookName = newName;
-		collSectionName.textContent = newName;
+		setSelectedBookLabel(newName);
+		setCollSectionCount(Object.keys(collections).length, newName);
 	}
 	editingBookName = newName;
 }

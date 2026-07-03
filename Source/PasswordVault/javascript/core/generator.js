@@ -10,6 +10,17 @@ var GEN_DEFAULT_LENGTH = 15;
 var GEN_MIN_LENGTH = 4;
 var GEN_MAX_LENGTH = 64;
 
+function getDefaultGeneratorOptions() {
+	var settings = getAppSettings();
+	return {
+		length: settings.generatorLength || GEN_DEFAULT_LENGTH,
+		upper: settings.generatorUpper !== false,
+		lower: settings.generatorLower !== false,
+		numbers: settings.generatorNumbers !== false,
+		symbols: settings.generatorSymbols !== false
+	};
+}
+
 var GEN_CHARSETS = {
 	upper:   'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 	lower:   'abcdefghijklmnopqrstuvwxyz',
@@ -76,19 +87,20 @@ function genAttrValHTML(val) {
 
 // Markup for the collapsible generator options panel - a sibling placed after .attr-row.
 function genPanelHTML() {
+	var defaults = getDefaultGeneratorOptions();
 	return (
 		'<div class="gen-panel">' +
 			'<div class="gen-panel-header">Generate Random Password</div>' +
 			'<div class="gen-panel-row">' +
 				'<span class="gen-panel-label">Length</span>' +
-				'<input type="range" class="gen-len-slider" min="' + GEN_MIN_LENGTH + '" max="' + GEN_MAX_LENGTH + '" value="' + GEN_DEFAULT_LENGTH + '">' +
-				'<span class="gen-len-val">' + GEN_DEFAULT_LENGTH + '</span>' +
+				'<input type="range" class="gen-len-slider" min="' + GEN_MIN_LENGTH + '" max="' + GEN_MAX_LENGTH + '" value="' + defaults.length + '">' +
+				'<span class="gen-len-val">' + defaults.length + '</span>' +
 			'</div>' +
 			'<div class="gen-panel-checks">' +
-				'<label><input type="checkbox" class="gen-chk" data-type="upper" checked> Uppercase A-Z</label>' +
-				'<label><input type="checkbox" class="gen-chk" data-type="lower" checked> Lowercase a-z</label>' +
-				'<label><input type="checkbox" class="gen-chk" data-type="numbers" checked> Numbers 0-9</label>' +
-				'<label><input type="checkbox" class="gen-chk" data-type="symbols" checked> Symbols !@#</label>' +
+				'<label><input type="checkbox" class="gen-chk" data-type="upper" ' + (defaults.upper ? 'checked' : '') + '> Uppercase A-Z</label>' +
+				'<label><input type="checkbox" class="gen-chk" data-type="lower" ' + (defaults.lower ? 'checked' : '') + '> Lowercase a-z</label>' +
+				'<label><input type="checkbox" class="gen-chk" data-type="numbers" ' + (defaults.numbers ? 'checked' : '') + '> Numbers 0-9</label>' +
+				'<label><input type="checkbox" class="gen-chk" data-type="symbols" ' + (defaults.symbols ? 'checked' : '') + '> Symbols !@#</label>' +
 			'</div>' +
 			'<div class="gen-panel-preview"></div>' +
 			'<div class="gen-panel-actions">' +
