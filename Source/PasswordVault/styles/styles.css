@@ -330,12 +330,16 @@ body.sidebar-collapsed .col-left { display: none; }
   color: var(--text-dim);
 }
 .books-panel-sub {
+  display: none;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.books-panel-sub.visible {
+  display: block;
 }
 
 /* "+ New Book" / "+ New Collection" — compact pill buttons living inside
@@ -546,6 +550,7 @@ body.sidebar-collapsed .col-left { display: none; }
   text-overflow: ellipsis;
 }
 .coll-section-name {
+  display: none;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
@@ -553,6 +558,9 @@ body.sidebar-collapsed .col-left { display: none; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.coll-section-name.visible {
+  display: block;
 }
 
 .coll-list {

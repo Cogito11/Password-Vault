@@ -44,10 +44,18 @@ function setSelectedCollectionLabel(collName) {
 
 // Generic toggle: flips aria-expanded on the header and
 // the 'panel-collapsed' class on the target list element.
-function toggleSectionCollapse(headerEl, listEl) {
+function setSectionSubtitleVisibility(headerEl, subtitleEl) {
+	if (!headerEl || !subtitleEl) return;
+	var isCollapsed = headerEl.getAttribute('aria-expanded') === 'false';
+	subtitleEl.classList.toggle('visible', isCollapsed);
+	subtitleEl.classList.toggle('hidden', !isCollapsed);
+}
+
+function toggleSectionCollapse(headerEl, listEl, subtitleEl) {
 	var isExpanded = headerEl.getAttribute('aria-expanded') !== 'false';
 	headerEl.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
 	listEl.classList.toggle('panel-collapsed', isExpanded);
+	setSectionSubtitleVisibility(headerEl, subtitleEl);
 }
 
 // Wire up click + keyboard (Enter/Space) activation for a header element.
@@ -55,20 +63,22 @@ function makeSectionHeaderToggleable(headerEl, listEl) {
 	if (!headerEl || !listEl) return;
 
 	headerEl.addEventListener('click', function () {
-		toggleSectionCollapse(headerEl, listEl);
+		toggleSectionCollapse(headerEl, listEl, headerEl.querySelector('.books-panel-sub, .coll-section-name'));
 	});
 
 	// Support keyboard activation since the headers are role="button"
 	headerEl.addEventListener('keydown', function (e) {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
-			toggleSectionCollapse(headerEl, listEl);
+			toggleSectionCollapse(headerEl, listEl, headerEl.querySelector('.books-panel-sub, .coll-section-name'));
 		}
 	});
 }
 
 makeSectionHeaderToggleable(booksPanelHead, booksList);
 makeSectionHeaderToggleable(collSectionHead, collList);
+setSectionSubtitleVisibility(booksPanelHead, booksPanelSub);
+setSectionSubtitleVisibility(collSectionHead, collSectionName);
 
 // newBookBtn / newCollBtn now live *inside* the clickable header rows above.
 // Stop their clicks from bubbling up and triggering the collapse toggle.
