@@ -4,11 +4,12 @@
 // Open
 
 newBookBtn.addEventListener('click', async function () {
+	var defaultSettings = getAppSettings();
 	bookNameInput.value = '';
 	bookLocationDisp.value = '';
 	bookLocationDisp.classList.remove('chosen');
-	encryptToggle.checked = false;
-	encryptFields.classList.remove('show');
+	encryptToggle.checked = defaultSettings.defaultBookEncrypted;
+	encryptFields.classList.toggle('show', defaultSettings.defaultBookEncrypted);
 	bookPw.value = '';
 	bookPwConfirm.value = '';
 	pwStrBar.style.width   = '0';

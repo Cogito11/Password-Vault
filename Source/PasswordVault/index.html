@@ -153,6 +153,16 @@
       <div class="left-hint" id="leftHint">Open a folder to<br>load collections.</div>
     </div>
 
+    <div class="sidebar-footer">
+      <button class="settings-btn" id="settingsBtn" title="Open settings" aria-label="Open settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"></path>
+        </svg>
+        <span>Settings</span>
+      </button>
+    </div>
+
   </div>
 
   <div class="col-right">
@@ -417,6 +427,99 @@
 
 </div>
 
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsOverlay">
+  <div class="modal settings-modal">
+
+    <div class="modal-head">
+      <div class="modal-head-title">Settings</div>
+      <button class="modal-close" id="settingsClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="settings-section">
+        <div class="settings-section-title">App Information</div>
+        <div class="settings-info-card">
+          <div class="settings-info-title">Password Vault</div>
+          <div class="settings-info-description">A local password manager centered on organization, ownership, and security.</div>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-item">
+            <div class="settings-item-label">Maintainer</div>
+            <div class="settings-item-value">Cole Bishop</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-label">Email</div>
+            <div class="settings-item-value">cdbishop2005@gmail.com</div>
+          </div>
+          <div class="settings-item full-width">
+            <div class="settings-item-label">Website</div>
+            <div class="settings-item-value"><a href="https://cogito11.github.io/Password-Vault/" target="_blank" rel="noopener noreferrer">https://cogito11.github.io/Password-Vault/</a></div>
+          </div>
+          <div class="settings-item full-width">
+            <div class="settings-item-label">GitHub</div>
+            <div class="settings-item-value"><a href="https://github.com/cogito11/Password-Vault" target="_blank" rel="noopener noreferrer">https://github.com/cogito11/Password-Vault</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Theme</div>
+        <div class="modal-field">
+          <div class="modal-label">Theme Selection</div>
+          <select class="modal-input" id="settingsThemeSelect" disabled>
+            <option value="dark">Default (coming soon)</option>
+          </select>
+          <div class="settings-hint">Theme customization is planned for a future release.</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Random Password Generation</div>
+        <div class="modal-field">
+          <div class="modal-label">Default Length</div>
+          <div class="settings-length-row">
+            <input class="gen-len-slider" id="settingsLengthInput" type="range" min="4" max="64" value="15">
+            <span class="gen-len-val" id="settingsLengthValue">15</span>
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="modal-label">Default Character Types</div>
+          <div class="settings-checks">
+            <label><input type="checkbox" id="settingsUpper"> Uppercase A-Z</label>
+            <label><input type="checkbox" id="settingsLower"> Lowercase a-z</label>
+            <label><input type="checkbox" id="settingsNumbers"> Numbers 0-9</label>
+            <label><input type="checkbox" id="settingsSymbols"> Symbols !@#</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Default New Book Encryption</div>
+        <div class="toggle-row">
+          <div class="toggle-label-group">
+            <div class="toggle-label">Encrypt new books by default</div>
+            <div class="toggle-sub">New password books will use encrypted storage unless you turn this off.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="settingsBookEncrypt">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-footer-info" id="settingsInfo">Adjust app defaults and future generation behavior.</div>
+      <button class="save-btn" id="saveSettingsBtn">Save</button>
+    </div>
+
+  </div>
+</div>
+
 <!-- New Collection Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
@@ -494,6 +597,7 @@
 
   <script src="javascript/modals/book-create.js"></script>
   <script src="javascript/modals/edit-book.js"></script>
+  <script src="javascript/modals/settings.js"></script>
 
   <script src="javascript/app.js"></script>
 
