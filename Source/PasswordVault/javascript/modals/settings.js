@@ -105,6 +105,7 @@
 			saveAppSettings(settings);
 			settingsInfo.textContent = 'Settings saved.';
 			showToast('Settings saved');
+			closeSettingsModal();
 		});
 	}
 
