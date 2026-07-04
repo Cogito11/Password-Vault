@@ -28,6 +28,10 @@
       "category": "Utility",
       "maintainer": "Cole Bishop <cdbishop2005@gmail.com>"
     },
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "PasswordVault/assets/logos/Password Vault Logo.png"
+    },
     "portable": {
       "artifactName": "PasswordVault_Portable_${version}_${os}_${arch}.${ext}"
     },
