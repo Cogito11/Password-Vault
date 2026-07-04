@@ -1838,7 +1838,7 @@ body.sidebar-collapsed .col-left { display: none; }
     width: 100%;
     max-width: none;
     border-right: none;
-    background: rgba(13,13,15,0.98);
+    background: var(--bg);
     transform: translateX(-100%);
     visibility: hidden;
     pointer-events: none;
