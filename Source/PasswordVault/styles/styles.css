@@ -94,51 +94,51 @@
 }
 
 :root[data-theme="ember"] {
-  --bg: #180a07;
-  --surface: #24110c;
-  --surface2: #2f160e;
-  --border: rgba(255, 169, 110, 0.16);
-  --border-hover: rgba(255, 169, 110, 0.22);
-  --divider: rgba(255, 169, 110, 0.20);
-  --amber: #ff9a4d;
-  --amber-dim: rgba(255, 154, 77, 0.13);
-  --amber-mid: rgba(255, 154, 77, 0.20);
-  --text: #ffe8d8;
-  --text-muted: #d19b7b;
-  --text-dim: #b77c5d;
-  --secondary-accent: #c68963;
-  --secondary-accent-strong: #ffd6b8;
-  --secondary-border: rgba(255, 169, 110, 0.16);
-  --topbar-bg: rgba(24,10,7,0.92);
-  --topbar-border: rgba(255, 169, 110, 0.18);
-  --logo-filter: hue-rotate(-18deg) saturate(1.2) brightness(1.05);
-  --success: #ff6b4a;
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1c1c1c;
+  --border: rgba(230, 40, 40, 0.20);
+  --border-hover: rgba(230, 40, 40, 0.32);
+  --divider: rgba(230, 40, 40, 0.24);
+  --amber: #e2352b;
+  --amber-dim: rgba(226, 53, 43, 0.15);
+  --amber-mid: rgba(226, 53, 43, 0.24);
+  --text: #f5f0ee;
+  --text-muted: #b0a5a3;
+  --text-dim: #7a706e;
+  --secondary-accent: #c94a3d;
+  --secondary-accent-strong: #ff5c4d;
+  --secondary-border: rgba(230, 40, 40, 0.20);
+  --topbar-bg: rgba(10,10,10,0.92);
+  --topbar-border: rgba(230, 40, 40, 0.22);
+  --logo-filter: hue-rotate(-45deg) saturate(1.6) brightness(0.85);
+  --success: #e2352b;
   --grid-overlay: none;
-  --accent-glow: radial-gradient(circle at top left, rgba(255, 123, 63, 0.24), transparent 52%);
+  --accent-glow: radial-gradient(circle at top left, rgba(226, 53, 43, 0.28), transparent 50%);
 }
 
 :root[data-theme="forest"] {
-  --bg: #07130c;
-  --surface: #102417;
-  --surface2: #173221;
-  --border: rgba(104, 183, 127, 0.16);
-  --border-hover: rgba(104, 183, 127, 0.24);
-  --divider: rgba(104, 183, 127, 0.20);
-  --amber: #57c96a;
-  --amber-dim: rgba(87, 201, 106, 0.12);
-  --amber-mid: rgba(87, 201, 106, 0.18);
-  --text: #eef9f0;
-  --text-muted: #8fb495;
-  --text-dim: #6c8b70;
-  --secondary-accent: #7da982;
-  --secondary-accent-strong: #d7f2dc;
-  --secondary-border: rgba(104, 183, 127, 0.16);
-  --topbar-bg: rgba(7,19,12,0.92);
-  --topbar-border: rgba(104, 183, 127, 0.18);
-  --logo-filter: hue-rotate(24deg) saturate(1.15) brightness(1.06);
-  --success: #62d67b;
-  --grid-overlay: linear-gradient(135deg, rgba(5, 24, 12, 0.95) 0 10%, transparent 10% 20%, rgba(10, 41, 20, 0.95) 20% 30%, transparent 30% 40%, rgba(6, 24, 12, 0.95) 40% 50%, transparent 50% 60%, rgba(10, 41, 20, 0.95) 60% 70%, transparent 70% 80%, rgba(5, 24, 12, 0.95) 80% 90%, transparent 90% 100%);
-  --accent-glow: radial-gradient(circle at top left, rgba(87, 201, 106, 0.06), transparent 64%);
+  --bg: #070d08;
+  --surface: #0e160f;
+  --surface2: #141e15;
+  --border: rgba(180, 195, 175, 0.10);
+  --border-hover: rgba(180, 195, 175, 0.18);
+  --divider: rgba(180, 195, 175, 0.14);
+  --amber: #e8e2c8;
+  --amber-dim: rgba(232, 226, 200, 0.10);
+  --amber-mid: rgba(232, 226, 200, 0.16);
+  --text: #e4e8e0;
+  --text-muted: #7e8c7a;
+  --text-dim: #566058;
+  --secondary-accent: #7e8c7a;
+  --secondary-accent-strong: #d8dcd0;
+  --secondary-border: rgba(180, 195, 175, 0.10);
+  --topbar-bg: rgba(7,13,8,0.92);
+  --topbar-border: rgba(180, 195, 175, 0.12);
+  --logo-filter: hue-rotate(85deg) saturate(.8) brightness(0.5);
+  --success: #7a9a6e;
+  --grid-overlay: none;
+  --accent-glow: radial-gradient(circle at top left, rgba(232, 226, 200, 0.10), transparent 52%);
 }
 
 :root[data-theme="midnight"] {
@@ -159,7 +159,7 @@
   --secondary-border: rgba(255,255,255,0.10);
   --topbar-bg: rgba(2,2,2,0.94);
   --topbar-border: rgba(255,255,255,0.12);
-  --logo-filter: brightness(1.06) contrast(1.04);
+  --logo-filter: saturate(0) brightness(1.1);
   --success: #d0d0d0;
   --grid-overlay: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   --accent-glow: radial-gradient(circle at top left, rgba(255,255,255,0.06), transparent 58%);
@@ -873,7 +873,7 @@ body.sidebar-collapsed .col-left { display: none; }
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  background: rgba(13,13,15,0.4);
+  background: var(--topbar-bg);;
 }
 
 .sidebar-toggle-btn {
