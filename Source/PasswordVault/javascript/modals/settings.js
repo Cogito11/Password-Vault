@@ -6,6 +6,7 @@
 	var settingsClose = document.getElementById('settingsClose');
 	var saveSettingsBtn = document.getElementById('saveSettingsBtn');
 	var settingsInfo = document.getElementById('settingsInfo');
+	var settingsVersion = document.getElementById('settingsVersion');
 	var settingsLengthInput = document.getElementById('settingsLengthInput');
 	var settingsLengthValue = document.getElementById('settingsLengthValue');
 	var settingsUpper = document.getElementById('settingsUpper');
@@ -15,7 +16,7 @@
 	var settingsBookEncrypt = document.getElementById('settingsBookEncrypt');
 	var settingsThemeSelect = document.getElementById('settingsThemeSelect');
 
-	function populateSettingsForm() {
+	async function populateSettingsForm() {
 		var settings = getAppSettings();
 		settingsLengthInput.value = settings.generatorLength;
 		if (settingsLengthValue) settingsLengthValue.textContent = settings.generatorLength;
@@ -25,6 +26,18 @@
 		settingsSymbols.checked = settings.generatorSymbols;
 		settingsBookEncrypt.checked = settings.defaultBookEncrypted;
 		settingsThemeSelect.value = 'dark';
+		if (settingsVersion) {
+			settingsVersion.textContent = 'Loading…';
+			try {
+				if (window.electronAPI && window.electronAPI.getAppVersion) {
+					settingsVersion.textContent = await window.electronAPI.getAppVersion();
+				} else {
+					settingsVersion.textContent = 'unknown';
+				}
+			} catch (err) {
+				settingsVersion.textContent = 'unknown';
+			}
+		}
 		validateSettingsForm();
 	}
 
@@ -53,10 +66,17 @@
 		};
 	}
 
-	function openSettingsModal() {
-		populateSettingsForm();
+	async function openSettingsModal() {
+		await populateSettingsForm();
 		settingsOverlay.classList.add('open');
-		setTimeout(function () { settingsLengthInput.focus(); }, 80);
+		window.scrollTo(0, 0);
+		var modalBody = settingsOverlay.querySelector('.modal-body');
+		if (modalBody) modalBody.scrollTop = 0;
+		setTimeout(function () {
+			if (settingsLengthInput) {
+				settingsLengthInput.focus({ preventScroll: true });
+			}
+		}, 80);
 	}
 
 	function closeSettingsModal() {
