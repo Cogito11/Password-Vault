@@ -25,7 +25,8 @@
 		settingsNumbers.checked = settings.generatorNumbers;
 		settingsSymbols.checked = settings.generatorSymbols;
 		settingsBookEncrypt.checked = settings.defaultBookEncrypted;
-		settingsThemeSelect.value = 'dark';
+		settingsThemeSelect.value = settings.theme || 'classic';
+		applyAppTheme(settingsThemeSelect.value || 'classic');
 		if (settingsVersion) {
 			settingsVersion.textContent = 'Loading…';
 			try {
@@ -62,7 +63,8 @@
 			generatorLower: settingsLower.checked,
 			generatorNumbers: settingsNumbers.checked,
 			generatorSymbols: settingsSymbols.checked,
-			defaultBookEncrypted: settingsBookEncrypt.checked
+			defaultBookEncrypted: settingsBookEncrypt.checked,
+			theme: settingsThemeSelect.value || 'classic'
 		};
 	}
 
@@ -113,6 +115,11 @@
 	[settingsUpper, settingsLower, settingsNumbers, settingsSymbols, settingsBookEncrypt].forEach(function (input) {
 		if (input) input.addEventListener('change', validateSettingsForm);
 	});
+	if (settingsThemeSelect) {
+		settingsThemeSelect.addEventListener('change', function () {
+			applyAppTheme(settingsThemeSelect.value || 'classic');
+		});
+	}
 
 	if (saveSettingsBtn) {
 		saveSettingsBtn.addEventListener('click', function () {
@@ -122,6 +129,7 @@
 				return;
 			}
 
+			applyAppTheme(settings.theme);
 			saveAppSettings(settings);
 			settingsInfo.textContent = 'Settings saved.';
 			showToast('Settings saved');
