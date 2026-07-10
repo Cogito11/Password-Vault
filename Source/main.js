@@ -11,7 +11,8 @@ function getIconPath() {
   switch (process.platform) {
     case 'win32': return path.join(base, 'Password Vault Logo.ico');
     case 'linux': return path.join(base, 'icons', '256x256.png');
-    default: return path.join(base, 'Password Vault Logo.icns');
+    case 'darwin': return path.join(base, 'Password Vault Logo.icns');
+    default: return path.join(base, 'Password Vault Logo.png');
   }
 }
 
