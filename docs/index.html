@@ -55,7 +55,7 @@
     <div class="hero-stats">
       <div class="hero-stat"><span class="dot dot-amber"></span>AES-256 encryption</div>
       <div class="hero-stat"><span class="dot dot-success"></span>Zero cloud dependency</div>
-      <div class="hero-stat"><span class="dot dot-dim"></span>Windows · Linux · macOS Coming Soon</div>
+      <div class="hero-stat"><span class="dot dot-success"></span>Windows · Linux · macOS</div>
     </div>
   </section>
 
@@ -346,30 +346,52 @@ Data inside the book → scrambled → vault.enc</pre>
       </div>
 
       <!-- macOS -->
-      <div class="download-card disabled" data-os="mac" aria-disabled="true">
+      <div class="download-card" data-os="mac">
 
         <div class="download-header">
           <div class="download-title">
             <span class="download-os">macOS</span>
+            <span class="recommended-label" hidden>
+              Recommended for your device
+            </span>
           </div>
         </div>
 
-        <div class="download-placeholder">
-          <h3>Coming Soon</h3>
-          <p>
-            Native Apple Silicon and Intel builds are planned for a future release.
-          </p>
-        </div>
+        <a class="download-button primary"
+          href="#"
+          data-type="installer"
+          data-pattern="mac.*\.dmg$">
+          <div class="download-button-content">
+            <span class="btn-label">.dmg Installer</span>
+            <span class="btn-description">
+              Recommended for most users
+            </span>
+            <span class="btn-sub"></span>
+          </div>
+        </a>
+
+        <a class="download-button secondary"
+          href="#"
+          data-type="portable"
+          data-pattern="mac.*\.zip$">
+          <div class="download-button-content">
+            <span class="btn-label">Zip Archive</span>
+            <span class="btn-description">
+              Unzip and run, no install needed
+            </span>
+            <span class="btn-sub"></span>
+          </div>
+        </a>
 
         <div class="download-note">
-          Follow the GitHub repository to be notified when macOS builds become available.
+          Apple Silicon (M1 and later) only — Intel Macs aren't supported yet.
         </div>
 
         <a class="download-more"
           href="https://github.com/Cogito11/Password-Vault/releases"
           target="_blank"
           rel="noopener">
-          Browse release history →
+          Browse all releases →
         </a>
 
       </div>

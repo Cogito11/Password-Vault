@@ -27,11 +27,10 @@ if ('IntersectionObserver' in window) {
 }
 
 // ===== OS detection =====
-// macOS is intentionally left out since that build isn't available yet, so there's
-// nothing to recommend even if we detect a Mac.
 function detectOS() {
   const ua = navigator.userAgent || '';
   if (/Win/i.test(ua)) return 'windows';
+  if (/Mac/i.test(ua) && !/(iPhone|iPod)/i.test(ua)) return 'mac';
   if (/Linux/i.test(ua) && !/Android/i.test(ua)) return 'linux';
   return null;
 }
@@ -129,7 +128,7 @@ fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
     
     const version = (release.tag_name || '').replace(/^v/, '');
 
-    ['windows', 'linux'].forEach((os) => {
+    ['windows', 'linux', 'mac'].forEach((os) => {
         const card = document.querySelector(`.download-card[data-os="${os}"]`);
         if (!card) return;
 
