@@ -95,7 +95,8 @@ var DEFAULT_APP_SETTINGS = {
 	generatorLower: true,
 	generatorNumbers: true,
 	generatorSymbols: true,
-	defaultBookEncrypted: false
+	defaultBookEncrypted: false,
+	theme: 'classic'
 };
 
 // All three helpers swallow errors - localStorage can be blocked by private-browsing
@@ -103,6 +104,29 @@ var DEFAULT_APP_SETTINGS = {
 function saveDefaultName(name) { try { localStorage.setItem(LS_DEFAULT_NAME, name); } catch (_) {} }
 function getDefaultName() { try { return localStorage.getItem(LS_DEFAULT_NAME); } catch (_) { return null; } }
 function clearDefaultName() { try { localStorage.removeItem(LS_DEFAULT_NAME); } catch (_) {} }
+
+function applyAppTheme(themeName) {
+	var name = (themeName || 'classic').toString().trim().toLowerCase();
+	if (!name) name = 'classic';
+	if (typeof document !== 'undefined' && document.documentElement) {
+		document.documentElement.setAttribute('data-theme', name);
+	}
+	if (typeof document !== 'undefined' && document.body) {
+		document.body.setAttribute('data-theme', name);
+	}
+}
+
+function initAppTheme() {
+	applyAppTheme(getAppSettings().theme);
+}
+
+if (typeof document !== 'undefined') {
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initAppTheme);
+	} else {
+		initAppTheme();
+	}
+}
 
 function getAppSettings() {
 	try {

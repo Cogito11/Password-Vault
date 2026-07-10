@@ -2,8 +2,12 @@ const { contextBridge, ipcRenderer, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
+const packageJsonPath = path.join(__dirname, 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
 contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => shell.openExternal(url),
+  getAppVersion: () => packageJson.version || 'unknown',
   // Config & Path exposed to the frontend
   createDefaultVault: () => ipcRenderer.invoke('create-default-vault'),
   getDefaultPath: () => ipcRenderer.invoke('get-default-path'),

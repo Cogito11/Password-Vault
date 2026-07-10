@@ -448,11 +448,11 @@
         <div class="settings-grid">
           <div class="settings-item">
             <div class="settings-item-label">Version</div>
-            <div class="settings-hint">0.9.0</div>
+            <div class="settings-hint" id="settingsVersion">Loading…</div>
           </div>
 
           <div class="settings-item">
-            <div class="settings-item-label">Maintainer</div>
+            <div class="settings-item-label">Developed By</div>
             <div class="settings-hint">Cole Bishop (@cogito11)</div>
           </div>
 
@@ -472,10 +472,15 @@
         <div class="settings-section-title">Theme</div>
         <div class="modal-field">
           <div class="modal-label">Theme Selection</div>
-          <select class="modal-input" id="settingsThemeSelect" disabled>
-            <option value="dark">Default (coming soon)</option>
+          <select class="modal-input" id="settingsThemeSelect">
+            <option value="classic">Classic</option>
+            <option value="aurora">Aurora</option>
+            <option value="ember">Ember</option>
+            <option value="forest">Forest</option>
+            <option value="midnight">Midnight</option>
+            <option value="manilla">Manilla</option>
           </select>
-          <div class="settings-hint">Theme customization is planned for a future release.</div>
+          <div class="settings-hint">Choose the look and feel for the vault interface.</div>
         </div>
       </div>
 

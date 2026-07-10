@@ -6,6 +6,7 @@
 	var settingsClose = document.getElementById('settingsClose');
 	var saveSettingsBtn = document.getElementById('saveSettingsBtn');
 	var settingsInfo = document.getElementById('settingsInfo');
+	var settingsVersion = document.getElementById('settingsVersion');
 	var settingsLengthInput = document.getElementById('settingsLengthInput');
 	var settingsLengthValue = document.getElementById('settingsLengthValue');
 	var settingsUpper = document.getElementById('settingsUpper');
@@ -15,7 +16,7 @@
 	var settingsBookEncrypt = document.getElementById('settingsBookEncrypt');
 	var settingsThemeSelect = document.getElementById('settingsThemeSelect');
 
-	function populateSettingsForm() {
+	async function populateSettingsForm() {
 		var settings = getAppSettings();
 		settingsLengthInput.value = settings.generatorLength;
 		if (settingsLengthValue) settingsLengthValue.textContent = settings.generatorLength;
@@ -24,7 +25,20 @@
 		settingsNumbers.checked = settings.generatorNumbers;
 		settingsSymbols.checked = settings.generatorSymbols;
 		settingsBookEncrypt.checked = settings.defaultBookEncrypted;
-		settingsThemeSelect.value = 'dark';
+		settingsThemeSelect.value = settings.theme || 'classic';
+		applyAppTheme(settingsThemeSelect.value || 'classic');
+		if (settingsVersion) {
+			settingsVersion.textContent = 'Loading…';
+			try {
+				if (window.electronAPI && window.electronAPI.getAppVersion) {
+					settingsVersion.textContent = await window.electronAPI.getAppVersion();
+				} else {
+					settingsVersion.textContent = 'unknown';
+				}
+			} catch (err) {
+				settingsVersion.textContent = 'unknown';
+			}
+		}
 		validateSettingsForm();
 	}
 
@@ -49,14 +63,22 @@
 			generatorLower: settingsLower.checked,
 			generatorNumbers: settingsNumbers.checked,
 			generatorSymbols: settingsSymbols.checked,
-			defaultBookEncrypted: settingsBookEncrypt.checked
+			defaultBookEncrypted: settingsBookEncrypt.checked,
+			theme: settingsThemeSelect.value || 'classic'
 		};
 	}
 
-	function openSettingsModal() {
-		populateSettingsForm();
+	async function openSettingsModal() {
+		await populateSettingsForm();
 		settingsOverlay.classList.add('open');
-		setTimeout(function () { settingsLengthInput.focus(); }, 80);
+		window.scrollTo(0, 0);
+		var modalBody = settingsOverlay.querySelector('.modal-body');
+		if (modalBody) modalBody.scrollTop = 0;
+		setTimeout(function () {
+			if (settingsLengthInput) {
+				settingsLengthInput.focus({ preventScroll: true });
+			}
+		}, 80);
 	}
 
 	function closeSettingsModal() {
@@ -93,6 +115,11 @@
 	[settingsUpper, settingsLower, settingsNumbers, settingsSymbols, settingsBookEncrypt].forEach(function (input) {
 		if (input) input.addEventListener('change', validateSettingsForm);
 	});
+	if (settingsThemeSelect) {
+		settingsThemeSelect.addEventListener('change', function () {
+			applyAppTheme(settingsThemeSelect.value || 'classic');
+		});
+	}
 
 	if (saveSettingsBtn) {
 		saveSettingsBtn.addEventListener('click', function () {
@@ -102,6 +129,7 @@
 				return;
 			}
 
+			applyAppTheme(settings.theme);
 			saveAppSettings(settings);
 			settingsInfo.textContent = 'Settings saved.';
 			showToast('Settings saved');
