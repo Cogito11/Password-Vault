@@ -30,7 +30,7 @@
     },
     "mac": {
       "target": ["dmg", "zip"],
-      "icon": "PasswordVault/assets/logos/Password Vault Logo.png"
+      "icon": "PasswordVault/assets/logos/Password Vault Logo.icns"
     },
     "portable": {
       "artifactName": "PasswordVault_Portable_${version}_${os}_${arch}.${ext}"
