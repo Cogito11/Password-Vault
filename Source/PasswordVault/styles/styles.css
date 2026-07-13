@@ -903,10 +903,13 @@ body.sidebar-collapsed .col-left { display: none; }
   padding: 0;
   transition: all 0.15s;
 }
-.sidebar-toggle-btn:hover {
-  border-color: rgba(232,162,48,0.4);
+.sidebar-toggle-btn:hover,
+.sidebar-toggle-btn:focus-visible {
+  border-color: var(--accent-strong);
   color: var(--amber);
   background: var(--amber-dim);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+  outline: none;
 }
 .sidebar-toggle-btn svg { width: 15px; height: 15px; stroke: currentColor; }
 .sidebar-close-btn { display: none; }
