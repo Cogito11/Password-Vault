@@ -4,6 +4,8 @@ A lightweight, offline-first password manager built with Electron.
 
 Password Vault stores all data locally on your computer. There are no accounts, cloud services, subscriptions, or mandatory internet connectivity. Your password data remains under your control and can be organized however you choose.
 
+🌐 **[Visit the website](https://cogito11.github.io/Password-Vault/)**
+
 The application is built around a three-level structure:
 
 - **Password Books**: top-level containers that hold your credentials and define whether data is stored as plain text or encrypted.
