@@ -15,9 +15,10 @@
 	var settingsSymbols = document.getElementById('settingsSymbols');
 	var settingsBookEncrypt = document.getElementById('settingsBookEncrypt');
 	var settingsThemeSelect = document.getElementById('settingsThemeSelect');
+	var savedSettings;
 
-	async function populateSettingsForm() {
-		var settings = getAppSettings();
+	async function populateSettingsForm(settings) {
+		settings = settings || getAppSettings();
 		settingsLengthInput.value = settings.generatorLength;
 		if (settingsLengthValue) settingsLengthValue.textContent = settings.generatorLength;
 		settingsUpper.checked = settings.generatorUpper;
@@ -69,7 +70,8 @@
 	}
 
 	async function openSettingsModal() {
-		await populateSettingsForm();
+		savedSettings = getAppSettings();
+		await populateSettingsForm(savedSettings);
 		settingsOverlay.classList.add('open');
 		window.scrollTo(0, 0);
 		var modalBody = settingsOverlay.querySelector('.modal-body');
@@ -82,6 +84,19 @@
 	}
 
 	function closeSettingsModal() {
+		// Theme changes are previewed immediately. Restore the saved preferences
+		// whenever the modal is dismissed without saving.
+		if (savedSettings) {
+			applyAppTheme(savedSettings.theme);
+			settingsLengthInput.value = savedSettings.generatorLength;
+			if (settingsLengthValue) settingsLengthValue.textContent = savedSettings.generatorLength;
+			settingsUpper.checked = savedSettings.generatorUpper;
+			settingsLower.checked = savedSettings.generatorLower;
+			settingsNumbers.checked = savedSettings.generatorNumbers;
+			settingsSymbols.checked = savedSettings.generatorSymbols;
+			settingsBookEncrypt.checked = savedSettings.defaultBookEncrypted;
+			settingsThemeSelect.value = savedSettings.theme || 'classic';
+		}
 		settingsOverlay.classList.remove('open');
 		settingsInfo.textContent = 'Adjust app defaults and future generation behavior.';
 	}
@@ -131,6 +146,7 @@
 
 			applyAppTheme(settings.theme);
 			saveAppSettings(settings);
+			savedSettings = settings;
 			settingsInfo.textContent = 'Settings saved.';
 			showToast('Settings saved');
 			closeSettingsModal();
