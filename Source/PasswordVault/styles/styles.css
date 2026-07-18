@@ -1775,7 +1775,7 @@ body.sidebar-collapsed .col-left { display: none; }
   padding: 0 20px;
   height: 38px;
   background: var(--amber-dim);
-  border-bottom: 1px solid rgba(232,162,48,0.25);
+  border-bottom: 1px solid var(--accent-soft);
   flex-shrink: 0;
   cursor: pointer;
   transition: background 0.15s;
@@ -1795,7 +1795,7 @@ body.sidebar-collapsed .col-left { display: none; }
 #resumeBannerDismiss {
   font-family: var(--mono);
   font-size: 11px;
-  color: rgba(232,162,48,0.5);
+  color: var(--text-dim);
   background: none;
   border: none;
   cursor: pointer;
