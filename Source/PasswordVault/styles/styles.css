@@ -1102,7 +1102,7 @@ body.sidebar-collapsed .col-left { display: none; }
   padding: 8px 12px; cursor: pointer; transition: all 0.13s; flex-shrink: 0;
   white-space: nowrap;
 }
-.pick-btn:hover { border-color: #4a9eff; color: #4a9eff; background: rgba(74,158,255,0.08); }
+.pick-btn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
 
 /* Toggle switch */
 .toggle-row {
@@ -1129,9 +1129,9 @@ body.sidebar-collapsed .col-left { display: none; }
 .pw-strength-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 4px; }
 
 .save-btn.blue {
-  background: rgba(74,158,255,0.10); border-color: rgba(74,158,255,0.4); color: #4a9eff;
+  background: var(--amber-dim); border-color: var(--amber); color: var(--amber);
 }
-.save-btn.blue:hover { background: rgba(74,158,255,0.20); border-color: #4a9eff; }
+.save-btn.blue:hover { background: var(--amber-mid); border-color: var(--amber); color: var(--amber); }
 
 /* ── Modal overlay ── */
 .modal-overlay {
