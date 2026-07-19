@@ -45,9 +45,16 @@ $('#unlockButton').onclick = async () => { try { await send({ type: 'unlockBook'
 $('#masterPassword').onkeydown = event => { if (event.key === 'Enter') $('#unlockButton').click(); };
 $('#backToBooks').onclick = () => loadBooks().catch(error => message(error.message));
 $('#lockButton').onclick = async () => { try { await send({ type: 'lockVault' }); await loadBooks(); } catch (error) { message(error.message); } };
-$('#addToggle').onclick = () => { $('#entryForm').hidden = !$('#entryForm').hidden; };
+$('#togglePassword').onclick = () => {
+  const input = $('#entryPassword'); const nowShowing = input.type === 'password';
+  input.type = nowShowing ? 'text' : 'password';
+  $('#togglePassword').textContent = nowShowing ? 'Hide' : 'Show';
+  $('#togglePassword').title = nowShowing ? 'Hide password' : 'Show password';
+};
+function resetPasswordVisibility() { $('#entryPassword').type = 'password'; $('#togglePassword').textContent = 'Show'; $('#togglePassword').title = 'Show password'; }
+$('#addToggle').onclick = () => { $('#entryForm').hidden = !$('#entryForm').hidden; if ($('#entryForm').hidden) resetPasswordVisibility(); };
 $('#generate').onclick = async () => { try { $('#entryPassword').value = (await send({ type: 'generatePassword', length: 20 })).password; } catch (error) { message(error.message); } };
 $('#searchPasswords').oninput = renderBook;
 $('#fillFirst').onclick = () => { const entry = bookEntries.find(item => item.origin === new URL(activeTab.url).origin); if (entry) fillEntry(entry.id); };
-$('#entryForm').onsubmit = async event => { event.preventDefault(); try { await send({ type: 'saveEntries', entry: { name: $('#entryName').value, origin: $('#entryUrl').value, username: $('#entryUsername').value, password: $('#entryPassword').value } }); event.target.reset(); $('#entryUrl').value = new URL(activeTab.url).origin; $('#entryForm').hidden = true; message('Login saved.'); await loadBook(); } catch (error) { message(error.message); } };
+$('#entryForm').onsubmit = async event => { event.preventDefault(); try { await send({ type: 'saveEntries', entry: { name: $('#entryName').value, origin: $('#entryUrl').value, username: $('#entryUsername').value, password: $('#entryPassword').value } }); event.target.reset(); $('#entryUrl').value = new URL(activeTab.url).origin; $('#entryForm').hidden = true; resetPasswordVisibility(); message('Login saved.'); await loadBook(); } catch (error) { message(error.message); } };
 (async () => { try { await currentTab(); await loadBooks(); } catch (error) { message(error.message); } })();
