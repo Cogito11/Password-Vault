@@ -16,6 +16,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
+    "release": "electron-builder --publish always",
     "test": "node --test tests/*.test.js"
   },
   "build": {
