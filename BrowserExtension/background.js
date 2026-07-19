@@ -69,7 +69,16 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       if (!entry) throw new Error('Refresh the extension and choose a login again.');
       const tabId = message.tabId || (sender.tab && sender.tab.id);
       if (!tabId) throw new Error('Open a website tab before filling a login.');
-      const fillResult = await chrome.tabs.sendMessage(tabId, { type: 'fillFields', entry });
+      let fillResult;
+      try {
+        fillResult = await chrome.tabs.sendMessage(tabId, { type: 'fillFields', entry });
+      } catch (error) {
+        // Chrome throws "Could not establish connection. Receiving end does not exist."
+        // when the content script isn't present on this tab — e.g. a chrome:// page,
+        // the new-tab page, a PDF viewer, or a tab left open from before the extension
+        // was installed or reloaded.
+        throw new Error('Can\u2019t fill this page. Try reloading the page, or make sure it\u2019s a regular website tab.');
+      }
       if (!fillResult || !fillResult.ok) throw new Error(fillResult && fillResult.error || 'Could not fill this page.');
       return respond({ ok: true });
     }
