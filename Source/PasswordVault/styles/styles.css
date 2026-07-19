@@ -65,8 +65,6 @@
   --topbar-border: rgba(255,255,255,0.12);
   --logo-filter: none;
   --success: #52c07a;
-  --grid-overlay: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  --accent-glow: none;
   --sans: 'Syne', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 }
@@ -93,8 +91,6 @@
   --topbar-border: rgba(128, 198, 255, 0.18);
   --logo-filter: hue-rotate(180deg) saturate(1.1) brightness(1.05);
   --success: #4fd6a0;
-  --grid-overlay: none;
-  --accent-glow: radial-gradient(circle at top left, rgba(92, 181, 255, 0.24), transparent 50%);
 }
 
 :root[data-theme="ember"] {
@@ -119,8 +115,6 @@
   --topbar-border: rgba(230, 40, 40, 0.22);
   --logo-filter: hue-rotate(-45deg) saturate(1.6) brightness(0.85);
   --success: #e2352b;
-  --grid-overlay: none;
-  --accent-glow: radial-gradient(circle at top left, rgba(226, 53, 43, 0.28), transparent 50%);
 }
 
 :root[data-theme="forest"] {
@@ -145,8 +139,6 @@
   --topbar-border: rgba(180, 195, 175, 0.12);
   --logo-filter: hue-rotate(85deg) saturate(.8) brightness(0.5);
   --success: #7a9a6e;
-  --grid-overlay: none;
-  --accent-glow: radial-gradient(circle at top left, rgba(232, 226, 200, 0.10), transparent 52%);
 }
 
 :root[data-theme="midnight"] {
@@ -171,8 +163,6 @@
   --topbar-border: rgba(255,255,255,0.12);
   --logo-filter: saturate(0) brightness(1.1);
   --success: #d0d0d0;
-  --grid-overlay: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  --accent-glow: radial-gradient(circle at top left, rgba(255,255,255,0.06), transparent 58%);
 }
 
 :root[data-theme="manilla"] {
@@ -197,8 +187,6 @@
   --topbar-border: rgba(115, 85, 39, 0.16);
   --logo-filter: sepia(0.2) saturate(0.9) brightness(0.95);
   --success: #4f8b49;
-  --grid-overlay: linear-gradient(rgba(115,85,39,0.06) 0 1px, transparent 1px), linear-gradient(90deg, rgba(115,85,39,0.02) 0 100%, transparent 100%);
-  --accent-glow: radial-gradient(circle at top left, rgba(164, 109, 33, 0.08), transparent 58%);
 }
 
 body {
@@ -212,27 +200,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-color: var(--bg);
-  background-image: var(--grid-overlay);
-  background-size: 52px 52px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--accent-glow);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.85;
 }
 
 .topbar {
@@ -1135,7 +1102,7 @@ body.sidebar-collapsed .col-left { display: none; }
   padding: 8px 12px; cursor: pointer; transition: all 0.13s; flex-shrink: 0;
   white-space: nowrap;
 }
-.pick-btn:hover { border-color: #4a9eff; color: #4a9eff; background: rgba(74,158,255,0.08); }
+.pick-btn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
 
 /* Toggle switch */
 .toggle-row {
@@ -1162,9 +1129,9 @@ body.sidebar-collapsed .col-left { display: none; }
 .pw-strength-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 4px; }
 
 .save-btn.blue {
-  background: rgba(74,158,255,0.10); border-color: rgba(74,158,255,0.4); color: #4a9eff;
+  background: var(--amber-dim); border-color: var(--amber); color: var(--amber);
 }
-.save-btn.blue:hover { background: rgba(74,158,255,0.20); border-color: #4a9eff; }
+.save-btn.blue:hover { background: var(--amber-mid); border-color: var(--amber); color: var(--amber); }
 
 /* ── Modal overlay ── */
 .modal-overlay {
@@ -1775,7 +1742,7 @@ body.sidebar-collapsed .col-left { display: none; }
   padding: 0 20px;
   height: 38px;
   background: var(--amber-dim);
-  border-bottom: 1px solid rgba(232,162,48,0.25);
+  border-bottom: 1px solid var(--accent-soft);
   flex-shrink: 0;
   cursor: pointer;
   transition: background 0.15s;
@@ -1795,7 +1762,7 @@ body.sidebar-collapsed .col-left { display: none; }
 #resumeBannerDismiss {
   font-family: var(--mono);
   font-size: 11px;
-  color: rgba(232,162,48,0.5);
+  color: var(--text-dim);
   background: none;
   border: none;
   cursor: pointer;

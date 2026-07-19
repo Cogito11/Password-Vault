@@ -21,7 +21,7 @@ function openModal() {
 	entryCountLbl.textContent = '0 added';
 	saveCollBtn.disabled = false;
 	saveCollBtn.textContent = 'Save File';
-	modalInfo.textContent = 'Name the collection and optionally add entries.';
+	modalInfo.textContent = 'Name the collection and optionally add passwords.';
 	
 	document.getElementById('collModalTitle').textContent = 'New Collection';
 	document.querySelector('#modalOverlay .modal-field').style.display = '';
@@ -45,9 +45,9 @@ function openEntryModal() {
 	entryCountLbl.textContent = '0 added';
 	saveCollBtn.disabled = true;
 	saveCollBtn.textContent = 'Add to Collection';
-	modalInfo.textContent = 'Add entries then save to the collection file.';
+	modalInfo.textContent = 'Add passwords then save to the collection file.';
 	
-	document.getElementById('collModalTitle').textContent = 'New Entry \u2014 ' + activeFile.replace(/\.txt$/i, '');
+	document.getElementById('collModalTitle').textContent = 'New Password \u2014 ' + activeFile.replace(/\.txt$/i, '');
 	document.querySelector('#modalOverlay .modal-field').style.display = 'none';
 	
 	addDefaultAttrRows();
@@ -198,7 +198,7 @@ function updateSaveBtn() {
 	var ready = entryModalMode === 'entry' ? modalEntryList.length > 0 : !!collNameInput.value.trim();
 
 	saveCollBtn.disabled = !ready;
-	modalInfo.textContent = modalEntryList.length + ' entr' + (modalEntryList.length === 1 ? 'y' : 'ies') + ' ready.';
+	modalInfo.textContent = modalEntryList.length + ' password' + (modalEntryList.length === 1 ? '' : 's') + ' ready.';
 }
 
 collNameInput.addEventListener('input', updateSaveBtn);

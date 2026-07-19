@@ -26,7 +26,7 @@ function openAllCollections(btn) {
 
 	// Update UI
 	panelTitle.textContent = 'All Passwords';
-	panelCount.textContent = allEntries.length + ' entries';
+	panelCount.textContent = allEntries.length + ' password' + (allEntries.length === 1 ? '' : 's');
 
 	// Reset search field
 	searchInput.value = '';
@@ -77,7 +77,7 @@ function openCollection(filename, btn) {
 	setSelectedCollectionLabel(displayName);
 
 	// Show number of entries
-	panelCount.textContent = entries.length + ' entries';
+	panelCount.textContent = entries.length + ' password' + (entries.length === 1 ? '' : 's');
 
 	// Reset search input
 	searchInput.value = '';

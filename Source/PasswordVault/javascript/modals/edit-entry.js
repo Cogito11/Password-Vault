@@ -122,7 +122,7 @@ saveEditBtn.addEventListener('click', async function () {
     if (sideBtn) sideBtn.querySelector('.coll-n').textContent = collections[editingCollName].length + ' password' + (collections[editingCollName].length !== 1 ? 's' : '');
     
     editModalOverlay.classList.remove('open');
-    showToast('Entry updated');
+	showToast('Password updated');
 
     // Re-render passwords
     refreshActiveView();
@@ -148,7 +148,7 @@ async function deleteEntry(idx, collName) {
   if (!entry) return;
 
   var confirmed = await showConfirm(
-    'Delete Entry',
+		'Delete Password',
     'Delete "' + entry.name + '"?\n\nThis cannot be undone.'
   );
   if (!confirmed) return;

@@ -1,7 +1,7 @@
 {
   "name": "password-vault",
   "productName": "Password Vault",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "homepage": "https://cogito11.github.io/Password-Vault/",
   "author": {
     "name": "Cole Bishop",
@@ -15,6 +15,11 @@
     "test": "node --test tests/*.test.js"
   },
   "build": {
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "appId": "com.bishop.passwordvault.app",
     "artifactName": "PasswordVault_Setup_${version}_${os}_${arch}.${ext}",
     "asar": true,
