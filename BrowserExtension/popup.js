@@ -1,4 +1,7 @@
 const $ = selector => document.querySelector(selector);
+$('#logoImage').addEventListener('error', () => {
+  $('#logoImage').replaceWith(Object.assign(document.createElement('span'), { className: 'mark-fallback', textContent: 'PV' }));
+}, { once: true });
 let activeTab; let selectedBook; let bookEntries = [];
 function send(message) { return chrome.runtime.sendMessage(message).then(response => { if (!response || !response.ok) throw new Error(response && response.error || 'Request failed.'); return response; }); }
 function message(text) { $('#message').textContent = text; }
