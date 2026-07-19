@@ -3,6 +3,10 @@
   "productName": "Password Vault",
   "version": "1.2.0",
   "homepage": "https://cogito11.github.io/Password-Vault/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cogito11/Password-Vault.git"
+  },
   "author": {
     "name": "Cole Bishop",
     "email": "cdbishop2005@gmail.com"
