@@ -199,7 +199,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 5v14M5 12h14"/>
           </svg>
-          New Entry
+          New Password
         </button>
 
         <div class="search-wrap">
@@ -264,11 +264,11 @@
   </div>
 </div>
 
-<!-- Edit Entry Modal -->
+<!-- Edit Password Modal -->
 <div class="modal-overlay" id="editModalOverlay">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-head-title">Edit Entry</div>
+      <div class="modal-head-title">Edit Password</div>
       <button class="modal-close" id="editModalClose">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
@@ -277,7 +277,7 @@
     <div class="modal-body">
 
       <div class="modal-field">
-        <div class="modal-label">Entry Name</div>
+        <div class="modal-label">Password Name</div>
         <input class="modal-input" id="editEntryName" type="text" placeholder="e.g. Gmail, Netflix…">
       </div>
 
@@ -549,21 +549,21 @@
       </div>
 
       <div class="modal-field">
-        <div class="modal-label">Entries &nbsp;<span id="entryCountLabel" style="color:var(--text-muted);font-size:9px;">0 added</span></div>
+        <div class="modal-label">Passwords &nbsp;<span id="entryCountLabel" style="color:var(--text-muted);font-size:9px;">0 added</span></div>
         <div class="modal-entries" id="modalEntries"></div>
       </div>
 
       <div class="entry-builder">
-        <div class="entry-builder-title">Add Entry</div>
+        <div class="entry-builder-title">Add Password</div>
         <div class="modal-field">
-          <div class="modal-label">Entry Name</div>
+          <div class="modal-label">Password Name</div>
           <input class="modal-input" id="entryNameInput" type="text" placeholder="e.g. Gmail, Netflix…">
         </div>
 
         <div id="attrRows" style="display:flex;flex-direction:column;gap:8px;"></div>
         <div class="builder-actions">
           <button class="mini-btn" id="addAttrBtn">+ Add Attribute</button>
-          <button class="mini-btn primary" id="addEntryBtn">Add Entry</button>
+          <button class="mini-btn primary" id="addEntryBtn">Add Password</button>
         </div>
 
       </div>
@@ -571,7 +571,7 @@
     </div>
 
     <div class="modal-footer">
-      <div class="modal-footer-info" id="modalInfo">Name the collection and optionally add entries.</div>
+      <div class="modal-footer-info" id="modalInfo">Name the collection and optionally add passwords.</div>
       <button class="save-btn" id="saveCollBtn" disabled>Save File</button>
     </div>
 

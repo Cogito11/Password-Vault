@@ -162,14 +162,14 @@ function renderPasswords(overrideEntries) {
 	}
 
 	// Update panel count
-	panelCount.textContent = entries.length + ' entries';
+	panelCount.textContent = entries.length + ' password' + (entries.length === 1 ? '' : 's');
 
 	// Clear previous results
 	pwList.innerHTML = '';
 
 	// Empty state
 	if (!entries.length) {
-		pwList.innerHTML = '<div class="no-results">No entries found.</div>';
+		pwList.innerHTML = '<div class="no-results">No passwords found.</div>';
 		return;
 	}
 

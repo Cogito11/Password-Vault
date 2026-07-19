@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Password Vault",
+  "version": "1.0.2",
+  "description": "A local, encrypted password vault with page autofill.",
+  "permissions": ["nativeMessaging", "activeTab", "tabs"],
+  "action": {
+    "default_title": "Password Vault",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -64,10 +64,10 @@ async function saveNewEntries() {
 		closeModal();
 
 		// Show success feedback
-		showToast(modalEntryList.length + ' entr' + (modalEntryList.length === 1 ? 'y' : 'ies') + ' added');
+		showToast(modalEntryList.length + ' password' + (modalEntryList.length === 1 ? '' : 's') + ' added');
 		
 		// Update main panel entry count
-		panelCount.textContent = combined.length + ' entries';
+		panelCount.textContent = combined.length + ' password' + (combined.length === 1 ? '' : 's');
 		
 		// Re-render visible entries in UI
 		renderPasswords();
