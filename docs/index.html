@@ -28,6 +28,7 @@
       <a href="#organized">Organization</a>
       <a href="#storage">Storage</a>
       <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
       <a href="#download" class="topnav-cta">Download</a>
       <a href="https://github.com/Cogito11/Password-Vault" class="topnav-gh" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-1.94c-3.2.7-3.87-1.36-3.87-1.36-.53-1.33-1.29-1.69-1.29-1.69-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.4-5.25 5.68.42.36.78 1.07.78 2.16v3.2c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
@@ -45,7 +46,7 @@
     </div>
     <div class="eyebrow">OFFLINE-FIRST · LOCAL ONLY · NO ACCOUNTS</div>
     <h1>Your passwords, <span class="amber">you in control</span></h1>
-    <p class="hero-sub">Password Vault is a desktop app for storing and organizing credentials without ever touching the cloud. Group them into books, split each book into collections, and decide per book whether it's saved as plain text or encrypted.</p>
+    <p class="hero-sub">Password Vault is a desktop app for storing and organizing your passwords without ever touching the cloud. Take advantage of in depth organization features and easy encrytion all completely locally on your device.</p>
     <div class="hero-actions">
       <a href="#download" class="btn btn-primary">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -57,6 +58,38 @@
       <div class="hero-stat"><span class="dot dot-amber"></span>AES-256 encryption</div>
       <div class="hero-stat"><span class="dot dot-success"></span>Zero cloud dependency</div>
       <div class="hero-stat"><span class="dot dot-success"></span>Windows · Linux · macOS</div>
+    </div>
+  </section>
+
+  <!-- ================= WHY (intro) ================= -->
+  <section class="section" id="why">
+    <div class="section-head">
+      <div class="eyebrow">Our Goal</div>
+      <h2>Why Password Vault</h2>
+    </div>
+    <p class="why-lede">Almost everything online asks you to create an account, and every account is one more password to remember or lose track of. Most people wind up reusing the same few passwords, or scattering them across sticky notes and half-remembered variations. Password Vault keeps them all in one place instead: a folder on your own computer, organized into books and collections as you see fit, encrypted where you choose, and never handed off to anyone else.</p>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <span class="why-num">01</span>
+        <h3>Your data stays with you</h3>
+        <p>Your passwords live in a folder on your own computer, not on someone else's servers. No account, subscription, or internet connection required.</p>
+      </div>
+      <div class="why-card">
+        <span class="why-num">02</span>
+        <h3>Organize your way</h3>
+        <p>Separate your passwords into books and collections so work, personal, finance, and everything else stay easy to find and manage.</p>
+      </div>
+      <div class="why-card">
+        <span class="why-num">03</span>
+        <h3>Encryption where it counts</h3>
+        <p>Encrypt the books that contain sensitive information while leaving others as readable files. Every book has its own storage and security settings.</p>
+      </div>
+      <div class="why-card">
+        <span class="why-num">04</span>
+        <h3>Simple, portable storage</h3>
+        <p>Your vault is a normal folder you can move, copy, back up, or sync however you like. No proprietary database and no vendor lock-in.</p>
+      </div>
     </div>
   </section>
 
@@ -189,7 +222,7 @@ Data inside the book → scrambled → vault.enc</pre>
       <div class="feature-card">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="22" y1="12" x2="2" y2="12"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>
         <h3>Offline first design</h3>
-        <p>Password Vault makes no network calls. Every book, collection, and entry lives on your own disk, nothing is synced, uploaded, or phoned home.</p>
+        <p>Password Vault never connects to the internet. Every book, collection, and entry lives on your own disk, nothing is synced, uploaded, or phoned home.</p>
       </div>
 
       <div class="feature-card">
@@ -226,12 +259,84 @@ Data inside the book → scrambled → vault.enc</pre>
       <h2>Security notes</h2>
     </div>
     <ul class="notes-list">
-      <li><strong>Fully offline.</strong> The app makes no network calls. Nothing about your vault ever leaves your machine.</li>
+      <li><strong>Fully offline.</strong> The app never connects to the internet. Nothing about your vault ever leaves your machine.</li>
       <li><strong>Memory-only keys.</strong> Decryption keys exist only for the length of a session and are wiped the moment a book is relocked.</li>
       <li><strong>Plain text means plain text.</strong> Unencrypted books rely entirely on your filesystem permissions for access. Use encrypted books for anything sensitive.</li>
       <li><strong>Clipboard isn't auto-cleared.</strong> Copied values stay on your clipboard until you clear it or copy something else.</li>
       <li><strong>Not independently audited.</strong> This is a personal tool, built and shared in the open; not a commercial product with a security team behind it.</li>
     </ul>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section" id="faq">
+    <div class="section-head">
+      <div class="eyebrow">Questions</div>
+      <h2>Common questions</h2>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Does any of my data leave my computer?
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+          <p>No. Password Vault never connects to the internet or sends any data anywhere. Every book, collection, and entry stays on your own disk, the whole time.</p>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What's the difference between a plain text and an encrypted book?
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+          <p>A plain text book stores each collection as a readable <code>.txt</code> file. Open it in any editor, no password needed, but it lacks any protection beyond your file system permissions. An encrypted book scrambles everything into one <code>vault.enc</code> file with AES-256, unreadable without the book's password.</p>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Can I point it at a folder of passwords I already have?
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+          <p>Yes, "Open Folder" works with any existing folder. If it already contains books and collections in the format Password Vault expects, they'll show up immediately; otherwise you can create a new book right there and build it out.</p>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          What happens if I forget an encrypted book's password?
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+          <p>There is no recovery option if you forget the password to unlock a book. Password Vault never stores your password anywhere, and nothing is sent to a server that could reset it for you. The book's password is the only key, so it's worth keeping a copy somewhere safe.</p>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Does it need an internet connection to work?
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+          <p>No. Password Vault is fully functional offline. Opening, unlocking, editing, generating passwords, and searching all happen locally, with no internet connection required at any point.</p>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question">
+          Which platforms are supported?
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+          <p>Windows and Linux both have installer and portable builds available. macOS support (Apple Silicon only, for now) is available as a .dmg or zip archive. See the Download section below for details on each platform.</p>
+        </div></div>
+      </div>
+
+    </div>
   </section>
 
   <!-- ================= DOWNLOAD ================= -->
@@ -385,7 +490,7 @@ Data inside the book → scrambled → vault.enc</pre>
         </a>
 
         <div class="download-note">
-          Apple Silicon (M1 and later) only — Intel Macs aren't supported yet.
+          Apple Silicon (M1 and later) only. Intel Macs aren't supported yet.
         </div>
 
         <a class="download-more"

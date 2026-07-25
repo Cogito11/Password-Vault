@@ -1,3 +1,11 @@
+// ===== FAQ accordion =====
+document.querySelectorAll('.faq-question').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    if (item) item.classList.toggle('open');
+  });
+});
+
 // ===== Tree disclosure (organization demo) =====
 document.querySelectorAll('.tree-toggle').forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -136,5 +144,5 @@ fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
     });
   })
   .catch(() => {
-    if (metaEl) metaEl.textContent = 'No published release yet — build it from source below, or check back soon.';
+    if (metaEl) metaEl.textContent = 'No published release yet, build it from source below, or check back soon.';
   });
