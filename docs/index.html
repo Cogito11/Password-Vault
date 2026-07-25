@@ -6,11 +6,22 @@
 <title>Password Vault</title>
 <meta name="description" content="Password Vault is an offline-first desktop password manager. Organize credentials into books and collections, store them as plain text or AES-256-GCM encrypted, and keep everything on your own disk.">
 
+<meta property="og:type" content="website">
+<meta property="og:title" content="Password Vault: Offline-first password manager">
+<meta property="og:description" content="Organize your passwords into books and collections, store them as plain text or AES-256 encrypted, and keep everything on your own disk. No accounts, no cloud.">
+<meta property="og:image" content="password-vault-logo.svg">
+<meta property="og:url" content="https://github.com/Cogito11/Password-Vault">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Password Vault: Offline-first password manager">
+<meta name="twitter:description" content="Organize your passwords into books and collections, store them as plain text or AES-256 encrypted, and keep everything on your own disk. No accounts, no cloud.">
+<meta name="twitter:image" content="password-vault-logo.svg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
 
-<link rel="icon" type="image/png" href="Password Vault Logo.svg">
+<link rel="icon" type="image/svg+xml" href="password-vault-logo.svg">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -277,61 +288,61 @@ Data inside the book → scrambled → vault.enc</pre>
     <div class="faq-list">
 
       <div class="faq-item">
-        <button class="faq-question">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-1" id="faq-question-1">
           Does any of my data leave my computer?
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+        <div class="faq-answer-wrap" id="faq-answer-1" role="region" aria-labelledby="faq-question-1"><div class="faq-answer-inner">
           <p>No. Password Vault never connects to the internet or sends any data anywhere. Every book, collection, and entry stays on your own disk, the whole time.</p>
         </div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-question">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-2" id="faq-question-2">
           What's the difference between a plain text and an encrypted book?
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+        <div class="faq-answer-wrap" id="faq-answer-2" role="region" aria-labelledby="faq-question-2"><div class="faq-answer-inner">
           <p>A plain text book stores each collection as a readable <code>.txt</code> file. Open it in any editor, no password needed, but it lacks any protection beyond your file system permissions. An encrypted book scrambles everything into one <code>vault.enc</code> file with AES-256, unreadable without the book's password.</p>
         </div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-question">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-3" id="faq-question-3">
           Can I point it at a folder of passwords I already have?
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+        <div class="faq-answer-wrap" id="faq-answer-3" role="region" aria-labelledby="faq-question-3"><div class="faq-answer-inner">
           <p>Yes, "Open Folder" works with any existing folder. If it already contains books and collections in the format Password Vault expects, they'll show up immediately; otherwise you can create a new book right there and build it out.</p>
         </div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-question">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-4" id="faq-question-4">
           What happens if I forget an encrypted book's password?
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+        <div class="faq-answer-wrap" id="faq-answer-4" role="region" aria-labelledby="faq-question-4"><div class="faq-answer-inner">
           <p>There is no recovery option if you forget the password to unlock a book. Password Vault never stores your password anywhere, and nothing is sent to a server that could reset it for you. The book's password is the only key, so it's worth keeping a copy somewhere safe.</p>
         </div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-question">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-5" id="faq-question-5">
           Does it need an internet connection to work?
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+        <div class="faq-answer-wrap" id="faq-answer-5" role="region" aria-labelledby="faq-question-5"><div class="faq-answer-inner">
           <p>No. Password Vault is fully functional offline. Opening, unlocking, editing, generating passwords, and searching all happen locally, with no internet connection required at any point.</p>
         </div></div>
       </div>
 
       <div class="faq-item">
-        <button class="faq-question">
+        <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-6" id="faq-question-6">
           Which platforms are supported?
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <div class="faq-answer-wrap"><div class="faq-answer-inner">
+        <div class="faq-answer-wrap" id="faq-answer-6" role="region" aria-labelledby="faq-question-6"><div class="faq-answer-inner">
           <p>Windows and Linux both have installer and portable builds available. macOS support (Apple Silicon only, for now) is available as a .dmg or zip archive. See the Download section below for details on each platform.</p>
         </div></div>
       </div>

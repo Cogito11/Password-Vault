@@ -2,7 +2,9 @@
 document.querySelectorAll('.faq-question').forEach((btn) => {
   btn.addEventListener('click', () => {
     const item = btn.closest('.faq-item');
-    if (item) item.classList.toggle('open');
+    if (!item) return;
+    const isOpen = item.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(isOpen));
   });
 });
 
@@ -122,7 +124,21 @@ function setDownloadButtons(card, releaseAssets, version) {
 
 fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
   .then((res) => {
-    if (!res.ok) throw new Error('No releases yet');
+    if (res.status === 404) {
+      const err = new Error('No releases published yet');
+      err.type = 'no-release';
+      throw err;
+    }
+    if (res.status === 403 || res.status === 429) {
+      const err = new Error(`GitHub API rate limit hit (status ${res.status})`);
+      err.type = 'rate-limited';
+      throw err;
+    }
+    if (!res.ok) {
+      const err = new Error(`GitHub API returned status ${res.status}`);
+      err.type = 'api-error';
+      throw err;
+    }
     return res.json();
   })
   .then((release) => {
@@ -143,6 +159,22 @@ fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
         setDownloadButtons(card, assets, version);
     });
   })
-  .catch(() => {
-    if (metaEl) metaEl.textContent = 'No published release yet, build it from source below, or check back soon.';
+  .catch((err) => {
+    console.error('Failed to load latest release:', err);
+
+    if (!metaEl) return;
+
+    // A genuine network failure (offline, DNS, CORS, blocked request) throws
+    // a TypeError from fetch itself rather than reaching the .then() above.
+    const isNetworkError = err instanceof TypeError;
+
+    if (isNetworkError) {
+      metaEl.textContent = "Couldn't reach GitHub, check your connection and refresh, or build from source below.";
+    } else if (err.type === 'rate-limited') {
+      metaEl.textContent = 'GitHub is rate-limiting requests right now, try refreshing shortly, or build from source below.';
+    } else if (err.type === 'no-release') {
+      metaEl.textContent = 'No published release yet, build it from source below, or check back soon.';
+    } else {
+      metaEl.textContent = 'Could not load release info, build it from source below, or check back soon.';
+    }
   });
