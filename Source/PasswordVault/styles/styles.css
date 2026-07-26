@@ -994,6 +994,9 @@ body.sidebar-collapsed .col-left { display: none; }
   color: var(--text-dim);
   width: 80px;
   flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pw-attr-val {

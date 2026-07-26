@@ -272,7 +272,7 @@ function renderPasswords(overrideEntries) {
 			
 			// Final attribute row
 			return '<div class="pw-attr">' +
-				'<span class="pw-attr-key">' + esc(attr.key) + '</span>' +
+				'<span class="pw-attr-key" title="' + esc(attr.key) + '">' + esc(attr.key) + '</span>' +
 				valSpan +
 				'<div class="pw-attr-actions">' + showBtn +
 					'<button class="act-btn" data-val="' + safeVal + '" onclick="copyVal(this)">COPY</button>' +
