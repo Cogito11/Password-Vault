@@ -1,6 +1,10 @@
 // MODALS / BOOK-CREATE - new password book modal
 // Handles name entry, location picking, optional encryption, and creation.
 
+// Show/Hide toggle for password fields
+wirePwToggle(bookPw);
+wirePwToggle(bookPwConfirm);
+
 // Open
 
 newBookBtn.addEventListener('click', async function () {

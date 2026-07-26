@@ -72,6 +72,7 @@
 	async function openSettingsModal() {
 		savedSettings = getAppSettings();
 		await populateSettingsForm(savedSettings);
+		if (typeof populateCsvImportBookOptions === 'function') populateCsvImportBookOptions();
 		settingsOverlay.classList.add('open');
 		window.scrollTo(0, 0);
 		var modalBody = settingsOverlay.querySelector('.modal-body');

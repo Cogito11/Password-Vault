@@ -1,6 +1,9 @@
 // MODALS / UNLOCK - vault unlock modal
 // Handles both single-book and multi-book unlock flows.
 
+// Show/Hide toggle for the password field
+wirePwToggle(vaultUnlockPw);
+
 // Open the vault-unlock modal, pre-filling the book name label.
 function openVaultUnlockModal(bookName) {
 	// bookName is null in single-book mode
