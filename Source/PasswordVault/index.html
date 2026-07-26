@@ -518,6 +518,23 @@
           </label>
         </div>
       </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Import from CSV</div>
+        <div class="settings-info-description">Import saved passwords exported from another browser (Chrome, Edge, and others) as a CSV file. Expected columns: name, url, username, password, note.</div>
+
+        <div class="modal-field">
+          <div class="modal-label">Import To</div>
+          <div class="location-row">
+            <select class="modal-input" id="csvImportBookSelect"></select>
+            <button class="pick-btn" id="csvImportBtn">Import</button>
+          </div>
+        </div>
+
+        <input type="file" id="csvImportFileInput" accept=".csv,text/csv" style="display:none;">
+
+        <div class="settings-hint" id="csvImportInfo"></div>
+      </div>
     </div>
 
     <div class="modal-footer">
@@ -597,6 +614,7 @@
 
   <script src="javascript/confirm.js"></script>
   <script src="javascript/vault/entries.js"></script>
+  <script src="javascript/vault/import.js"></script>
 
   <script src="javascript/modals/unlock.js"></script>
   <script src="javascript/modals/collection.js"></script>
