@@ -105,6 +105,7 @@ function wireEditBookListeners(isEnc, isUnlocked) {
 
 		if (newPwEl) 
 		{
+			wirePwToggle(newPwEl);
 			newPwEl.addEventListener('input', function () {
 				updatePwStrength(this.value, strBar, strLabel);
 				validateEditBook();
@@ -112,7 +113,7 @@ function wireEditBookListeners(isEnc, isUnlocked) {
 		}
 
 		var conf = document.getElementById('ebNewPwConfirm');
-		if (conf) conf.addEventListener('input', validateEditBook);
+		if (conf) { wirePwToggle(conf); conf.addEventListener('input', validateEditBook); }
 
 		var decBtn = document.getElementById('ebDecryptBtn');
 
@@ -149,13 +150,16 @@ function wireEditBookListeners(isEnc, isUnlocked) {
 		var encStrBar = document.getElementById('ebEncPwStrBar');
 		var encStrLbl = document.getElementById('ebEncPwStrLabel');
 
-		if (encPwEl) encPwEl.addEventListener('input', function () {
-			updatePwStrength(this.value, encStrBar, encStrLbl);
-			validateEditBook();
-		});
+		if (encPwEl) {
+			wirePwToggle(encPwEl);
+			encPwEl.addEventListener('input', function () {
+				updatePwStrength(this.value, encStrBar, encStrLbl);
+				validateEditBook();
+			});
+		}
 
 		var encConf = document.getElementById('ebEncPwConfirm');
-		if (encConf) encConf.addEventListener('input', validateEditBook);
+		if (encConf) { wirePwToggle(encConf); encConf.addEventListener('input', validateEditBook); }
 	}
 }
 
