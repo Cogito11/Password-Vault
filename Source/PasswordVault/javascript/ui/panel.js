@@ -7,6 +7,9 @@
 // ═══════════════════════════════
 
 // Attach a SHOW/HIDE eye-icon toggle to a <input type="password"> field.
+// Styled to match the app's existing icon-button convention: dim by
+// default (like .book-lock's opacity: 0.45) and brightening to amber on
+// hover/active (like .book-action-btn / .book-relock-btn).
 // @param {HTMLInputElement} input
 // WHAT THIS DOES:
 // - Wraps the input so an icon button can sit inside its right edge
@@ -24,7 +27,7 @@ function wirePwToggle(input) {
 	wrap.style.position = 'relative';
 	input.parentNode.insertBefore(wrap, input);
 	wrap.appendChild(input);
-	input.style.paddingRight = '38px';
+	input.style.paddingRight = '36px';
 
 	var btn = document.createElement('button');
 	btn.type = 'button';
@@ -33,16 +36,28 @@ function wirePwToggle(input) {
 	btn.setAttribute('aria-label', 'Show password');
 	btn.tabIndex = -1;
 	btn.style.cssText =
-		'position:absolute;right:4px;top:50%;transform:translateY(-50%);' +
-		'width:28px;height:28px;display:flex;align-items:center;justify-content:center;' +
-		'background:transparent;border:none;cursor:pointer;color:var(--text-dim);padding:0;';
+		'position:absolute;right:5px;top:50%;transform:translateY(-50%);' +
+		'width:26px;height:26px;display:flex;align-items:center;justify-content:center;' +
+		'border:none;border-radius:4px;background:transparent;' +
+		'cursor:pointer;color:var(--text-dim);opacity:0.6;padding:0;transition:all 0.13s;';
+
+	btn.addEventListener('mouseenter', function () {
+		btn.style.opacity = '1';
+		btn.style.color = 'var(--amber)';
+		btn.style.background = 'var(--amber-dim)';
+	});
+	btn.addEventListener('mouseleave', function () {
+		btn.style.opacity = '0.6';
+		btn.style.color = 'var(--text-dim)';
+		btn.style.background = 'transparent';
+	});
 
 	var eyeSvg =
-		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' +
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;">' +
 		'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>';
 
 	var eyeOffSvg =
-		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">' +
+		'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;">' +
 		'<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 4.22-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
 
 	btn.innerHTML = eyeSvg;
