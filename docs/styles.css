@@ -515,7 +515,9 @@ h1, h2, h3 { font-family: var(--sans); color: #fff; letter-spacing: -0.01em; }
 .footer-brand { display: flex; align-items: center; gap: 8px; font-family: var(--sans); font-weight: 700; font-size: 13px; color: var(--text-muted); }
 .footer-links { display: flex; gap: 18px; font-size: 12px; color: var(--text-muted); }
 .footer-links a:hover { color: var(--amber); }
-.footer-meta { font-size: 11px; color: var(--text-dim); width: 100%; text-align: center; margin-top: 8px; }
+.footer-fine { font-size: 11px; color: var(--text-dim); width: 100%; text-align: center; margin-top: 8px; }
+.footer-fine a { color: var(--text-dim); text-decoration: underline; text-underline-offset: 2px; }
+.footer-fine a:hover { color: var(--amber); }
 
 /* ============ scroll reveal ============ */
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
