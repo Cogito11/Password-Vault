@@ -67,6 +67,7 @@
   --success: #52c07a;
   --sans: 'Syne', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --attr-key-width: 80px;
 }
 
 :root[data-theme="aurora"] {
@@ -977,6 +978,7 @@ body.sidebar-collapsed .col-left { display: none; }
 }
 
 .pw-attr {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -992,11 +994,57 @@ body.sidebar-collapsed .col-left { display: none; }
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
-  width: 80px;
+  width: var(--attr-key-width, 80px);
   flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Drag handle for resizing the attribute name column (wide layout only).
+   Sits centered on the boundary between .pw-attr-key and .pw-attr-val as an
+   absolutely-positioned hit target, so it doesn't add any visible gap to
+   the row. Invisible by default; a hairline appears on hover/drag. */
+.attr-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(14px + var(--attr-key-width, 80px));
+  width: 11px;
+  margin-left: -5px;
+  cursor: col-resize;
+  z-index: 3;
+  touch-action: none;
+}
+
+.attr-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: transparent;
+  border-radius: 1px;
+  transition: background-color 0.12s, width 0.12s;
+}
+
+.attr-resize-handle:hover::after,
+.attr-resize-handle.is-dragging::after {
+  width: 2px;
+  background: var(--divider);
+}
+
+.attr-resize-handle.is-dragging::after {
+  background: var(--amber);
+}
+
+/* While actively dragging, lock the cursor/selection app-wide so fast
+   mouse movement over other elements doesn't interrupt the drag. */
+body.resizing-attr-col {
+  cursor: col-resize !important;
+  user-select: none;
 }
 
 .pw-attr-val {
@@ -1934,6 +1982,10 @@ body.sidebar-collapsed .col-left { display: none; }
 
   .pw-attr-key {
     width: 100%;
+  }
+
+  .attr-resize-handle {
+    display: none;
   }
 
   .pw-attr-actions {

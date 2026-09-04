@@ -273,6 +273,7 @@ function renderPasswords(overrideEntries) {
 			// Final attribute row
 			return '<div class="pw-attr">' +
 				'<span class="pw-attr-key" title="' + esc(attr.key) + '">' + esc(attr.key) + '</span>' +
+				'<div class="attr-resize-handle" title="Drag to resize"></div>' +
 				valSpan +
 				'<div class="pw-attr-actions">' + showBtn +
 					'<button class="act-btn" data-val="' + safeVal + '" onclick="copyVal(this)">COPY</button>' +
@@ -363,3 +364,66 @@ function toggleReveal(btn) {
 		btn.textContent = 'SHOW';
 	}
 }
+
+// ═══════════════════════════════
+// ATTRIBUTE COLUMN RESIZE
+// Every .pw-attr-key across every card reads its width from the single
+// --attr-key-width CSS variable (see styles.css), so dragging one row's
+// divider resizes the name column for all password entries at once.
+// Handles are rebuilt with every renderPasswords() call, so this uses
+// event delegation on document rather than binding per-handle.
+// Session-only by design: not persisted, resets on reload.
+// ═══════════════════════════════
+
+(function () {
+	var MIN_KEY_WIDTH = 48;
+	var MAX_KEY_WIDTH = 280;
+
+	// Same breakpoint the stylesheet uses to stack key/value vertically;
+	// resizing a shared side-by-side column width makes no sense there.
+	var narrowQuery = window.matchMedia('(max-width: 760px)');
+
+	// Keep the key column from growing so wide it eats the value column
+	// and action buttons entirely, whatever the current row happens to be.
+	function clampKeyWidth(px, rowWidth) {
+		var dynamicMax = rowWidth ? Math.min(MAX_KEY_WIDTH, rowWidth - 150) : MAX_KEY_WIDTH;
+		var max = Math.max(MIN_KEY_WIDTH, dynamicMax);
+		return Math.min(max, Math.max(MIN_KEY_WIDTH, px));
+	}
+
+	document.addEventListener('mousedown', function (e) {
+		if (e.button !== 0 || narrowQuery.matches) return;
+
+		var handle = e.target.closest('.attr-resize-handle');
+		if (!handle) return;
+
+		var row   = handle.closest('.pw-attr');
+		var keyEl = row && row.querySelector('.pw-attr-key');
+		if (!keyEl) return;
+
+		e.preventDefault();
+
+		var startX     = e.clientX;
+		var startWidth = keyEl.getBoundingClientRect().width;
+		var rowWidth   = row.getBoundingClientRect().width;
+
+		handle.classList.add('is-dragging');
+		document.body.classList.add('resizing-attr-col');
+
+		function onMove(ev) {
+			var next = clampKeyWidth(startWidth + (ev.clientX - startX), rowWidth);
+			// Setting this once updates every card's attribute row in one shot.
+			document.documentElement.style.setProperty('--attr-key-width', next + 'px');
+		}
+
+		function onUp() {
+			document.removeEventListener('mousemove', onMove);
+			document.removeEventListener('mouseup', onUp);
+			handle.classList.remove('is-dragging');
+			document.body.classList.remove('resizing-attr-col');
+		}
+
+		document.addEventListener('mousemove', onMove);
+		document.addEventListener('mouseup', onUp);
+	});
+})();
