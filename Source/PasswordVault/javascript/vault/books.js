@@ -31,7 +31,7 @@ async function selectBook(bookName, btn) {
 }
 
 // Make a book the active one
-// Syncs global state, builds sidebar, resets right panel
+// Syncs global state, builds sidebar, opens the All Passwords view
 function activateBook(bookName, btn) {
 	// Remove active state from all book buttons
 	booksList.querySelectorAll('.book-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -66,10 +66,19 @@ function activateBook(bookName, btn) {
 	// Show new collection button
 	newCollBtn.classList.remove('hidden');
 
-	// Reset right panel state
-	activeFile = null;
-	rightPanel.style.display = 'none';
-	rightEmpty.style.display = '';
+	// Open the "All Passwords" view straight away instead of leaving the
+	// right panel empty until a collection is picked.
+	var allBtn = collList.querySelector('.all-btn');
+	if (allBtn) 
+	{
+		openAllCollections(allBtn);
+	} 
+	else 
+	{
+		activeFile = null;
+		rightPanel.style.display = 'none';
+		rightEmpty.style.display = '';
+	}
 }
 
 // Relock a book, wipe key and sensitive data from memory
