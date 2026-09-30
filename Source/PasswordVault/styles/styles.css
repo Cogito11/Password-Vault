@@ -1374,6 +1374,46 @@ body.resizing-attr-col {
 .attr-row-del:hover { color: #e05555; }
 .attr-row-del svg { width: 13px; height: 13px; stroke: currentColor; }
 
+/* Reorder handle (edit password modal) */
+.attr-row-grip {
+  background: none;
+  border: none;
+  cursor: grab;
+  color: var(--text-dim);
+  padding: 5px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  touch-action: none;
+  transition: color 0.13s, background 0.13s;
+}
+.attr-row-grip:hover { color: var(--amber); background: var(--amber-dim); }
+.attr-row-grip:focus-visible { outline: none; color: var(--amber); background: var(--amber-dim); box-shadow: 0 0 0 1px var(--amber); }
+.attr-row-grip svg { width: 14px; height: 14px; stroke: currentColor; }
+
+/* While reordering: gently dim the other rows (applied instantly). */
+.attr-row-block { border-radius: 8px; }
+#editAttrRows.is-reordering .attr-row-block:not(.is-dragging) { opacity: 0.7; }
+
+/* The row being dragged: a thin amber outline and a soft shadow. */
+.attr-row-block.is-dragging {
+  position: relative;
+  z-index: 2;
+  background: var(--surface2);
+  box-shadow:
+    0 0 0 3px var(--surface2),
+    0 0 0 4px var(--amber),
+    0 8px 20px rgba(0, 0, 0, 0.28);
+}
+/* Collapse the generator panel while dragging so row heights stay predictable. */
+.attr-row-block.is-dragging .gen-panel { display: none !important; }
+.attr-row-block.is-dragging .attr-row-grip { cursor: grabbing; color: var(--amber); }
+
+/* Keep the grabbing cursor and block text selection for the whole drag. */
+body.reordering-attr { cursor: grabbing !important; user-select: none; }
+body.reordering-attr * { cursor: grabbing !important; }
+
 /* Password generator */
 .attr-row-block { display: flex; flex-direction: column; gap: 6px; }
 
