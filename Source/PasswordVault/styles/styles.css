@@ -577,6 +577,10 @@ body.resizing-sidebar * { cursor: col-resize !important; }
 }
 
 .book-btn {
+  /* Colors the hover buttons' fade needs to match this row (see .book-actions) */
+  --row-base: var(--bg);
+  --row-tint: transparent;
+  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
@@ -593,16 +597,30 @@ body.resizing-sidebar * { cursor: col-resize !important; }
   text-align: left;
   transition: all 0.13s;
 }
-.book-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text); }
+.book-btn:hover { --row-base: var(--surface); background: var(--surface); border-color: var(--border); color: var(--text); }
+/* Edit / delete buttons. They float over the right end of the row instead of
+   taking up space in it, so names can run nearly to the edge. On hover they
+   appear on top of the name, which fades out underneath them. The background
+   is the row's own color (opaque base + its tint) so it blends in seamlessly. */
 .book-actions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 8px;
   display: flex;
   align-items: center;
   gap: 2px;
-  flex-shrink: 0;
+  padding-left: 18px;
+  background:
+    linear-gradient(to right, transparent, var(--row-tint) 18px),
+    linear-gradient(to right, transparent, var(--row-base) 18px);
   opacity: 0;
   transition: opacity 0.13s;
   pointer-events: none;
 }
+/* Keep the lock / relock icon at the right edge visible: sit left of it */
+.book-btn:has(.book-lock) .book-actions { right: calc(8px + 14px + 9px); }
+.book-btn:has(.book-relock-btn) .book-actions { right: calc(8px + 24px + 9px); }
 .book-btn:hover .book-actions {
   opacity: 1;
   pointer-events: all;
@@ -634,6 +652,8 @@ body.resizing-sidebar * { cursor: col-resize !important; }
 }
 .book-action-btn svg { width: 14px; height: 14px; stroke: currentColor; }
 .book-btn.active {
+  --row-base: var(--bg);
+  --row-tint: var(--amber-dim);
   background: var(--amber-dim);
   border-color: var(--amber);
   color: var(--amber);
@@ -765,6 +785,10 @@ body.resizing-sidebar * { cursor: col-resize !important; }
 }
 
 .coll-btn {
+  /* Colors the hover buttons' fade needs to match this row (see .coll-actions) */
+  --row-base: var(--bg);
+  --row-tint: transparent;
+  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
@@ -783,9 +807,11 @@ body.resizing-sidebar * { cursor: col-resize !important; }
   margin-bottom: 2px;
 }
 
-.coll-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text); }
+.coll-btn:hover { --row-base: var(--surface); background: var(--surface); border-color: var(--border); color: var(--text); }
 
 .coll-btn.active {
+  --row-base: var(--bg);
+  --row-tint: var(--amber-dim);
   background: var(--amber-dim);
   border-color: var(--amber);
   color: var(--amber);
@@ -822,12 +848,20 @@ body.resizing-sidebar * { cursor: col-resize !important; }
 .coll-btn.all-btn:hover { background: var(--surface); color: var(--text); }
 .coll-btn.all-btn.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
 
-/* Collection action buttons (rename / delete) */
+/* Collection action buttons (rename / delete). Same approach as .book-actions:
+   floated over the right end of the row, with the name fading out beneath. */
 .coll-actions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 10px;
   display: flex;
   align-items: center;
   gap: 2px;
-  flex-shrink: 0;
+  padding-left: 18px;
+  background:
+    linear-gradient(to right, transparent, var(--row-tint) 18px),
+    linear-gradient(to right, transparent, var(--row-base) 18px);
   opacity: 0;
   transition: opacity 0.13s;
   pointer-events: none;
