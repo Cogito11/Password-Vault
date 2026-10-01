@@ -322,17 +322,65 @@ body {
   overflow: hidden;
 }
 
-body.sidebar-collapsed .col-left { display: none; }
+body.sidebar-collapsed .col-left,
+body.sidebar-collapsed .col-resizer { display: none; }
 
 /* LEFT COLUMN */
 .col-left {
-  width: 300px;
+  /* --sidebar-width is only set while the user has dragged the divider
+     (see ui/sidebar-resize.js). It's never saved, so every launch starts at
+     the 300px fallback. The max-width keeps room for the main view when the
+     window is small. */
+  width: var(--sidebar-width, 300px);
+  max-width: calc(100% - 400px);
   flex-shrink: 0;
   border-right: 1px solid var(--divider);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+
+/* Drag handle between the sidebar and the main view. Zero width so it adds no
+   gap; the hit area and the highlight line are pseudo-elements straddling the
+   sidebar's right border. */
+.col-resizer {
+  position: relative;
+  flex: 0 0 0;
+  width: 0;
+  z-index: 4;
+  outline: none;
+  touch-action: none;
+}
+.col-resizer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 7px;
+  cursor: col-resize;
+}
+.col-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 2px;
+  background: transparent;
+  pointer-events: none;
+}
+.col-resizer:hover::after,
+.col-resizer:focus-visible::after { background: var(--amber-mid); }
+.col-resizer.is-dragging::after { background: var(--amber); }
+
+/* Lock the cursor and selection for the whole drag so fast movement over
+   other elements doesn't interrupt it. */
+body.resizing-sidebar {
+  cursor: col-resize !important;
+  user-select: none;
+}
+body.resizing-sidebar * { cursor: col-resize !important; }
 
 .col-head {
   padding: 14px 16px 10px;
@@ -438,6 +486,7 @@ body.sidebar-collapsed .col-left { display: none; }
   display: flex;
   align-items: baseline;
   gap: 8px;
+  overflow: hidden; /* so a narrow sidebar clips the count instead of overlapping "+ New" */
 }
 .books-panel-head:hover .books-panel-label { color: var(--text-muted); }
 .books-panel-label {
@@ -448,11 +497,15 @@ body.sidebar-collapsed .col-left { display: none; }
   color: var(--secondary-accent);
   transition: color 0.13s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .books-panel-count {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .books-panel-sub {
   display: none;
@@ -2051,6 +2104,8 @@ body.reordering-attr * { cursor: grabbing !important; }
   .body {
     isolation: isolate;
   }
+
+  .col-resizer { display: none; }
 
   .col-left {
     position: absolute;
