@@ -19,7 +19,7 @@ function updateSidebarToggleUi() {
 	var open = isSidebarOpen();
 	var label = open ? 'Collapse sidebar' : 'Show sidebar';
 
-	[sidebarToggleBtn, sidebarToggleEmptyBtn].forEach(function (btn) {
+	[sidebarToggleBtn, sidebarToggleEmptyBtn, sidebarToggleSettingsBtn].forEach(function (btn) {
 		if (!btn) return;
 		btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 		btn.setAttribute('aria-label', label);
@@ -47,6 +47,7 @@ function closeSidebarOverlay() {
 
 if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
 if (sidebarToggleEmptyBtn) sidebarToggleEmptyBtn.addEventListener('click', toggleSidebar);
+if (sidebarToggleSettingsBtn) sidebarToggleSettingsBtn.addEventListener('click', toggleSidebar);
 if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebarOverlay);
 
 if (sidebarNarrowQuery.addEventListener) {

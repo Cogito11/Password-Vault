@@ -154,7 +154,7 @@
     </div>
 
     <div class="sidebar-footer">
-      <button class="settings-btn" id="settingsBtn" title="Open settings" aria-label="Open settings">
+      <button class="settings-btn" id="settingsBtn" title="Open settings" aria-label="Open settings" aria-pressed="false">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"></path>
@@ -213,6 +213,174 @@
       <div class="pw-list" id="pwList"></div>
     </div>
 
+    <!-- Settings view: replaces the password list while the Settings button is active.
+         Changes are saved automatically as they're made. -->
+    <div id="settingsView" class="settings-view">
+      <div class="pw-toolbar settings-toolbar">
+        <button class="sidebar-toggle-btn" id="sidebarToggleSettingsBtn" title="Collapse sidebar" aria-label="Collapse sidebar" aria-expanded="true" aria-controls="sidebarPanel">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <path d="M9 4v16"/>
+          </svg>
+        </button>
+        <div class="pw-toolbar-title">Settings</div>
+        <span class="settings-saved" id="settingsSaved" role="status" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Saved
+        </span>
+        <button class="modal-close" id="settingsClose" title="Close settings" aria-label="Close settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="settings-scroll">
+        <div class="settings-stack">
+
+          <!-- About -->
+          <div class="settings-section settings-about">
+            <div class="settings-brand">
+              <div class="settings-brand-mark">
+                <img src="assets/logos/Password Vault Logo.png" alt="" width="55" height="55">
+              </div>
+              <div class="settings-brand-text">
+                <div class="settings-app-name">Password Vault</div>
+                <div class="settings-info-description">A local password manager centered on organization, ownership, and security.</div>
+              </div>
+            </div>
+
+            <div class="about-details">
+              <div class="about-row">
+                <span class="about-label">Version</span>
+                <span class="about-value" id="settingsVersion">Loading…</span>
+              </div>
+              <div class="about-row">
+                <span class="about-label">Developed By</span>
+                <span class="about-value">Cole Bishop (@cogito11)</span>
+              </div>
+              <div class="about-row">
+                <span class="about-label">Updates</span>
+                <span class="about-value settings-update-row">
+                  <button type="button" class="settings-action-btn" id="settingsUpdateBtn" data-state="idle">
+                    <svg class="ico-refresh" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                    <svg class="ico-check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    <span id="settingsUpdateLabel">Check for update</span>
+                  </button>
+                  <a class="settings-action-btn primary" id="settingsUpdateDownload" href="https://cogito11.github.io/Password-Vault/#download" data-external-link="https://cogito11.github.io/Password-Vault/#download" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    <span id="settingsUpdateDownloadLabel">Download</span>
+                  </a>
+                  <span class="settings-hint" id="settingsUpdateHint">Check GitHub for a newer release of Password Vault.</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="settings-actions">
+              <a class="settings-action-btn" href="https://github.com/Cogito11/Password-Vault" data-external-link="https://github.com/Cogito11/Password-Vault">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+                GitHub
+              </a>
+              <a class="settings-action-btn" href="https://cogito11.github.io/Password-Vault/" data-external-link="https://cogito11.github.io/Password-Vault/">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                Website
+              </a>
+            </div>
+          </div>
+
+          <!-- Theme -->
+          <div class="settings-section">
+            <div class="settings-section-title">Theme</div>
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Color theme</div>
+                <div class="settings-info-description">Choose the look and feel for the vault interface.</div>
+              </div>
+              <div class="settings-row-control">
+                <select class="modal-input" id="settingsThemeSelect">
+                  <option value="classic">Classic</option>
+                  <option value="aurora">Aurora</option>
+                  <option value="ember">Ember</option>
+                  <option value="forest">Forest</option>
+                  <option value="midnight">Midnight</option>
+                  <option value="manilla">Manilla</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Random Password Generation -->
+          <div class="settings-section">
+            <div class="settings-section-title">Random Password Generation</div>
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Default length</div>
+                <div class="settings-info-description">How many characters a generated password has.</div>
+              </div>
+              <div class="settings-row-control">
+                <div class="settings-length-row">
+                  <input class="gen-len-slider" id="settingsLengthInput" type="range" min="4" max="64" value="15">
+                  <span class="gen-len-val" id="settingsLengthValue">15</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Character types</div>
+                <div class="settings-info-description">What generated passwords are allowed to include.</div>
+                <div class="settings-hint settings-warn" id="settingsCharsHint" hidden>At least one character type is required.</div>
+              </div>
+              <div class="settings-row-control">
+                <div class="settings-checks">
+                  <label><input type="checkbox" id="settingsUpper"> Uppercase A-Z</label>
+                  <label><input type="checkbox" id="settingsLower"> Lowercase a-z</label>
+                  <label><input type="checkbox" id="settingsNumbers"> Numbers 0-9</label>
+                  <label><input type="checkbox" id="settingsSymbols"> Symbols !@#</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Default New Book Encryption -->
+          <div class="settings-section">
+            <div class="settings-section-title">Default New Book Encryption</div>
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Encrypt new books by default</div>
+                <div class="settings-info-description">New password books will use encrypted storage unless you turn this off.</div>
+              </div>
+              <div class="settings-row-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsBookEncrypt">
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Import from CSV -->
+          <div class="settings-section">
+            <div class="settings-section-title">Import from CSV</div>
+            <div class="settings-info-description">Import saved passwords exported from another browser (Chrome, Edge, and others) as a CSV file. Expected columns: name, url, username, password, note.</div>
+            <input type="file" id="csvImportFileInput" accept=".csv,text/csv" style="display:none;">
+
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Import to</div>
+                <div class="settings-info-description">The password book the imported entries are added to.</div>
+                <div class="settings-hint" id="csvImportInfo"></div>
+              </div>
+              <div class="settings-row-control">
+                <div class="location-row">
+                  <select class="modal-input" id="csvImportBookSelect"></select>
+                  <button class="pick-btn" id="csvImportBtn">Import</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -427,124 +595,6 @@
 
 </div>
 
-<!-- Settings Modal -->
-<div class="modal-overlay" id="settingsOverlay">
-  <div class="modal settings-modal">
-
-    <div class="modal-head">
-      <div class="modal-head-title">Settings</div>
-      <button class="modal-close" id="settingsClose">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <div class="settings-section">
-        <div class="settings-section-title">App Information</div>
-        <div class="settings-info-card">
-          <div class="settings-info-title">Password Vault</div>
-          <div class="settings-info-description">A local password manager centered on organization, ownership, and security.</div>
-        </div>
-        <div class="settings-grid">
-          <div class="settings-item">
-            <div class="settings-item-label">Version</div>
-            <div class="settings-hint" id="settingsVersion">Loading…</div>
-          </div>
-
-          <div class="settings-item">
-            <div class="settings-item-label">Developed By</div>
-            <div class="settings-hint">Cole Bishop (@cogito11)</div>
-          </div>
-
-          <div class="settings-item full-width">
-            <div class="settings-item-label">Website</div>
-            <div class="settings-item-value"><a href="#" data-external-link="https://cogito11.github.io/Password-Vault/">https://cogito11.github.io/Password-Vault/</a></div>
-          </div>
-
-          <div class="settings-item full-width">
-            <div class="settings-item-label">GitHub</div>
-            <div class="settings-item-value"><a href="#" data-external-link="https://github.com/cogito11/Password-Vault">https://github.com/cogito11/Password-Vault</a></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">Theme</div>
-        <div class="modal-field">
-          <div class="modal-label">Theme Selection</div>
-          <select class="modal-input" id="settingsThemeSelect">
-            <option value="classic">Classic</option>
-            <option value="aurora">Aurora</option>
-            <option value="ember">Ember</option>
-            <option value="forest">Forest</option>
-            <option value="midnight">Midnight</option>
-            <option value="manilla">Manilla</option>
-          </select>
-          <div class="settings-hint">Choose the look and feel for the vault interface.</div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">Random Password Generation</div>
-        <div class="modal-field">
-          <div class="modal-label">Default Length</div>
-          <div class="settings-length-row">
-            <input class="gen-len-slider" id="settingsLengthInput" type="range" min="4" max="64" value="15">
-            <span class="gen-len-val" id="settingsLengthValue">15</span>
-          </div>
-        </div>
-        <div class="modal-field">
-          <div class="modal-label">Default Character Types</div>
-          <div class="settings-checks">
-            <label><input type="checkbox" id="settingsUpper"> Uppercase A-Z</label>
-            <label><input type="checkbox" id="settingsLower"> Lowercase a-z</label>
-            <label><input type="checkbox" id="settingsNumbers"> Numbers 0-9</label>
-            <label><input type="checkbox" id="settingsSymbols"> Symbols !@#</label>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">Default New Book Encryption</div>
-        <div class="toggle-row">
-          <div class="toggle-label-group">
-            <div class="toggle-label">Encrypt new books by default</div>
-            <div class="toggle-sub">New password books will use encrypted storage unless you turn this off.</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="settingsBookEncrypt">
-            <div class="toggle-track"></div>
-            <div class="toggle-thumb"></div>
-          </label>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">Import from CSV</div>
-        <div class="settings-info-description">Import saved passwords exported from another browser (Chrome, Edge, and others) as a CSV file. Expected columns: name, url, username, password, note.</div>
-
-        <div class="modal-field">
-          <div class="modal-label">Import To</div>
-          <div class="location-row">
-            <select class="modal-input" id="csvImportBookSelect"></select>
-            <button class="pick-btn" id="csvImportBtn">Import</button>
-          </div>
-        </div>
-
-        <input type="file" id="csvImportFileInput" accept=".csv,text/csv" style="display:none;">
-
-        <div class="settings-hint" id="csvImportInfo"></div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <div class="modal-footer-info" id="settingsInfo">Adjust app defaults and future generation behavior.</div>
-      <button class="save-btn" id="saveSettingsBtn">Save</button>
-    </div>
-
-  </div>
-</div>
-
 <!-- New Collection Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
@@ -600,6 +650,7 @@
   <script src="javascript/core/dom.js"></script>
   <script src="javascript/core/utils.js"></script>
   <script src="javascript/core/generator.js"></script>
+  <script src="javascript/core/updates.js"></script>
 
   <script src="javascript/storage/db.js"></script>
   <script src="javascript/storage/crypto.js"></script>

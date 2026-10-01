@@ -9,6 +9,9 @@
 // - Disable "new entry" (since this is not a real file)
 function openAllCollections(btn) {
 
+	// Leave the inline Settings view if it's open
+	if (typeof closeSettingsView === 'function') closeSettingsView();
+
 	// Remove active state from all sidebar buttons
 	document.querySelectorAll('.coll-btn').forEach(function (b) { b.classList.remove('active'); });
 	
@@ -50,6 +53,9 @@ function openAllCollections(btn) {
 // @param {string} filename - The collection file name (Ex: "School Passwords.txt")
 // @param {HTMLElement} btn - The sidebar button clicked
 function openCollection(filename, btn) {
+
+	// Leave the inline Settings view if it's open
+	if (typeof closeSettingsView === 'function') closeSettingsView();
 
 	// Clear active state from all buttons
 	document.querySelectorAll('.coll-btn').forEach(function (b) { b.classList.remove('active'); });

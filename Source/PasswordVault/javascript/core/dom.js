@@ -36,6 +36,7 @@ var newCollBtn = document.getElementById('newCollBtn');
 var sidebarPanel = document.getElementById('sidebarPanel');
 var sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
 var sidebarToggleEmptyBtn = document.getElementById('sidebarToggleEmptyBtn');
+var sidebarToggleSettingsBtn = document.getElementById('sidebarToggleSettingsBtn');
 var sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 
 // Right panel - password entries 

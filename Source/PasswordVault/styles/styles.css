@@ -395,7 +395,8 @@ body.sidebar-collapsed .col-left { display: none; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.settings-btn:hover {
+.settings-btn:hover,
+.settings-btn.active {
   border-color: var(--amber);
   color: var(--amber);
   background: var(--amber-dim);
@@ -1526,36 +1527,123 @@ body.reordering-attr * { cursor: grabbing !important; }
   color: var(--text-muted);
 }
 
-.settings-modal .modal-body {
-  gap: 14px;
+/* Settings view (inline in the main viewport, replaces the password list) */
+.settings-view {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
 }
-.settings-section {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
+.col-right.settings-open > .settings-view { display: flex; }
+/* !important so the password list / empty state stay hidden regardless of the
+   inline display values the rest of the app sets on them. Their state is
+   untouched, so closing settings brings back exactly what was showing. */
+.col-right.settings-open > .right-empty,
+.col-right.settings-open > #rightPanel { display: none !important; }
+
+.settings-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px;
+}
+/* One column of full-width cards (About first, then each section) */
+.settings-stack {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+/* Small confirmation shown in the toolbar after a setting is saved */
+.settings-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.settings-saved.show { opacity: 1; }
+.settings-saved svg { width: 12px; height: 12px; stroke: var(--amber); }
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.settings-update-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
+}
+
+/* Ghost buttons for Check for update / GitHub / Website */
+.settings-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-muted);
+  padding: 7px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.13s;
+}
+.settings-action-btn:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: var(--amber-dim);
+}
+.settings-action-btn.primary {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: var(--amber-dim);
+}
+.settings-action-btn.primary:hover { background: var(--amber-mid); }
+.settings-action-btn:disabled { opacity: 0.6; cursor: default; }
+.settings-action-btn[hidden] { display: none; }
+.settings-action-btn svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+.settings-action-btn .ico-check { display: none; }
+.settings-action-btn[data-state="current"] .ico-check { display: block; }
+.settings-action-btn[data-state="current"] .ico-refresh { display: none; }
+.settings-action-btn[data-state="checking"] .ico-refresh { animation: settings-spin 0.8s linear infinite; }
+@keyframes settings-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  .settings-scroll { padding: 12px; }
+  /* the shared mobile toolbar is a 3-column grid; this one has an extra item */
+  .pw-toolbar.settings-toolbar { display: flex; }
+}
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 .settings-section-title {
   font-size: 13px;
   font-weight: 700;
   color: var(--secondary-accent-strong);
-}
-.settings-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.settings-info-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 }
 .settings-info-title {
   font-size: 15px;
@@ -1567,39 +1655,99 @@ body.reordering-attr * { cursor: grabbing !important; }
   line-height: 1.6;
   color: var(--text-muted);
 }
-.settings-item {
+.settings-brand {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  width: 100%;
+  align-items: center;
+  gap: 14px;
 }
-.settings-item.full-width {
-  width: 100%;
+/* The logo art already includes its amber rounded square (same as the top
+   bar), so it's shown directly at roughly Amble's 44px brand-mark size. */
+.settings-brand-mark {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.settings-item-label {
+.settings-brand-mark img {
+  width: 55px;
+  height: 55px;
+  border-radius: 12px;
+  object-fit: contain;
+  filter: var(--logo-filter);
+}
+.settings-app-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+/* About details: fixed label column, values left-aligned beside it */
+.about-details { display: flex; flex-direction: column; }
+.about-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--divider);
+  min-height: 24px;
+}
+.about-row:first-child { border-top: 1px solid var(--divider); }
+.about-label {
+  flex: 0 0 140px;
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--secondary-accent);
 }
-.settings-item-value {
+.about-value {
+  font-family: var(--mono);
   font-size: 12px;
   color: var(--text);
-  line-height: 1.5;
-  word-break: break-word;
 }
-.settings-item-value a {
-  color: var(--amber);
-  text-decoration: none;
+
+/* Preference rows: label + description on the left, control on the right */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--divider);
 }
-.settings-item-value a:hover {
-  text-decoration: underline;
+.settings-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
+.settings-row-text {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.settings-row-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.settings-row-control {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 100%;
+}
+.settings-row-control .modal-input { width: 220px; max-width: 100%; }
+.settings-row-control .location-row .modal-input { width: 200px; }
+.settings-row-control .settings-length-row { width: 280px; max-width: 100%; }
+.settings-hint.settings-warn { color: var(--amber); }
+.settings-hint[hidden],
+.settings-hint:empty { display: none; }
 .settings-hint {
   font-family: var(--mono);
   font-size: 11px;
