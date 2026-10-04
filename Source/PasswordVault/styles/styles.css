@@ -1165,7 +1165,7 @@ body.resizing-attr-col {
 }
 
 .act-btn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
-.act-btn.ok { border-color: var(--success); color: var(--success); background: rgba(82,192,122,0.08); }
+.act-btn.ok { border-color: var(--success); color: var(--success); background: color-mix(in srgb, var(--success) 8%, transparent); }
 
 .new-entry-btn {
   display: none;
@@ -1940,17 +1940,20 @@ body.reordering-attr * { cursor: grabbing !important; }
 }
 .confirm-ok-btn:hover { background: rgba(224,85,85,0.22); border-color: #e05555; }
 
+/* Toasts report successes and errors alike, so they use the normal text color
+   with an accent border (each theme supplies its own accent) rather than the
+   success color. */
 .toast {
   position: fixed;
   bottom: 20px;
   right: 20px;
   background: var(--surface2);
-  border: 1px solid var(--border-hover);
+  border: 1px solid var(--accent-strong);
   border-radius: 7px;
   padding: 9px 16px;
   font-family: var(--mono);
   font-size: 12px;
-  color: var(--success);
+  color: var(--text);
   z-index: 999;
   opacity: 0;
   transform: translateY(6px);
