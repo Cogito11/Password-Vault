@@ -218,3 +218,38 @@ function findByData(root, name, value) {
 	}
 	return null;
 }
+
+
+// ═══════════════════════════════
+// SECRET FIELDS - which attributes are hidden by default
+// ═══════════════════════════════
+
+// Whole words that mark a value as sensitive. Matching whole words (not pieces of
+// words) means "Shipping address", "Opinion" and "Monkey" are NOT hidden just
+// because they contain "pin" or "key".
+var SECRET_WORDS = [
+	'pass', 'password', 'passwords', 'passwd', 'pwd', 'passcode', 'passphrase',
+	'pin', 'secret', 'secrets', 'token', 'tokens', 'key', 'keys', 'apikey',
+	'cvv', 'cvc', 'cvn', 'ssn', 'otp', 'totp', '2fa', 'mfa',
+	'seed', 'mnemonic', 'credential', 'credentials', 'answer', 'answers',
+
+	// "password" in other languages (labels are matched as whole words, any script)
+	'contraseña', 'contrasena', 'clave', 'passwort', 'kennwort', 'wachtwoord', 'senha', 'lösenord', 'hasło', 'salasana',
+	'пароль', '密码', '密碼', 'パスワード', '비밀번호'
+];
+
+// Two-word labels where neither word is sensitive on its own
+var SECRET_PHRASES = /\b(card|account|routing|license|licence|passport|bank|social security|tax) (number|no|num)\b|\b(security|recovery|backup|auth|verification|reset) (code|codes)\b/;
+
+function isSecretKey(key) {
+	var words = String(key == null ? '' : key)
+		.replace(/([a-z])([A-Z])/g, '$1 $2') // apiKey -> api Key
+		.toLowerCase()
+		.split(/[^\p{L}\p{N}]+/u)           // letters and digits of any script
+		.filter(Boolean);
+
+	if (words.some(function (w) { return SECRET_WORDS.indexOf(w) !== -1; })) return true;
+
+	var joined = words.join(' ');
+	return SECRET_PHRASES.test(joined) || joined.indexOf('mot de passe') !== -1;
+}

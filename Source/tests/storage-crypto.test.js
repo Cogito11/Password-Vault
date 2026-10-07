@@ -204,3 +204,23 @@ test('vault I/O can save and read encrypted bytes through the active book path',
   assert.deepEqual(loaded, bytes);
   assert.deepEqual(files.get('/tmp/vault/vault.enc'), bytes);
 });
+
+test('unlockFailureMessage tells a wrong password apart from file problems', () => {
+  const sandbox = loadCryptoModule();
+  const m = (stage, err, backup) => sandbox.unlockFailureMessage(stage, err, backup);
+
+  assert.match(m('decrypt', new Error('OperationError'), false), /^Incorrect password/);
+  assert.doesNotMatch(m('decrypt', new Error('x'), false), /backup|damaged/i);
+  assert.match(m('decrypt', new Error('x'), true), /Incorrect password.*may be damaged.*vault\.enc\.bak/);
+
+  assert.match(m('read', { code: 'ENOENT', message: 'ENOENT: no such file' }, false), /was not found/);
+  assert.match(m('read', { message: "EACCES: permission denied, open 'x'" }, false), /permission denied/);
+  assert.match(m('read', new Error('disk on fire'), false), /Couldn't read vault\.enc: disk on fire/);
+
+  assert.match(m('check', new Error('too short'), false), /too short to be a vault/);
+  assert.match(m('check', new Error('too short'), true), /vault\.enc\.bak/);
+  assert.match(m('parse', new Error('bad json'), false), /password worked.*contents are damaged/);
+
+  // never claims "Incorrect password" for anything that isn't a failed decrypt
+  for (const stage of ['read', 'check', 'parse']) assert.doesNotMatch(m(stage, new Error('x'), true), /Incorrect password/);
+});

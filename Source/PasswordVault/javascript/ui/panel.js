@@ -292,7 +292,7 @@ function renderPasswords(overrideEntries) {
 			var uid = 'f' + idx + '_' + ai;
 
 			// Detect sesitive fields (passwords, tokens...)
-			var isSecret = /pass(word)?|secret|pin|key|token/i.test(attr.key);
+			var isSecret = isSecretKey(attr.key);
 			
 			var safeVal = esc(attr.val);
 

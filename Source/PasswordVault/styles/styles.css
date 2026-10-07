@@ -618,6 +618,12 @@ body.resizing-sidebar * { cursor: col-resize !important; }
   transition: opacity 0.13s;
   pointer-events: none;
 }
+/* Keyboard users: when one of the icons has focus, show them (and ring the focused one) */
+.book-btn:has(:focus-visible) .book-actions,
+.coll-btn:has(:focus-visible) .coll-actions { opacity: 1; pointer-events: auto; }
+.book-action-btn:focus-visible,
+.coll-action-btn:focus-visible { outline: 1px solid var(--amber); outline-offset: 1px; }
+
 /* Keep the lock / relock icon at the right edge visible: sit left of it */
 .book-btn:has(.book-lock) .book-actions { right: calc(8px + 14px + 9px); }
 .book-btn:has(.book-relock-btn) .book-actions { right: calc(8px + 24px + 9px); }

@@ -51,6 +51,9 @@ vaultUnlockBtn.addEventListener('click', async function () {
 	vaultUnlockBtn.textContent = 'Unlocking\u2026';
 	vaultUnlockError.style.display = 'none';
 
+	// How far unlocking got, so a failure can be explained accurately
+	var stage = 'read';
+
 	try {
 		// Read vault.enc - supports Web FS API and Electron path mode
 		var buf;
@@ -70,11 +73,19 @@ vaultUnlockBtn.addEventListener('click', async function () {
 			buf = new Uint8Array(await (await fh.getFile()).arrayBuffer());
 		}
 
+		stage = 'check';
+		// 16 byte salt + 12 byte IV + at least the 16 byte authentication tag
+		if (buf.length < 44) throw new Error('too short');
+
 		var salt = buf.slice(0, 16);
 		var iv = buf.slice(16, 28);
 		var ct = buf.slice(28);
+
+		stage = 'decrypt';
 		var key = await deriveKey(pw, salt);
 		var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
+
+		stage = 'parse';
 		var payload = JSON.parse(new TextDecoder().decode(pt));
 
 		vaultUnlockOverlay.classList.remove('open');
@@ -138,7 +149,15 @@ vaultUnlockBtn.addEventListener('click', async function () {
 			showToast(vaultName() + ' unlocked');
 		}
 		
-	} catch (_) {
+	} catch (err) {
+		// Mention the backup copy if there is one
+		var hasBackup = false;
+		try {
+			var folder = isMultiBookMode && bookHandles[unlockingBookName] ? bookHandles[unlockingBookName].path : _electronVaultPath;
+			hasBackup = !!folder && window.vault.exists(window.vault.joinPath(folder, 'vault.enc.bak'));
+		} catch (_) { /* can't tell, so don't mention it */ }
+
+		vaultUnlockError.textContent = unlockFailureMessage(stage, err, hasBackup);
 		vaultUnlockError.style.display = 'block';
 		vaultUnlockBtn.disabled = false;
 		vaultUnlockBtn.textContent = 'Unlock';

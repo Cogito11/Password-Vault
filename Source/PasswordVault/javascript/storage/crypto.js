@@ -99,3 +99,28 @@ async function verifyEncryptedBook(bookName, key, expectedCollections) {
 		throw new Error('Verification failed: the encrypted copy does not match your data.');
 	}
 }
+
+// Explains why unlocking failed. Decrypting with a wrong password and decrypting a
+// damaged file fail in exactly the same way, so those two can't be told apart. But
+// everything around that CAN be: the file missing or unreadable, too short to be a
+// vault at all, or decrypting fine but holding unreadable contents. Reporting those
+// as "wrong password" would make someone with a damaged vault believe they had
+// forgotten their password.
+//   stage: 'read' | 'check' | 'decrypt' | 'parse' (how far unlocking got)
+function unlockFailureMessage(stage, err, hasBackup) {
+	var backupHint = hasBackup ? " A backup copy (vault.enc.bak) is in this book's folder." : '';
+	var text = ((err && err.code) || '') + ' ' + ((err && err.message) || '');
+
+	if (stage === 'read') {
+		if (/ENOENT/.test(text)) return "vault.enc was not found in this book's folder." + backupHint;
+		if (/EACCES|EPERM/.test(text)) return "vault.enc can't be opened (permission denied).";
+		return "Couldn't read vault.enc" + (err && err.message ? ': ' + err.message : '.');
+	}
+
+	if (stage === 'check') return 'vault.enc looks damaged (the file is too short to be a vault).' + backupHint;
+	if (stage === 'parse') return "The password worked, but the vault's contents are damaged." + backupHint;
+
+	// stage === 'decrypt'
+	return 'Incorrect password \u2014 please try again.' +
+		(hasBackup ? " If you're sure it's right, the file may be damaged: a backup copy (vault.enc.bak) is in this book's folder." : '');
+}
