@@ -113,6 +113,9 @@ modalOverlay.addEventListener('keydown', function (e) {
 
 	var t = e.target;
 
+	// Enter inside a multi-line value adds a line instead of submitting
+	if (t.tagName === 'TEXTAREA') return;
+
 	if (t.classList.contains('attr-key') || t.classList.contains('attr-val')) 
 	{
 		e.preventDefault();
@@ -143,7 +146,7 @@ addEntryBtn.addEventListener('click', function () {
 	var attrs = [];
 	attrRows.querySelectorAll('.attr-row').forEach(function (row) {
 		var k = row.querySelector('.attr-key').value.trim();
-		var v = row.querySelector('.attr-val').value.trim();
+		var v = row.querySelector('.attr-val').value; // exactly as typed: a password may start or end with a space
 		if (k) attrs.push({ key: k, val: v });
 	});
 

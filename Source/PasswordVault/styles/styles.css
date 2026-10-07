@@ -1148,6 +1148,14 @@ body.resizing-attr-col {
 
 .pw-attr-val.masked { color: var(--text-muted); letter-spacing: 0.1em; }
 
+/* A value with line breaks shows all of them instead of one clipped line */
+.pw-attr-val.multi {
+  white-space: pre-wrap;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
 .pw-attr-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
 .act-btn {
@@ -1507,6 +1515,8 @@ body.reordering-attr * { cursor: grabbing !important; }
 
 .attr-row .attr-val-wrap { flex: 1; position: relative; display: flex; align-items: center; }
 .attr-val-wrap .attr-val { width: 100%; padding-right: 30px; }
+.attr-val-wrap .attr-val-multi { resize: vertical; min-height: 58px; line-height: 1.4; }
+.attr-val-wrap:has(.attr-val-multi) .attr-gen-btn { top: 6px; }
 
 .attr-gen-btn {
   position: absolute;

@@ -142,29 +142,65 @@ function namedBookListFiles(bookName) {
 // Plain-text file parser
  
 // Parses the contents of a .txt collection file into an array of entry objects.
-// Expected format:
+// Format (see buildFileText in utils.js for the writer):
+//
 //   Entry Name (N attributes)
 //       Key: Value
+//       Key: First line of a longer value
+//           ...and the lines that follow it, indented further than the Key
 //   (blank line)
 //   End
+//
+// Rules worth knowing:
+//   - The part after the first ": " is the value, kept EXACTLY as written (only the
+//     single separator space is removed), so passwords with spaces survive.
+//   - A line indented deeper than the attribute above it continues that value.
+//   - In a key, "\:" means a literal colon and "\\" a literal backslash.
+//   - Only lines made up entirely of dashes / equals signs (a separator) are
+//     skipped, so entry names like "-Backup" or "=Bank" are ordinary names.
 //
 // Returns: [{ name: string, attrs: [{ key, val }] }]
 function parseFile(text) {
 	var entries = [];
 	var lines = text.split(/\r?\n/);
-	var cur = null; // The entry currently being built
+	var cur = null;        // The entry currently being built
+	var lastAttr = null;   // The attribute that may still receive continuation lines
+	var attrIndent = 0;    // How far that attribute's line was indented
+	var pendingBlank = []; // Blank lines since the last attribute line (kept only if the value continues)
  
 	for (var i = 0; i < lines.length; i++) {
 		var raw = lines[i];
 		var tr = raw.trim();
+
+		// Blank line: only matters if the value above carries on after it
+		if (!tr) { pendingBlank.push(raw); continue; }
+
+		var indent = raw.length - raw.replace(/^[ \t]+/, '').length;
+
+		// Indented deeper than the attribute above -> continuation of its value
+		if (lastAttr && indent > attrIndent) {
+			// Blank lines that came first belong to the value too (a line holding only
+			// spaces keeps those spaces beyond the indentation)
+			for (var b = 0; b < pendingBlank.length; b++) lastAttr.val += '\n' + stripIndent(pendingBlank[b], attrIndent + 4);
+			lastAttr.val += '\n' + stripIndent(raw, attrIndent + 4);
+			pendingBlank = [];
+			continue;
+		}
+
+		pendingBlank = [];
+		lastAttr = null;
  
-		// Skip blank lines, "End" terminators, and decorative separator lines (--- or ===)
-		if (!tr || /^end$/i.test(tr) || /^[-=]/.test(tr)) continue;
+		// Skip "End" terminators and pure separator lines (--- or ===)
+		if (/^end$/i.test(tr) || /^[-=\s]{3,}$/.test(tr)) continue;
  
 		if (/^\s/.test(raw) && cur) {
 			// Indented line -> attribute of the current entry
-			var ci = tr.indexOf(':');
-			if (ci > 0) cur.attrs.push({ key: tr.slice(0, ci).trim(), val: tr.slice(ci + 1).trim() });
+			var attr = splitAttribute(raw.replace(/^[ \t]+/, ''));
+			if (attr) {
+				cur.attrs.push(attr);
+				lastAttr = attr;
+				attrIndent = indent;
+			}
 			continue;
 		}
  
@@ -174,4 +210,48 @@ function parseFile(text) {
 		if (cur.name) entries.push(cur); // Guard against a line that is nothing but the annotation
 	}
 	return entries;
+}
+
+// Removes up to `n` leading spaces/tabs from a line
+function stripIndent(line, n) {
+	var i = 0;
+	while (i < n && (line[i] === ' ' || line[i] === '\t')) i++;
+	return line.slice(i);
+}
+
+// Splits "Key: value" (indentation already removed) into { key, val }, or null if
+// the line has no usable key. Colons inside the key are written as "\:".
+function splitAttribute(body) {
+	var key = '';
+
+	for (var i = 0; i < body.length; i++) {
+		var c = body[i];
+
+		if (c === '\\' && (body[i + 1] === '\\' || body[i + 1] === ':')) {
+			key += body[i + 1];
+			i++;
+			continue;
+		}
+
+		if (c === ':') {
+			if (!key.trim()) return null;
+
+			var val = body.slice(i + 1);
+			if (val.charAt(0) === ' ') val = val.slice(1); // the one separator space
+			return { key: key.trim(), val: val };
+		}
+
+		key += c;
+	}
+
+	// No unescaped colon anywhere. Older files never escaped anything, so fall back
+	// to splitting at the first colon rather than losing the attribute.
+	var ci = body.indexOf(':');
+	if (ci > 0) {
+		var legacyVal = body.slice(ci + 1);
+		if (legacyVal.charAt(0) === ' ') legacyVal = legacyVal.slice(1);
+		return { key: body.slice(0, ci).trim(), val: legacyVal };
+	}
+
+	return null;
 }

@@ -73,9 +73,18 @@ function generatePassword(opts) {
 // Markup for the value input, wrapped so a generate icon can sit inside it.
 // Replaces a bare `<input class="modal-input attr-val">`.
 function genAttrValHTML(val) {
+	// A value with line breaks (a multi-line note, say) needs a textarea: an <input>
+	// would silently strip the line breaks, changing the value when it's saved.
+	// The line break right after <textarea> is ignored by the HTML parser, which
+	// keeps a value that itself starts with a line break intact.
+	var multi = String(val == null ? '' : val).indexOf('\n') !== -1;
+	var field = multi
+		? '<textarea class="modal-input attr-val attr-val-multi" rows="3" placeholder="Value">\n' + esc(val) + '</textarea>'
+		: '<input class="modal-input attr-val" type="text" placeholder="Value" value="' + esc(val) + '">';
+
 	return (
 		'<div class="attr-val-wrap">' +
-			'<input class="modal-input attr-val" type="text" placeholder="Value" value="' + esc(val) + '">' +
+			field +
 			'<button type="button" class="attr-gen-btn" title="Generate password">' +
 				'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
 					'<path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/>' +

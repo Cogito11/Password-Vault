@@ -93,6 +93,8 @@ function copyVal(btn) {
 //
 // Entry Name (N attributes)
 //     Key: Value
+//     Key: First line of a longer value
+//         and the lines that follow it, indented further
 //
 // Entry Name 2 (M attributes)
 //     Key: Value
@@ -100,7 +102,13 @@ function copyVal(btn) {
 // End
 //
 // WHY:
-// This creates a simple, human-readable and parseable text format.
+// This creates a simple, human-readable and parseable text format. Everything the
+// app writes reads back exactly as it was entered (see parseFile in vault-io.js):
+//   - values are written as-is, including leading/trailing spaces
+//   - a value with line breaks continues on following lines, indented deeper
+//   - colons and backslashes inside a KEY are escaped as "\\:" and "\\\\"
+//   - names and keys are always a single line (line breaks become spaces)
+// Blank (or whitespace-only) lines at the very end of a multi-line value are not kept.
 function buildFileText(entries) {
 	// Collect lines of text before joining
 	var lines = [];
@@ -108,13 +116,18 @@ function buildFileText(entries) {
 	entries.forEach(function (entry) {
 
 		// Header line for each entry, includes entry name and number of attributes
-		lines.push(entry.name + ' (' + entry.attrs.length + ' attributes)');
-		
+		lines.push(singleLine(entry.name) + ' (' + entry.attrs.length + ' attributes)');
+
 		// Add each attribute on its own indented line
-		entry.attrs.forEach(function (a) { 
-			lines.push('    ' + a.key + ': ' + a.val); 
+		entry.attrs.forEach(function (a) {
+			var valueLines = String(a.val == null ? '' : a.val).split(/\r\n|\r|\n/);
+
+			lines.push('    ' + escapeKey(singleLine(a.key)) + ': ' + valueLines[0]);
+
+			// Any further lines of the value are indented deeper than the key
+			for (var i = 1; i < valueLines.length; i++) lines.push('        ' + valueLines[i]);
 		});
-		
+
 		// Blank line between entries for readability
 		lines.push('');
 	});
@@ -125,6 +138,17 @@ function buildFileText(entries) {
 
 	// Join all lines into a single string with newline seperators
 	return lines.join('\n');
+}
+
+// Names and keys live on one line: line breaks become spaces
+function singleLine(s) {
+	return String(s == null ? '' : s).replace(/[\r\n]+/g, ' ');
+}
+
+// In a key, a colon would be mistaken for the key/value separator, so it (and the
+// backslash used to escape it) is escaped
+function escapeKey(key) {
+	return key.replace(/\\/g, '\\\\').replace(/:/g, '\\:');
 }
 
 

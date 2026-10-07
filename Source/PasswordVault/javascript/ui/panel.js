@@ -259,10 +259,13 @@ function renderPasswords(overrideEntries) {
 			
 			var safeVal = esc(attr.val);
 
+			// Values with line breaks (multi-line notes) are shown with their line breaks
+			var multiClass = String(attr.val).indexOf('\n') !== -1 ? ' multi' : '';
+
 			// Mask sensitive values by default
 			var valSpan = isSecret
-				? '<span class="pw-attr-val masked" id="v_' + uid + '">\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</span>'
-				: '<span class="pw-attr-val" id="v_' + uid + '">' + safeVal + '</span>';
+				? '<span class="pw-attr-val masked' + multiClass + '" id="v_' + uid + '">\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</span>'
+				: '<span class="pw-attr-val' + multiClass + '" id="v_' + uid + '">' + safeVal + '</span>';
 
 			// Add show button only for secrets
 			var showBtn = isSecret

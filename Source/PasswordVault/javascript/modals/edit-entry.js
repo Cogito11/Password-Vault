@@ -25,6 +25,9 @@ editModalOverlay.addEventListener('keydown', function (e) {
   
   var t = e.target;
   
+  // Enter inside a multi-line value adds a line instead of saving
+  if (t.tagName === 'TEXTAREA') return;
+
   if (t.classList.contains('attr-key') || t.classList.contains('attr-val')) 
   {
     e.preventDefault();
@@ -235,7 +238,7 @@ saveEditBtn.addEventListener('click', async function () {
   var attrs = [];
   editAttrRows.querySelectorAll('.attr-row').forEach(function (row) {
     var k = row.querySelector('.attr-key').value.trim();
-    var v = row.querySelector('.attr-val').value.trim();
+    var v = row.querySelector('.attr-val').value; // exactly as typed: a password may start or end with a space
     if (k) attrs.push({ key: k, val: v });
   });
 
