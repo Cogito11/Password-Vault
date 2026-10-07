@@ -1816,10 +1816,13 @@ body.reordering-attr * { cursor: grabbing !important; }
   padding-bottom: 14px;
   border-bottom: 1px solid var(--divider);
 }
-.settings-row:last-child {
+.settings-row:last-child,
+/* the row before a trailing slider row that is currently hidden */
+.settings-row:has(+ .settings-row[hidden]:last-child) {
   padding-bottom: 0;
   border-bottom: none;
 }
+.settings-row[hidden] { display: none; }
 .settings-row-text {
   flex: 1 1 260px;
   min-width: 0;
@@ -1842,6 +1845,7 @@ body.reordering-attr * { cursor: grabbing !important; }
 .settings-row-control .modal-input { width: 220px; max-width: 100%; }
 .settings-row-control .location-row .modal-input { width: 200px; }
 .settings-row-control .settings-length-row { width: 280px; max-width: 100%; }
+.settings-row-control .settings-length-row .gen-len-val { min-width: 48px; text-align: right; }
 .settings-hint.settings-warn { color: var(--amber); }
 .settings-hint[hidden],
 .settings-hint:empty { display: none; }

@@ -28,14 +28,26 @@ var GEN_CHARSETS = {
 	symbols: '!@#$%^&*()-_=+[]{}?/~'
 };
 
-// Random int in [0, max) - prefers crypto.getRandomValues when available.
+// Random int in [0, max), from the secure random source only.
+// There is deliberately no fallback to Math.random(): it isn't suitable for
+// passwords, so if secure randomness is missing we fail instead of quietly
+// producing weak ones.
 function genRandInt(max) {
-	if (window.crypto && window.crypto.getRandomValues) {
-		var buf = new Uint32Array(1);
-		window.crypto.getRandomValues(buf);
-		return buf[0] % max;
+	if (!(window.crypto && window.crypto.getRandomValues)) {
+		throw new Error('Secure random number generation is not available.');
 	}
-	return Math.floor(Math.random() * max);
+
+	// Rejection sampling: values from the final, partial bucket are thrown away so
+	// every result is exactly equally likely (a plain "% max" slightly favours
+	// the smaller numbers).
+	var limit = Math.floor(4294967296 / max) * max;
+	var buf = new Uint32Array(1);
+
+	do {
+		window.crypto.getRandomValues(buf);
+	} while (buf[0] >= limit);
+
+	return buf[0] % max;
 }
 
 // Generate a password string from the given options.

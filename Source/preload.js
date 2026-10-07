@@ -19,6 +19,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // On-demand file reads
     readBookFiles: (bookPath)  => ipcRenderer.invoke('read-book-files', bookPath),
     readVaultFiles: (vaultPath) => ipcRenderer.invoke('read-vault-files', vaultPath),
+
+  // Security
+  /** Ask the main process to empty the clipboard after `seconds`, if it still holds `text` */
+  scheduleClipboardClear: (text, seconds) => ipcRenderer.invoke('schedule-clipboard-clear', String(text), Number(seconds)),
+
+  /** Be told when the computer is locked or goes to sleep (cb receives the reason) */
+  onSystemLock: (cb) => {
+    if (typeof cb === 'function') ipcRenderer.on('system-lock', (_event, reason) => cb(String(reason)));
+  },
 });
 
 contextBridge.exposeInMainWorld('vault', {

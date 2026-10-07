@@ -304,6 +304,9 @@ async function saveNewCollection() {
 		closeModal();
 		showToast(filename + (bookIsEncrypted() ? ' saved (encrypted)' : ' saved'));
 
+		// Nothing needs the staged entries any more, don't keep their values around
+		modalEntryList = [];
+
 		var newBtn = findByData(collList, 'file', filename);
 		if (newBtn) openCollection(filename, newBtn);
 		

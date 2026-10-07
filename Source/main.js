@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session, clipboard, powerMonitor } = require('electron');
 const fs   = require('fs');
 const path = require('path');
 const { writeFileAtomic } = require('./fs-atomic');
@@ -53,6 +53,46 @@ function isIgnoredFolder(name) {
   return name.startsWith('.') || name === '$RECYCLE.BIN' || name === 'System Volume Information' || name === 'node_modules';
 }
 
+let mainWindow = null;
+
+// ── Clipboard clearing ──────────────────────────────────────────────
+// After a value is copied (and the user has turned this on), the clipboard is
+// emptied again after a delay, but only if it still holds that same text, so
+// something the user copied afterwards is never wiped. This lives here rather
+// than in the page so it survives a page reload and can be flushed on quit.
+let clipboardTimer = null;
+let clipboardPending = null;
+
+function runClipboardClear() {
+  clearTimeout(clipboardTimer);
+  clipboardTimer = null;
+
+  if (clipboardPending !== null) {
+    try {
+      if (clipboard.readText() === clipboardPending) clipboard.clear();
+    } catch (e) { /* clipboard unavailable, nothing to do */ }
+  }
+
+  clipboardPending = null;
+}
+
+function scheduleClipboardClear(text, seconds) {
+  if (typeof text !== 'string' || !text) return false;
+
+  const secs = Math.min(600, Math.max(1, Math.round(Number(seconds)) || 30));
+
+  clearTimeout(clipboardTimer);
+  clipboardPending = text;
+  clipboardTimer = setTimeout(runClipboardClear, secs * 1000);
+  return true;
+}
+
+// Tell the page the computer was locked or is going to sleep (it decides what to do)
+function notifySystemLock(reason) {
+  runClipboardClear(); // leaving the computer: don't leave a copied password behind
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('system-lock', reason);
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
@@ -75,6 +115,9 @@ function createWindow() {
     },
   });
 
+  mainWindow = win;
+  win.on('closed', () => { if (mainWindow === win) mainWindow = null; });
+
   win.once('ready-to-show', () => {
     win.show();
   });
@@ -83,6 +126,12 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  ipcMain.handle('schedule-clipboard-clear', (_event, text, seconds) => scheduleClipboardClear(text, seconds));
+
+  // 'lock-screen' is only emitted on Windows and macOS; 'suspend' on all platforms
+  powerMonitor.on('lock-screen', () => notifySystemLock('lock-screen'));
+  powerMonitor.on('suspend', () => notifySystemLock('suspend'));
+
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     callback(true);
   });
@@ -170,6 +219,9 @@ app.whenReady().then(() => {
   
   createWindow();
 });
+
+// Don't leave a copied value on the clipboard just because the app was closed
+app.on('before-quit', runClipboardClear);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

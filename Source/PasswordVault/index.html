@@ -360,6 +360,77 @@
             </div>
           </div>
 
+          <!-- Security -->
+          <div class="settings-section">
+            <div class="settings-section-title">Security</div>
+
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Auto-lock books when idle</div>
+                <div class="settings-info-description">Locks every unlocked encrypted book after a period with no mouse or keyboard activity.</div>
+              </div>
+              <div class="settings-row-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsAutoLock">
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+            </div>
+            <div class="settings-row" id="settingsAutoLockMinutesRow" hidden>
+              <div class="settings-row-text">
+                <div class="settings-row-label">Lock after</div>
+                <div class="settings-info-description">How long to wait without any activity.</div>
+              </div>
+              <div class="settings-row-control">
+                <div class="settings-length-row">
+                  <input class="gen-len-slider" id="settingsAutoLockMinutes" type="range" min="1" max="60" value="5">
+                  <span class="gen-len-val" id="settingsAutoLockMinutesValue">5 min</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Lock books when the computer locks or sleeps</div>
+                <div class="settings-info-description">Locks all books when your screen is locked or the computer goes to sleep. Screen-lock detection is available on Windows and macOS; sleep is detected everywhere.</div>
+              </div>
+              <div class="settings-row-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsLockOnSystem">
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row-text">
+                <div class="settings-row-label">Clear clipboard after copying</div>
+                <div class="settings-info-description">Empties the clipboard some time after you copy a value, as long as it still holds what you copied.</div>
+              </div>
+              <div class="settings-row-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsClipClear">
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+            </div>
+            <div class="settings-row" id="settingsClipSecondsRow" hidden>
+              <div class="settings-row-text">
+                <div class="settings-row-label">Clear after</div>
+                <div class="settings-info-description">How long a copied value stays on the clipboard.</div>
+              </div>
+              <div class="settings-row-control">
+                <div class="settings-length-row">
+                  <input class="gen-len-slider" id="settingsClipSeconds" type="range" min="5" max="120" value="30">
+                  <span class="gen-len-val" id="settingsClipSecondsValue">30 s</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Import from CSV -->
           <div class="settings-section">
             <div class="settings-section-title">Import from CSV</div>
@@ -662,6 +733,7 @@
   <script src="javascript/vault/loader.js"></script>
   <script src="javascript/vault/books.js"></script>
   <script src="javascript/vault/collections.js"></script>
+  <script src="javascript/vault/autolock.js"></script>
 
   <script src="javascript/ui/sidebar.js"></script>
   <script src="javascript/ui/sidebar-resize.js"></script>

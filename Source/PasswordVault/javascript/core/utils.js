@@ -49,10 +49,11 @@ function showToast(msg) {
 function copyVal(btn) {
 	if (!btn) return;
 
-	var text = btn.dataset && btn.dataset.val ? btn.dataset.val : '';
+	// The value is looked up from the data on screen when the button is pressed
+	// (see attrValueFromButton in panel.js), it isn't stored in the page.
+	var text = typeof attrValueFromButton === 'function' ? attrValueFromButton(btn) : '';
 
 	if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-		// Copy the text from the buttons data attribute
 		navigator.clipboard.writeText(text).then(function () {
 			// Save original button label
 			var prev = btn.textContent;
@@ -61,7 +62,16 @@ function copyVal(btn) {
 			btn.textContent = 'DONE';
 			btn.classList.add('ok');
 
-			showToast('Copied to clipboard');
+			// Optionally have the clipboard emptied again after a while
+			var settings = typeof getAppSettings === 'function' ? getAppSettings() : null;
+			var willClear = !!(settings && settings.clearClipboardEnabled && text && window.electronAPI && window.electronAPI.scheduleClipboardClear);
+
+			if (willClear) {
+				window.electronAPI.scheduleClipboardClear(text, settings.clearClipboardSeconds);
+				showToast('Copied \u2014 clipboard clears in ' + settings.clearClipboardSeconds + 's');
+			} else {
+				showToast('Copied to clipboard');
+			}
 
 			// Restore original button after delay
 			setTimeout(function () { 

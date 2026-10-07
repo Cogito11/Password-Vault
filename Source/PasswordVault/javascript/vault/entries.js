@@ -65,6 +65,9 @@ async function saveNewEntries() {
 
 		// Show success feedback
 		showToast(modalEntryList.length + ' password' + (modalEntryList.length === 1 ? '' : 's') + ' added');
+
+		// Nothing needs the staged entries any more, don't keep their values around
+		modalEntryList = [];
 		
 		// Update main panel entry count
 		panelCount.textContent = combined.length + ' password' + (combined.length === 1 ? '' : 's');

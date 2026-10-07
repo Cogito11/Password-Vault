@@ -115,6 +115,9 @@ function relockBook(bookName, options) {
 
 	// If this book was active, reset entire UI state
 	if (activeBookName === bookName) {
+		// Take its decrypted entries (and anything half-typed) off the screen too
+		clearDecryptedView();
+
 		activeBookName = null;
 		activeBookHandle = null;
 		collections = {};
@@ -134,6 +137,8 @@ function relockBook(bookName, options) {
 	else if (!isMultiBookMode) 
 	{
 		// single book mode reset
+		clearDecryptedView();
+
 		collections = {};
 		vaultKey = null;
 		isEncryptedVault = false;
@@ -223,6 +228,8 @@ async function deleteBook(bookName) {
 
 		// Reset UI if deleted book was active
 		if (activeBookName === bookName) {
+			clearDecryptedView();
+
 			activeBookName = null;
 			activeBookHandle = null;
 			collections = {};
