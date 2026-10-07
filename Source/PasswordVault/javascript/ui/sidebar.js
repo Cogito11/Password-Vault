@@ -213,7 +213,7 @@ function addBookBtn(bookName, isEncrypted) {
 // - Removes encryption key from memory
 function injectRelockBtn(bookName) {
 
-	var btn = booksList.querySelector('[data-book="' + bookName + '"]');
+	var btn = findByData(booksList, 'book', bookName);
 	
 	// Skip if not found or already has relock button
 	if (!btn || btn.querySelector('.book-relock-btn')) return;

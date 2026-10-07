@@ -126,3 +126,61 @@ function buildFileText(entries) {
 	// Join all lines into a single string with newline seperators
 	return lines.join('\n');
 }
+
+
+// ═══════════════════════════════
+// NAMES - turning what the user typed into a safe book / collection name
+// ═══════════════════════════════
+
+// Windows treats these as devices, with or without an extension (CON, NUL.txt...)
+var RESERVED_FILE_NAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$/i;
+var MAX_NAME_LENGTH = 100;
+
+// Cleans a typed name so it can be used as a folder / file name on any OS.
+// Only characters that genuinely can't be used are removed, so accented and
+// non-Latin names ("Café", "Банк", "银行") are kept as typed.
+//
+// Returns { name, changed, error }
+//   name    - the cleaned name ('' if nothing usable is left)
+//   changed - true if cleaning altered what was typed (beyond trimming), so the
+//             UI can tell the user what the name will actually be
+//   error   - a message if the name can't be used at all, otherwise null
+function sanitizeName(raw) {
+	var typed = String(raw == null ? '' : raw).trim();
+
+	var name = typed
+		.replace(/[\u0000-\u001f\u007f<>:"\/\\|?*]/g, '') // characters no common file system allows
+		.replace(/\s+/g, ' ')                              // collapse runs of whitespace
+		.replace(/^\.+/, '')                               // a leading dot makes a hidden file on macOS/Linux
+		.trim()
+		.replace(/[. ]+$/, '');                            // Windows silently drops trailing dots and spaces
+
+	// Cut by characters, not UTF-16 units, so an emoji is never split in half
+	var chars = Array.from(name);
+	if (chars.length > MAX_NAME_LENGTH) name = chars.slice(0, MAX_NAME_LENGTH).join('').trim();
+
+	var error = null;
+	if (!name) error = 'Enter a valid name.';
+	else if (RESERVED_FILE_NAMES.test(name)) error = '"' + name + '" is a reserved name on Windows. Please choose another.';
+
+	return { name: name, changed: name !== typed, error: error };
+}
+
+// Case- and accent-form-insensitive key for comparing names. Windows and macOS
+// treat "Banking" and "banking" as the same file, so every duplicate check goes
+// through this instead of comparing raw strings.
+function nameKey(s) {
+	return String(s == null ? '' : s).normalize('NFC').toLowerCase();
+}
+
+// Finds the first descendant whose data-<name> attribute equals value.
+// Replaces querySelector('[data-file="' + value + '"]'), which throws a
+// SyntaxError for any value containing a quote, bracket or backslash.
+function findByData(root, name, value) {
+	if (!root) return null;
+	var nodes = root.querySelectorAll('[data-' + name + ']');
+	for (var i = 0; i < nodes.length; i++) {
+		if (nodes[i].dataset[name] === value) return nodes[i];
+	}
+	return null;
+}

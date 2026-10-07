@@ -239,6 +239,9 @@ saveEditBtn.addEventListener('click', async function () {
     if (k) attrs.push({ key: k, val: v });
   });
 
+  // Remember the current entry so it can be put back if saving fails
+  var previousEntry = collections[editingCollName][editingIdx];
+
   // editingCollName
   collections[editingCollName][editingIdx] = { name: name, attrs: attrs };
   if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
@@ -258,7 +261,7 @@ saveEditBtn.addEventListener('click', async function () {
     }
 
     // editingCollName
-    var sideBtn = collList.querySelector('[data-file="' + editingCollName + '"]');
+    var sideBtn = findByData(collList, 'file', editingCollName);
     if (sideBtn) sideBtn.querySelector('.coll-n').textContent = collections[editingCollName].length + ' password' + (collections[editingCollName].length !== 1 ? 's' : '');
     
     editModalOverlay.classList.remove('open');
@@ -268,6 +271,9 @@ saveEditBtn.addEventListener('click', async function () {
     refreshActiveView();
 
   } catch (err) {
+
+    // The save failed, so put the old entry back: what's in memory must match what's on disk
+    collections[editingCollName][editingIdx] = previousEntry;
 
     editModalInfo.textContent = 'Error: ' + err.message;
     editModalInfo.style.color = '#e05555';
@@ -307,7 +313,7 @@ async function deleteEntry(idx, collName) {
     }
 
     var remaining = collections[collName].length;
-    var sideBtn = collList.querySelector('[data-file="' + collName + '"]');
+    var sideBtn = findByData(collList, 'file', collName);
     if (sideBtn) sideBtn.querySelector('.coll-n').textContent = remaining + ' password' + (remaining !== 1 ? 's' : '');
 
     var allBtnEl = collList.querySelector('.all-btn');

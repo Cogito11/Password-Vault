@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
 const fs   = require('fs');
 const path = require('path');
+const { writeFileAtomic } = require('./fs-atomic');
 
 const configPath = path.join(app.getPath('userData'), 'vault-config.json');
 
@@ -18,15 +19,38 @@ function getIconPath() {
 
 function getConfig() {
   if (_config) return _config;
-  try { _config = JSON.parse(fs.readFileSync(configPath, 'utf8')); }
-  catch(e) { _config = {}; }
+
+  let raw = null;
+  try { raw = fs.readFileSync(configPath, 'utf8'); }
+  catch (e) { /* no config yet, that's fine */ }
+
+  if (raw === null) {
+    _config = {};
+    return _config;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    _config = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  } catch (e) {
+    // The file exists but is unreadable. Keep a copy instead of silently
+    // starting over (the next save would otherwise overwrite it for good).
+    try { fs.copyFileSync(configPath, configPath + '.corrupt'); } catch (_) { /* best effort */ }
+    _config = {};
+  }
+
   return _config;
 }
 
 function setConfig(key, val) {
   const conf = getConfig();
   conf[key] = val;
-  fs.writeFileSync(configPath, JSON.stringify(conf));
+  writeFileAtomic(configPath, JSON.stringify(conf));
+}
+
+// Folders that should never be treated as password books
+function isIgnoredFolder(name) {
+  return name.startsWith('.') || name === '$RECYCLE.BIN' || name === 'System Volume Information' || name === 'node_modules';
 }
 
 function createWindow() {
@@ -52,19 +76,13 @@ function createWindow() {
   });
 
   win.once('ready-to-show', () => {
-    console.log('ready-to-show fired at', Date.now());
     win.show();
-  });
-
-  win.webContents.on('did-finish-load', () => {
-    console.log('did-finish-load fired at', Date.now());
   });
 
   win.loadFile('PasswordVault/index.html');
 }
 
 app.whenReady().then(() => {
-  console.time('ready-to-createWindow');
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     callback(true);
   });
@@ -103,6 +121,8 @@ app.whenReady().then(() => {
     for (const entry of entries) {
       if (entry.isDirectory()) 
       {
+        if (isIgnoredFolder(entry.name)) continue;
+
         const bookPath = path.join(vaultPath, entry.name);
         const isEncrypted = fs.existsSync(path.join(bookPath, 'vault.enc'));
         subBooks.push({ name: entry.name, path: bookPath, isEncrypted });
@@ -149,7 +169,6 @@ app.whenReady().then(() => {
   });
   
   createWindow();
-  console.timeEnd('ready-to-createWindow');
 });
 
 app.on('window-all-closed', () => {

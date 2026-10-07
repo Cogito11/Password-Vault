@@ -49,12 +49,15 @@
   // @param {string} title - dialog heading
   // @param {string} message - body text
   // @param {string} okLabel - confirm button label (default: "Delete")
+  // @param {object} options - { hideCancel: true } turns it into a plain notice
+  //                           with a single OK button
   // @returns {Promise<boolean>}
-  window.showConfirm = function (title, message, okLabel) {
+  window.showConfirm = function (title, message, okLabel, options) {
     // Set UI text (with defaults)
     titleEl.textContent = title || 'Confirm';
     msgEl.textContent = message || '';
     okBtn.textContent = okLabel || 'Delete';
+    cancelBtn.style.display = (options && options.hideCancel) ? 'none' : '';
 
     // Show modal
     overlay.classList.add('open');

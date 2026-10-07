@@ -83,6 +83,7 @@ vaultUnlockBtn.addEventListener('click', async function () {
 		{
 			var info = bookHandles[unlockingBookName];
 			info.key = key;
+			info.salt = salt;
 			info.collections = payload.collections || {};
 			info.isUnlocked = true;
 
@@ -93,7 +94,7 @@ vaultUnlockBtn.addEventListener('click', async function () {
 				meta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + ' \xb7 encrypted';
 			}
 
-			var bookBtn = booksList.querySelector('[data-book="' + unlockingBookName + '"]');
+			var bookBtn = findByData(booksList, 'book', unlockingBookName);
 			if (bookBtn) 
 			{
 				var lk = bookBtn.querySelector('.book-lock');
@@ -117,10 +118,11 @@ vaultUnlockBtn.addEventListener('click', async function () {
 			if (info) 
 			{
 				info.key = key;
+				info.salt = salt;
 				info.collections = collections;
 				info.isUnlocked = true;
 
-				var bookBtn = booksList.querySelector('[data-book="' + vaultName() + '"]');
+				var bookBtn = findByData(booksList, 'book', vaultName());
 				if (bookBtn) 
 				{
 					var lk = bookBtn.querySelector('.book-lock');

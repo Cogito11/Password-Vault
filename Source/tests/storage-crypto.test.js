@@ -69,7 +69,7 @@ test('packEncrypted and decrypt round-trip the vault payload correctly', async (
   assert.deepEqual(decoded, payload);
 });
 
-test('reEncryptVault preserves the salt and writes a new encrypted payload', async () => {
+test('reEncryptVault reuses the in-memory salt, never reads the file, and asks for a backup', async () => {
   const sandbox = loadCryptoModule();
   const password = 'master-password';
   const originalPayload = { collections: { Inbox: [{ name: 'GitHub', attrs: [{ key: 'token', val: 'abc123' }] }] } };
@@ -78,33 +78,92 @@ test('reEncryptVault preserves the salt and writes a new encrypted payload', asy
   const salt = originalBytes.slice(0, 16);
   const key = await sandbox.deriveKey(password, salt);
 
-  let writtenBytes = null;
-  let readCalls = 0;
+  let written = null;
+  let diskReads = 0;
 
-  sandbox.getBookKey = () => key;
-  sandbox.bookReadBin = () => {
-    readCalls += 1;
-    return originalBytes;
-  };
-  sandbox.bookWriteBin = (filename, bytes) => {
-    writtenBytes = bytes;
-  };
+  sandbox.isMultiBookMode = true;
+  sandbox.activeBookName = 'Work';
+  sandbox.bookHandles = { Work: { key, salt, isEncrypted: true, isUnlocked: true, collections: originalPayload.collections } };
   sandbox.collections = originalPayload.collections;
+  sandbox.namedBookReadBin = () => { diskReads += 1; return originalBytes; };
+  sandbox.bookReadBin = () => { diskReads += 1; return originalBytes; };
+  sandbox.namedBookWriteBin = (book, filename, bytes, opts) => { written = { book, filename, bytes, opts }; };
 
   await sandbox.reEncryptVault();
 
-  assert.equal(readCalls, 1);
-  assert.ok(writtenBytes instanceof Uint8Array);
-  assert.equal(writtenBytes.slice(0, 16).length, 16);
-  assert.deepEqual(writtenBytes.slice(0, 16), salt);
-  assert.notDeepEqual(writtenBytes.slice(16, 28), originalBytes.slice(16, 28));
+  assert.equal(diskReads, 0, 'the salt must come from memory, not from re-reading the file');
+  assert.equal(written.book, 'Work');
+  assert.equal(written.filename, 'vault.enc');
+  assert.deepEqual({ ...written.opts }, { backup: true });
+  assert.ok(written.bytes instanceof Uint8Array);
+  assert.deepEqual(written.bytes.slice(0, 16), salt);
+  assert.notDeepEqual(written.bytes.slice(16, 28), originalBytes.slice(16, 28));
 
-  const newIv = writtenBytes.slice(16, 28);
-  const newCiphertext = writtenBytes.slice(28);
-  const decrypted = await cryptoApi.subtle.decrypt({ name: 'AES-GCM', iv: newIv }, key, newCiphertext);
-  const decoded = JSON.parse(new TextDecoder().decode(decrypted));
+  const decrypted = await cryptoApi.subtle.decrypt({ name: 'AES-GCM', iv: written.bytes.slice(16, 28) }, key, written.bytes.slice(28));
+  assert.deepEqual(JSON.parse(new TextDecoder().decode(decrypted)), { collections: originalPayload.collections });
+});
 
-  assert.deepEqual(decoded, { collections: originalPayload.collections });
+test('reEncryptBook refuses to write when the book is locked (no key or salt in memory)', async () => {
+  const sandbox = loadCryptoModule();
+  let wrote = false;
+
+  sandbox.isMultiBookMode = true;
+  sandbox.activeBookName = 'Work';
+  sandbox.bookHandles = { Work: { key: null, salt: null, isEncrypted: true, isUnlocked: false, collections: {} } };
+  sandbox.collections = {};
+  sandbox.namedBookWriteBin = () => { wrote = true; };
+
+  await assert.rejects(() => sandbox.reEncryptBook('Work'), /locked/i);
+  assert.equal(wrote, false);
+});
+
+test('reEncryptBook saves a non-active book from its own collections', async () => {
+  const sandbox = loadCryptoModule();
+  const password = 'pw-for-other-book';
+  const bytes = await sandbox.packEncrypted({ collections: {} }, password);
+  const salt = bytes.slice(0, 16);
+  const key = await sandbox.deriveKey(password, salt);
+  const otherCollections = { Other: [{ name: 'Site', attrs: [{ key: 'Password', val: 'x' }] }] };
+
+  let written = null;
+  sandbox.isMultiBookMode = true;
+  sandbox.activeBookName = 'Active';
+  sandbox.bookHandles = { Other: { key, salt, isEncrypted: true, isUnlocked: true, collections: otherCollections } };
+  sandbox.collections = { ShouldNotBeSaved: [] };
+  sandbox.namedBookWriteBin = (book, filename, b) => { written = b; };
+
+  await sandbox.reEncryptBook('Other');
+
+  const pt = await cryptoApi.subtle.decrypt({ name: 'AES-GCM', iv: written.slice(16, 28) }, key, written.slice(28));
+  assert.deepEqual(JSON.parse(new TextDecoder().decode(pt)), { collections: otherCollections });
+});
+
+test('verifyEncryptedBook accepts a file that decrypts to exactly the expected data', async () => {
+  const sandbox = loadCryptoModule();
+  const collections = { A: [{ name: 'x', attrs: [{ key: 'k', val: 'v' }] }] };
+  const bytes = await sandbox.packEncrypted({ collections }, 'pw');
+  const key = await sandbox.deriveKey('pw', bytes.slice(0, 16));
+  sandbox.namedBookReadBin = () => bytes;
+
+  await sandbox.verifyEncryptedBook('Book', key, collections);
+});
+
+test('verifyEncryptedBook rejects wrong data, a damaged file and a truncated file', async () => {
+  const sandbox = loadCryptoModule();
+  const collections = { A: [{ name: 'x', attrs: [] }] };
+  const bytes = await sandbox.packEncrypted({ collections }, 'pw');
+  const key = await sandbox.deriveKey('pw', bytes.slice(0, 16));
+
+  sandbox.namedBookReadBin = () => bytes;
+  await assert.rejects(() => sandbox.verifyEncryptedBook('Book', key, { A: [] }), /does not match/);
+
+  const damaged = bytes.slice();
+  damaged[damaged.length - 1] ^= 0xff;
+  sandbox.namedBookReadBin = () => damaged;
+  await assert.rejects(() => sandbox.verifyEncryptedBook('Book', key, collections));
+
+  sandbox.namedBookReadBin = () => bytes.slice(0, 20);
+  await assert.rejects(() => sandbox.verifyEncryptedBook('Book', key, collections), /too short/);
 });
 
 test('vault I/O can save and read encrypted bytes through the active book path', async () => {

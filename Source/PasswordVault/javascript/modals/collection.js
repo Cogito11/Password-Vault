@@ -195,10 +195,42 @@ function renderModalEntries() {
 }
 
 function updateSaveBtn() {
-	var ready = entryModalMode === 'entry' ? modalEntryList.length > 0 : !!collNameInput.value.trim();
+	var count = modalEntryList.length + ' password' + (modalEntryList.length === 1 ? '' : 's') + ' ready.';
+	var info = count;
+	var ready;
+
+	if (entryModalMode === 'entry') 
+	{
+		ready = modalEntryList.length > 0;
+	} 
+	else 
+	{
+		var typed = collNameInput.value.trim();
+		ready = !!typed;
+
+		if (typed) 
+		{
+			var san = sanitizeName(typed);
+
+			if (san.error) 
+			{
+				ready = false;
+				info = san.error;
+			} 
+			else if (collectionNameTaken(san.name + '.txt')) 
+			{
+				ready = false;
+				info = 'A collection named "' + san.name + '" already exists.';
+			} 
+			else if (san.changed) 
+			{
+				info = 'Will be saved as "' + san.name + '". ' + count;
+			}
+		}
+	}
 
 	saveCollBtn.disabled = !ready;
-	modalInfo.textContent = modalEntryList.length + ' password' + (modalEntryList.length === 1 ? '' : 's') + ' ready.';
+	modalInfo.textContent = info;
 }
 
 collNameInput.addEventListener('input', updateSaveBtn);
@@ -218,18 +250,20 @@ saveCollBtn.addEventListener('click', async function () {
 
 // Save a brand-new collection file with all staged entries.
 async function saveNewCollection() {
-	var collName = collNameInput.value.trim();
-	if (!collName) return;
+	if (!collNameInput.value.trim()) return;
 
-	var filename = collName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim() + '.txt';
+	var san = sanitizeName(collNameInput.value);
+	var problem = san.error || (collectionNameTaken(san.name + '.txt') ? 'A collection named "' + san.name + '" already exists.' : null);
 
-	if (collections[filename]) 
+	if (problem) 
 	{
-		modalInfo.textContent = 'A collection with that name already exists.';
+		modalInfo.textContent = problem;
 		modalInfo.style.color = '#e05555';
 		setTimeout(function () { window.focus(); modalInfo.style.color = ''; }, 3000);
 		return;
 	}
+
+	var filename = san.name + '.txt';
 
 	var newEntries = modalEntryList.slice();
 
@@ -267,7 +301,7 @@ async function saveNewCollection() {
 		closeModal();
 		showToast(filename + (bookIsEncrypted() ? ' saved (encrypted)' : ' saved'));
 
-		var newBtn = collList.querySelector('[data-file="' + filename + '"]');
+		var newBtn = findByData(collList, 'file', filename);
 		if (newBtn) openCollection(filename, newBtn);
 		
 	} catch (err) {

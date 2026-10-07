@@ -188,6 +188,28 @@ function updatePwStrength(pw, bar, label) {
 	}
 }
 
+// True if renaming this book to newName would collide with another book or folder,
+// ignoring case ("Work" and "work" are the same folder on Windows and macOS).
+// Changing only the capitalisation of this book's own name is fine.
+function bookRenameConflict(info, oldName, newName) {
+	if (nameKey(newName) === nameKey(oldName)) return false;
+
+	// Other books we already know about
+	var known = Object.keys(bookHandles).some(function (n) { return n !== oldName && nameKey(n) === nameKey(newName); });
+	if (known) return true;
+
+	// Folders that exist on disk but aren't loaded (added outside the app)
+	var base = isMultiBookMode
+		? _electronVaultPath
+		: info.path.substring(0, Math.max(info.path.lastIndexOf('/'), info.path.lastIndexOf('\\')));
+
+	try {
+		return window.vault.readDir(base).some(function (e) { return nameKey(e.name) === nameKey(newName); });
+	} catch (_) {
+		return false;
+	}
+}
+
 // Enable/disable the Save button based on current field values. 
 function validateEditBook() {
 	var info = bookHandles[editingBookName];
@@ -196,10 +218,40 @@ function validateEditBook() {
 	saveEditBookBtn.disabled = false;
 	editBookInfo.textContent = '';
 
+	// Name: must be usable, and must not collide with another book
+	var nameField = document.getElementById('ebNameInput');
+	if (nameField) 
+	{
+		var san = sanitizeName(nameField.value);
+
+		if (san.error) 
+		{
+			editBookInfo.textContent = san.error;
+			saveEditBookBtn.disabled = true;
+			return;
+		}
+
+		if (san.name !== editingBookName && bookRenameConflict(info, editingBookName, san.name)) 
+		{
+			editBookInfo.textContent = 'A book named "' + san.name + '" already exists.';
+			saveEditBookBtn.disabled = true;
+			return;
+		}
+
+		if (san.changed) editBookInfo.textContent = 'Will be renamed to "' + san.name + '".';
+	}
+
 	if (info.isEncrypted && info.isUnlocked) 
 	{
 		var newPw = (document.getElementById('ebNewPw') || {}).value || '';
 		var conf  = (document.getElementById('ebNewPwConfirm') || {}).value || '';
+
+		if (newPw && newPw.length < 6) 
+		{
+			editBookInfo.textContent = 'Password too short (min 6 chars).';
+			saveEditBookBtn.disabled = true;
+			return;
+		}
 
 		if (newPw && newPw !== conf) 
 		{
@@ -247,59 +299,87 @@ saveEditBookBtn.addEventListener('click', async function () {
 	var info = bookHandles[editingBookName];
 	if (!info) return;
 
+	var showProblem = function (msg) {
+		editBookInfo.textContent = msg;
+		saveEditBookBtn.disabled = false;
+		saveEditBookBtn.textContent = 'Save Changes';
+	};
+
+	// ---- Check EVERYTHING before changing anything, so a problem with (say) the
+	// ---- new name can't leave the encryption half-changed.
 	var nameInput = document.getElementById('ebNameInput');
-	var newName = nameInput ? nameInput.value.trim().replace(/[^a-zA-Z0-9 _\-]/g, '').trim() : '';
-	if (!newName) 
-	{ 
-		editBookInfo.textContent = 'Enter a valid book name.'; 
-		return; 
+	var san = sanitizeName(nameInput ? nameInput.value : '');
+	if (san.error) { showProblem(san.error); return; }
+
+	var newName = san.name;
+	var renaming = newName !== editingBookName;
+
+	if (renaming && bookRenameConflict(info, editingBookName, newName)) 
+	{
+		showProblem('A book named "' + newName + '" already exists.');
+		return;
+	}
+
+	var newPw = '';
+	var encPw = '';
+	var changingPassword = false;
+	var encrypting = false;
+
+	if (info.isEncrypted && info.isUnlocked) 
+	{
+		newPw = (document.getElementById('ebNewPw') || {}).value || '';
+		var conf = (document.getElementById('ebNewPwConfirm') || {}).value || '';
+
+		if (newPw) 
+		{
+			if (newPw.length < 6) { showProblem('Password too short (min 6 chars).'); return; }
+			if (newPw !== conf) { showProblem('Passwords do not match.'); return; }
+			changingPassword = true;
+		}
+	} 
+	else if (!info.isEncrypted) 
+	{
+		var tog = document.getElementById('ebEncToggle');
+
+		if (tog && tog.checked) 
+		{
+			encPw = (document.getElementById('ebEncPw') || {}).value || '';
+			var encConf = (document.getElementById('ebEncPwConfirm') || {}).value || '';
+
+			if (encPw.length < 6) { showProblem('Password too short (min 6 chars).'); return; }
+			if (encPw !== encConf) { showProblem('Passwords do not match.'); return; }
+			encrypting = true;
+		}
 	}
 
 	saveEditBookBtn.disabled = true;
 	saveEditBookBtn.textContent = 'Saving...';
 
+	var encryptionApplied = false;
+
 	try {
 		// Step 1 - encryption changes
-		if (info.isEncrypted && info.isUnlocked) 
+		if (changingPassword) 
 		{
-			var newPw = (document.getElementById('ebNewPw') || {}).value || '';
-			var conf = (document.getElementById('ebNewPwConfirm') || {}).value || '';
-
-			if (newPw && newPw === conf) 
-			{
-				await doChangeBookPassword(editingBookName, newPw);
-				showToast('Password changed');
-			}
+			await doChangeBookPassword(editingBookName, newPw);
+			encryptionApplied = true;
+			showToast('Password changed');
 		} 
-		else if (!info.isEncrypted) 
+		else if (encrypting) 
 		{
-			var tog = document.getElementById('ebEncToggle');
-
-			if (tog && tog.checked) 
-			{
-				var encPw = (document.getElementById('ebEncPw') || {}).value || '';
-				await doEncryptBook(editingBookName, encPw);
-			}
+			await doEncryptBook(editingBookName, encPw);
+			encryptionApplied = true;
 		}
 
 		// Step 2 - rename
-		if (newName !== editingBookName) 
-		{
-			if (bookHandles[newName]) 
-			{
-				editBookInfo.textContent = 'A book with that name already exists.';
-				saveEditBookBtn.disabled = false;
-				saveEditBookBtn.textContent = 'Save Changes';
-				return;
-			}
-			await doRenameBook(editingBookName, newName);
-		}
+		if (renaming) await doRenameBook(editingBookName, newName);
 
 		editBookOverlay.classList.remove('open');
 		showToast('Book updated');
 
 	} catch (err) {
-		editBookInfo.textContent = 'Error: ' + err.message;
+		// Be accurate about what did happen if only part of the edit went through
+		editBookInfo.textContent = 'Error: ' + err.message + (encryptionApplied ? ' (The encryption change was already saved.)' : '');
 		editBookInfo.style.color = '#e05555';
 		setTimeout(function () { window.focus(); editBookInfo.style.color = ''; }, 3000);
 	}

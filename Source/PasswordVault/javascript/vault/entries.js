@@ -45,7 +45,7 @@ async function saveNewEntries() {
 		// UI Updates
 
 		// Update sidebar count for this specific collection
-		var sideBtn = collList.querySelector('[data-file="' + activeFile + '"]');
+		var sideBtn = findByData(collList, 'file', activeFile);
 		
 		if (sideBtn) {
 			sideBtn.querySelector('.coll-n').textContent = combined.length + ' password' + (combined.length !== 1 ? 's' : '');
@@ -73,6 +73,10 @@ async function saveNewEntries() {
 		renderPasswords();
 
 	} catch (err) {
+
+		// The save failed: restore the previous list so memory matches what's on disk
+		collections[activeFile] = existing;
+		if (isMultiBookMode && activeBookName) bookHandles[activeBookName].collections = collections;
 
 		// Show error message inside modal
 		modalInfo.textContent = 'Error: ' + err.message;

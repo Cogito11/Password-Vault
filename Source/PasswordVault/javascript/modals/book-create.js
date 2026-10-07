@@ -132,20 +132,51 @@ bookPw.addEventListener('input', function () {
 	validateBookForm();
 });
 
+// True if anything in parentPath already has this name, ignoring case. Windows and
+// macOS treat "Work" and "work" as the same folder, and this also catches folders
+// that were added outside the app after it scanned the vault.
+function bookNameTaken(parentPath, name) {
+	var key = nameKey(name);
+
+	try {
+		return window.vault.readDir(parentPath).some(function (e) { return nameKey(e.name) === key; });
+	} catch (_) {
+		return false;
+	}
+}
+
 function validateBookForm() {
-	var name = bookNameInput.value.trim();
-	if (!name) 
+	var typed = bookNameInput.value.trim();
+	if (!typed) 
 	{ 
 		saveBookBtn.disabled = true; 
 		bookModalInfo.textContent = 'Enter a name for the book.'; 
 		return; 
 	}
 
+	var san = sanitizeName(typed);
+	if (san.error)
+	{
+		saveBookBtn.disabled = true;
+		bookModalInfo.textContent = san.error;
+		return;
+	}
+
+	// If characters will be dropped, say what the book will really be called
+	var nameNote = san.changed ? 'Will be created as "' + san.name + '". ' : '';
+
 	if (!chosenParentHandle && !chosenParentPath) 
 	{ 
 		saveBookBtn.disabled = true; 
 		bookModalInfo.textContent = 'Choose where to create the book.'; 
 		return; 
+	}
+
+	if (chosenParentPath && bookNameTaken(chosenParentPath, san.name))
+	{
+		saveBookBtn.disabled = true;
+		bookModalInfo.textContent = 'A book named "' + san.name + '" already exists in that location.';
+		return;
 	}
 
 	if (encryptToggle.checked) 
@@ -172,11 +203,11 @@ function validateBookForm() {
 			return; 
 		}
 
-		bookModalInfo.textContent = 'AES-256-GCM encrypted \u2014 one binary file, no readable text on disk.';
+		bookModalInfo.textContent = nameNote + 'AES-256-GCM encrypted \u2014 one binary file, no readable text on disk.';
 	} 
 	else 
 	{
-		bookModalInfo.textContent = 'Plain book \u2014 collections stored as .txt files inside the folder.';
+		bookModalInfo.textContent = nameNote + 'Plain book \u2014 collections stored as .txt files inside the folder.';
 	}
 
 	saveBookBtn.disabled = false;
@@ -185,21 +216,29 @@ function validateBookForm() {
 // Create
 
 saveBookBtn.addEventListener('click', async function () {
-	var name = bookNameInput.value.trim().replace(/[^a-zA-Z0-9 _\-]/g, '').trim();
+	var san = sanitizeName(bookNameInput.value);
+	var name = san.name;
 
-	if (!name || (!chosenParentHandle && !chosenParentPath)) return;
+	if (san.error || (!chosenParentHandle && !chosenParentPath)) return;
 
 	saveBookBtn.disabled = true;
 	saveBookBtn.textContent = 'Creating\u2026';
 
+	var bookDirPath = null;
+	var createdDir = false;
+
 	try {
-		var bookDirPath = null;
 		var bookDir = null;
 
 		if (chosenParentPath) 
 		{
+			// Checked again here (not just while typing) in case the folder appeared since
+			if (bookNameTaken(chosenParentPath, name))
+				throw new Error('A book named "' + name + '" already exists in that location.');
+
 			bookDirPath = window.vault.joinPath(chosenParentPath, name);
-			window.vault.mkdir(bookDirPath);
+			window.vault.mkdir(bookDirPath); // not recursive: fails if the folder exists
+			createdDir = true;
 		} 
 		else 
 		{
@@ -217,7 +256,7 @@ saveBookBtn.addEventListener('click', async function () {
 
 			if (bookDirPath) 
 			{
-				window.vault.writeFileBin(window.vault.joinPath(bookDirPath, 'vault.enc'), bytes);
+				window.vault.writeFileBin(window.vault.joinPath(bookDirPath, 'vault.enc'), bytes, { exclusive: true });
 			} 
 			else 
 			{
@@ -231,7 +270,7 @@ saveBookBtn.addEventListener('click', async function () {
 		{
 			if (bookDirPath) 
 			{
-				window.vault.writeFile(window.vault.joinPath(bookDirPath, defaultCollFilename), buildFileText(defaultCollEntries));
+				window.vault.writeFile(window.vault.joinPath(bookDirPath, defaultCollFilename), buildFileText(defaultCollEntries), { exclusive: true });
 			} 
 			else 
 			{
@@ -249,7 +288,12 @@ saveBookBtn.addEventListener('click', async function () {
 		saveBookBtn.textContent = 'Create Book';
 		
 	} catch (e) {
-		bookModalInfo.textContent = 'Error: ' + e.message;
+		// Don't leave an empty folder behind if creating the files failed (rmdir only removes empty folders)
+		if (createdDir) { try { window.vault.rmdir(bookDirPath); } catch (_) { /* not empty or already gone */ } }
+
+		bookModalInfo.textContent = (e && e.code === 'EEXIST')
+			? 'A book named "' + name + '" already exists in that location.'
+			: 'Error: ' + e.message;
 		bookModalInfo.style.color = '#e05555';
 		setTimeout(function () { window.focus(); bookModalInfo.style.color = ''; }, 3000);
 		saveBookBtn.disabled = false;
