@@ -210,7 +210,6 @@ document.getElementById('resumeBanner').addEventListener('click', async function
 // Dismiss resume/quickstart banner
 document.getElementById('resumeBannerDismiss').addEventListener('click', function (e) {
 	e.stopPropagation();
-	_pendingDefaultHandle = null;
 	document.getElementById('resumeBanner').classList.remove('visible');
 });
 

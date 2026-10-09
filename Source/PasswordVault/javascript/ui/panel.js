@@ -155,18 +155,15 @@ function resetVaultState() {
 	// Core Data
 	collections      = {};
 	activeFile       = null;
-	dirHandle        = null;
 	vaultKey         = null;
 	isEncryptedVault = false;
 
 	// Mode Flags
 	isMultiBookMode  = false;
-	isElectronPathMode  = false;
 	_electronVaultPath  = null;
 
 	// Multi Book State
 	bookHandles         = {};
-	activeBookHandle    = null;
 	activeBookName      = null;
 	unlockingBookName   = null;
 
@@ -192,9 +189,6 @@ function resetVaultState() {
 
 	// Hide eject button
 	ejectBtn.classList.remove('visible');
-
-	// Reset lock state
-	singleBookLocked = false;
 
 	// Hide new collection
 	newCollBtn.classList.add('hidden');

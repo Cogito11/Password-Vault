@@ -183,8 +183,6 @@ test('vault I/O can save and read encrypted bytes through the active book path',
       }
     },
     isMultiBookMode: false,
-    activeBookHandle: null,
-    dirHandle: null,
     _electronVaultPath: '/tmp/vault',
     TextEncoder,
     Uint8Array

@@ -53,37 +53,44 @@ function copyVal(btn) {
 	// (see attrValueFromButton in panel.js), it isn't stored in the page.
 	var text = typeof attrValueFromButton === 'function' ? attrValueFromButton(btn) : '';
 
-	if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-		navigator.clipboard.writeText(text).then(function () {
-			// Save original button label
-			var prev = btn.textContent;
-
-			// Give visual feedback
-			btn.textContent = 'DONE';
-			btn.classList.add('ok');
-
-			// Optionally have the clipboard emptied again after a while
-			var settings = typeof getAppSettings === 'function' ? getAppSettings() : null;
-			var willClear = !!(settings && settings.clearClipboardEnabled && text && window.electronAPI && window.electronAPI.scheduleClipboardClear);
-
-			if (willClear) {
-				window.electronAPI.scheduleClipboardClear(text, settings.clearClipboardSeconds);
-				showToast('Copied \u2014 clipboard clears in ' + settings.clearClipboardSeconds + 's');
-			} else {
-				showToast('Copied to clipboard');
-			}
-
-			// Restore original button after delay
-			setTimeout(function () { 
-				btn.textContent = prev; 
-				btn.classList.remove('ok'); 
-			}, 1600);
-		}).catch(function () {
-			showToast('Clipboard unavailable');
-		});
-	} else {
+	// Copy through Electron's native clipboard (see preload.js). Unlike
+	// navigator.clipboard it needs no browser permission, so the page is granted
+	// none and can never read the clipboard back.
+	if (!(window.electronAPI && typeof window.electronAPI.copyText === 'function')) {
 		showToast('Clipboard unavailable');
+		return;
 	}
+
+	try {
+		window.electronAPI.copyText(text);
+	} catch (_) {
+		showToast('Clipboard unavailable');
+		return;
+	}
+
+	// Save original button label
+	var prev = btn.textContent;
+
+	// Give visual feedback
+	btn.textContent = 'DONE';
+	btn.classList.add('ok');
+
+	// Optionally have the clipboard emptied again after a while
+	var settings = typeof getAppSettings === 'function' ? getAppSettings() : null;
+	var willClear = !!(settings && settings.clearClipboardEnabled && text && typeof window.electronAPI.scheduleClipboardClear === 'function');
+
+	if (willClear) {
+		window.electronAPI.scheduleClipboardClear(text, settings.clearClipboardSeconds);
+		showToast('Copied \u2014 clipboard clears in ' + settings.clearClipboardSeconds + 's');
+	} else {
+		showToast('Copied to clipboard');
+	}
+
+	// Restore original button after delay
+	setTimeout(function () { 
+		btn.textContent = prev; 
+		btn.classList.remove('ok'); 
+	}, 1600);
 }
 
 // Function to convert an array of entries into a plain text file format

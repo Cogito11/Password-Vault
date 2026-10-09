@@ -41,7 +41,6 @@ function activateBook(bookName, btn) {
 
 	// Set global active book state
 	activeBookName = bookName;
-	activeBookHandle = bookHandles[bookName].handle;
 
 	var info = bookHandles[bookName];
 
@@ -119,7 +118,6 @@ function relockBook(bookName, options) {
 		clearDecryptedView();
 
 		activeBookName = null;
-		activeBookHandle = null;
 		collections = {};
 		vaultKey = null;
 		isEncryptedVault = false;
@@ -231,7 +229,6 @@ async function deleteBook(bookName) {
 			clearDecryptedView();
 
 			activeBookName = null;
-			activeBookHandle = null;
 			collections = {};
 			vaultKey = null;
 			isEncryptedVault = false;

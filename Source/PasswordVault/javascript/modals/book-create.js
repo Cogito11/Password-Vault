@@ -19,44 +19,22 @@ newBookBtn.addEventListener('click', async function () {
 	pwStrBar.style.width   = '0';
 	pwStrLabel.textContent = '';
 	saveBookBtn.disabled = true;
-	chosenParentHandle = null;
 	chosenParentPath = null;
 
-	// Pre-fill location from default if one is set
-	if (window.electronAPI && window.electronAPI.getDefaultPath) 
-	{
-		var defPath = await window.electronAPI.getDefaultPath();
+	// Pre-fill location from the default vault folder if one is set
+	var defPath = await window.electronAPI.getDefaultPath();
 
-		if (defPath) 
-		{
-			chosenParentPath = defPath;
-			chosenParentHandle = null;
-			bookLocationDisp.value = defPath.split(/[\/\\]/).filter(Boolean).pop() || defPath;
-			bookLocationDisp.classList.add('chosen');
-			bookModalInfo.textContent = 'Default location pre-selected \u2014 change it or enter a name.';
-			saveBookBtn.disabled = false;
-		} 
-		else 
-		{
-			bookModalInfo.textContent = 'Choose a name and location.';
-		}
-	}
+	if (defPath) 
+	{
+		chosenParentPath = defPath;
+		bookLocationDisp.value = defPath.split(/[\/\\]/).filter(Boolean).pop() || defPath;
+		bookLocationDisp.classList.add('chosen');
+		bookModalInfo.textContent = 'Default location pre-selected \u2014 change it or enter a name.';
+		saveBookBtn.disabled = false;
+	} 
 	else 
 	{
-		var defaultHandle = await getDefaultDirHandle();
-		if (defaultHandle) 
-		{
-			chosenParentHandle = defaultHandle;
-			chosenParentPath   = null;
-			bookLocationDisp.value = defaultHandle.name;
-			bookLocationDisp.classList.add('chosen');
-			bookModalInfo.textContent = 'Default location pre-selected \u2014 change it or enter a name.';
-			saveBookBtn.disabled = false;
-		} 
-		else 
-		{
-			bookModalInfo.textContent = 'Choose a name and location.';
-		}
+		bookModalInfo.textContent = 'Choose a name and location.';
 	}
 
 	bookModalOverlay.classList.add('open');
@@ -79,30 +57,13 @@ bookPwConfirm.addEventListener('keydown', function (e) { if (e.key === 'Enter') 
 // Location picker
 
 pickLocationBtn.addEventListener('click', async function () {
-	if (window.vault && window.vault.openFolder) {
-		var p = await window.vault.openFolder();
-		if (!p) return;
-		chosenParentPath   = p;
-		chosenParentHandle = null;
-		bookLocationDisp.value = p.split(/[\/\\]/).filter(Boolean).pop() || p;
-		bookLocationDisp.classList.add('chosen');
-		validateBookForm();
-		return;
-	}
+	var p = await window.vault.openFolder();
+	if (!p) return;
 
-	try {
-		var startIn = await getLastDirHandle();
-		var opts    = { mode: 'readwrite' };
-		if (startIn) opts.startIn = startIn;
-		chosenParentHandle = await window.showDirectoryPicker(opts);
-		chosenParentPath   = null;
-		window.focus();
-		saveLastDirHandle(chosenParentHandle);
-		bookLocationDisp.value = chosenParentHandle.name;
-		bookLocationDisp.classList.add('chosen');
-		validateBookForm();
-	} catch (_) { /* cancelled */ }
-
+	chosenParentPath = p;
+	bookLocationDisp.value = p.split(/[\/\\]/).filter(Boolean).pop() || p;
+	bookLocationDisp.classList.add('chosen');
+	validateBookForm();
 });
 
 // Encrypt toggle and strength meter
@@ -165,14 +126,14 @@ function validateBookForm() {
 	// If characters will be dropped, say what the book will really be called
 	var nameNote = san.changed ? 'Will be created as "' + san.name + '". ' : '';
 
-	if (!chosenParentHandle && !chosenParentPath) 
+	if (!chosenParentPath) 
 	{ 
 		saveBookBtn.disabled = true; 
 		bookModalInfo.textContent = 'Choose where to create the book.'; 
 		return; 
 	}
 
-	if (chosenParentPath && bookNameTaken(chosenParentPath, san.name))
+	if (bookNameTaken(chosenParentPath, san.name))
 	{
 		saveBookBtn.disabled = true;
 		bookModalInfo.textContent = 'A book named "' + san.name + '" already exists in that location.';
@@ -219,7 +180,7 @@ saveBookBtn.addEventListener('click', async function () {
 	var san = sanitizeName(bookNameInput.value);
 	var name = san.name;
 
-	if (san.error || (!chosenParentHandle && !chosenParentPath)) return;
+	if (san.error || !chosenParentPath) return;
 
 	saveBookBtn.disabled = true;
 	saveBookBtn.textContent = 'Creating\u2026';
@@ -228,22 +189,13 @@ saveBookBtn.addEventListener('click', async function () {
 	var createdDir = false;
 
 	try {
-		var bookDir = null;
+		// Checked again here (not just while typing) in case the folder appeared since
+		if (bookNameTaken(chosenParentPath, name))
+			throw new Error('A book named "' + name + '" already exists in that location.');
 
-		if (chosenParentPath) 
-		{
-			// Checked again here (not just while typing) in case the folder appeared since
-			if (bookNameTaken(chosenParentPath, name))
-				throw new Error('A book named "' + name + '" already exists in that location.');
-
-			bookDirPath = window.vault.joinPath(chosenParentPath, name);
-			window.vault.mkdir(bookDirPath); // not recursive: fails if the folder exists
-			createdDir = true;
-		} 
-		else 
-		{
-			bookDir = await chosenParentHandle.getDirectoryHandle(name, { create: true });
-		}
+		bookDirPath = window.vault.joinPath(chosenParentPath, name);
+		window.vault.mkdir(bookDirPath); // not recursive: fails if the folder exists
+		createdDir = true;
 
 		var defaultCollFilename = 'Password_Collection.txt';
 		var defaultCollEntries = [];
@@ -254,31 +206,12 @@ saveBookBtn.addEventListener('click', async function () {
 			initCollections[defaultCollFilename] = defaultCollEntries;
 			var bytes = await packEncrypted({ collections: initCollections }, bookPw.value);
 
-			if (bookDirPath) 
-			{
-				window.vault.writeFileBin(window.vault.joinPath(bookDirPath, 'vault.enc'), bytes, { exclusive: true });
-			} 
-			else 
-			{
-				var fh = await bookDir.getFileHandle('vault.enc', { create: true });
-				var w = await fh.createWritable(); await w.write(bytes); await w.close();
-			}
-
+			window.vault.writeFileBin(window.vault.joinPath(bookDirPath, 'vault.enc'), bytes, { exclusive: true });
 			showToast('"' + name + '" created \u2014 encrypted');
 		} 
 		else 
 		{
-			if (bookDirPath) 
-			{
-				window.vault.writeFile(window.vault.joinPath(bookDirPath, defaultCollFilename), buildFileText(defaultCollEntries), { exclusive: true });
-			} 
-			else 
-			{
-				var fh2 = await bookDir.getFileHandle(defaultCollFilename, { create: true });
-				var w2 = await fh2.createWritable();
-				await w2.write(buildFileText(defaultCollEntries));
-				await w2.close();
-			}
+			window.vault.writeFile(window.vault.joinPath(bookDirPath, defaultCollFilename), buildFileText(defaultCollEntries), { exclusive: true });
 			showToast('"' + name + '" created');
 		}
 

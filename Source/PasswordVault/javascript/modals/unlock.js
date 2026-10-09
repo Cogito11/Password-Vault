@@ -23,8 +23,6 @@ function openVaultUnlockModal(bookName) {
 
 vaultUnlockClose.addEventListener('click', function () {
 	vaultUnlockOverlay.classList.remove('open');
-
-	if (!isMultiBookMode) dirHandle = null;
 	unlockingBookName = null;
 });
 
@@ -32,8 +30,6 @@ vaultUnlockOverlay.addEventListener('click', function (e) {
 	if (e.target !== vaultUnlockOverlay) return;
 
 	vaultUnlockOverlay.classList.remove('open');
-
-	if (!isMultiBookMode) dirHandle = null;
 	unlockingBookName = null;
 });
 
@@ -55,23 +51,12 @@ vaultUnlockBtn.addEventListener('click', async function () {
 	var stage = 'read';
 
 	try {
-		// Read vault.enc - supports Web FS API and Electron path mode
-		var buf;
+		// Read vault.enc
+		var encPath = isMultiBookMode
+			? window.vault.joinPath(bookHandles[unlockingBookName].path, 'vault.enc')
+			: window.vault.joinPath(_electronVaultPath, 'vault.enc');
 
-		if (isElectronPathMode) 
-		{
-			var encPath = isMultiBookMode
-				? window.vault.joinPath(bookHandles[unlockingBookName].path, 'vault.enc')
-				: window.vault.joinPath(_electronVaultPath, 'vault.enc');
-
-			buf = new Uint8Array(window.vault.readFileBin(encPath));
-		} 
-		else 
-		{
-			var targetHandle = isMultiBookMode ? bookHandles[unlockingBookName].handle : dirHandle;
-			var fh = await targetHandle.getFileHandle('vault.enc');
-			buf = new Uint8Array(await (await fh.getFile()).arrayBuffer());
-		}
+		var buf = new Uint8Array(window.vault.readFileBin(encPath));
 
 		stage = 'check';
 		// 16 byte salt + 12 byte IV + at least the 16 byte authentication tag

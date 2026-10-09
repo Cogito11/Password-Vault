@@ -121,3 +121,53 @@ test('copyVal does not throw when the clipboard API is unavailable', () => {
 
   assert.doesNotThrow(() => sandbox.copyVal(btn));
 });
+
+test('copyVal copies the looked-up value through the native clipboard bridge', () => {
+  const copied = [];
+  const sandbox = loadScript('PasswordVault/javascript/core/utils.js', {
+    navigator: {},
+    window: { electronAPI: { copyText: (t) => copied.push(t) } },
+    toast: { textContent: '', classList: createClassList() }
+  });
+  sandbox.attrValueFromButton = () => 'p@ss w0rd ';
+
+  const btn = { dataset: {}, textContent: 'COPY', classList: createClassList() };
+  sandbox.copyVal(btn);
+
+  assert.deepEqual(copied, ['p@ss w0rd ']);
+  assert.equal(btn.textContent, 'DONE');
+});
+
+test('copyVal schedules a clipboard clear only when the setting is on', () => {
+  const scheduled = [];
+  const make = (settings) => {
+    const sandbox = loadScript('PasswordVault/javascript/core/utils.js', {
+      navigator: {},
+      window: { electronAPI: { copyText() {}, scheduleClipboardClear: (t, s) => scheduled.push([t, s]) } },
+      toast: { textContent: '', classList: createClassList() }
+    });
+    sandbox.attrValueFromButton = () => 'secret';
+    sandbox.getAppSettings = () => settings;
+    return sandbox;
+  };
+  const btn = () => ({ dataset: {}, textContent: 'COPY', classList: createClassList() });
+
+  make({ clearClipboardEnabled: false, clearClipboardSeconds: 30 }).copyVal(btn());
+  assert.deepEqual(scheduled, []);
+
+  make({ clearClipboardEnabled: true, clearClipboardSeconds: 45 }).copyVal(btn());
+  assert.deepEqual(scheduled, [['secret', 45]]);
+});
+
+test('copyVal reports a failed copy instead of throwing or claiming success', () => {
+  const sandbox = loadScript('PasswordVault/javascript/core/utils.js', {
+    navigator: {},
+    window: { electronAPI: { copyText: () => { throw new Error('no clipboard'); } } },
+    toast: { textContent: '', classList: createClassList() }
+  });
+  sandbox.attrValueFromButton = () => 'x';
+
+  const btn = { dataset: {}, textContent: 'COPY', classList: createClassList() };
+  assert.doesNotThrow(() => sandbox.copyVal(btn));
+  assert.equal(btn.textContent, 'COPY');
+});

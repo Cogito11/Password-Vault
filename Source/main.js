@@ -55,6 +55,31 @@ function isIgnoredFolder(name) {
 
 let mainWindow = null;
 
+// ── Single instance ─────────────────────────────────────────────────
+// Only one copy of the app may run at a time. Two windows open on the same vault
+// would each write their own idea of its contents, and whichever saved last would
+// silently overwrite the other's changes. Launching the app again instead brings
+// the window that's already running to the front.
+const hasInstanceLock = app.requestSingleInstanceLock();
+
+if (!hasInstanceLock) {
+  app.quit();
+}
+
+app.on('second-instance', () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+});
+
+// Browser permissions the page may use (see the handlers in app.whenReady below).
+// None: copying goes through the native clipboard in preload.js, file access goes
+// through the Node bridge, and neither involves a browser permission. (Electron
+// asks for "clipboard-read" even when a page only WRITES with navigator.clipboard,
+// so allowing the browser clipboard API would also let the page read the clipboard.)
+const ALLOWED_PERMISSIONS = new Set([]);
+
 // ── Clipboard clearing ──────────────────────────────────────────────
 // After a value is copied (and the user has turned this on), the clipboard is
 // emptied again after a delay, but only if it still holds that same text, so
@@ -126,14 +151,24 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // A second copy is on its way out (see above); don't build anything for it
+  if (!hasInstanceLock) return;
+
   ipcMain.handle('schedule-clipboard-clear', (_event, text, seconds) => scheduleClipboardClear(text, seconds));
 
   // 'lock-screen' is only emitted on Windows and macOS; 'suspend' on all platforms
   powerMonitor.on('lock-screen', () => notifySystemLock('lock-screen'));
   powerMonitor.on('suspend', () => notifySystemLock('suspend'));
 
+  // Only the permissions the app actually uses are granted (see ALLOWED_PERMISSIONS).
+  // Everything else (camera, microphone, location, notifications, ...) is refused:
+  // the app has no use for them, and "allow everything" would hand them to any page
+  // that ever got loaded into the window.
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    callback(true);
+    callback(ALLOWED_PERMISSIONS.has(permission));
+  });
+  session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+    return ALLOWED_PERMISSIONS.has(permission);
   });
 
   ipcMain.handle('get-default-path', () => {

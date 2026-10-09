@@ -1,7 +1,6 @@
 // ═══════════════════════════════
-// VAULT-IO - transparent file I/O for both Web FS API and Electron path mode
-// All functions route through the active book, falling back to Node fs when
-// isElectronPathMode is true.
+// VAULT-IO - file I/O for the active book (and named books), through the Node fs
+// bridge (window.vault). Writes are crash-safe, see fs-atomic.js.
 // ═══════════════════════════════
 
 // Returns the display name of the vault by extracting the last segment of
@@ -12,8 +11,6 @@ function vaultName() {
 	}
 	return 'Vault';
 }
-
-function getBookHandle() { return isMultiBookMode ? activeBookHandle : dirHandle; }
 
 // Returns the AES-GCM CryptoKey for the active book, or null if it is plain text.
 function getBookKey() { return isMultiBookMode ? (bookHandles[activeBookName] ? bookHandles[activeBookName].key : null) : vaultKey; }

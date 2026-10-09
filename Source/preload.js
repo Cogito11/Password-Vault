@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer, shell } = require('electron');
+const { contextBridge, ipcRenderer, shell, clipboard } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { writeFileAtomic } = require('./fs-atomic');
@@ -19,6 +19,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // On-demand file reads
     readBookFiles: (bookPath)  => ipcRenderer.invoke('read-book-files', bookPath),
     readVaultFiles: (vaultPath) => ipcRenderer.invoke('read-vault-files', vaultPath),
+
+  // Clipboard
+  /**
+   * Put text on the system clipboard. This uses Electron's native clipboard, which
+   * needs no browser permission, so the page is never granted any (and can't read
+   * the clipboard back). navigator.clipboard can't be used for this: Electron asks
+   * for its "clipboard-read" permission even to WRITE.
+   */
+  copyText: (text) => { clipboard.writeText(String(text)); },
 
   // Security
   /** Ask the main process to empty the clipboard after `seconds`, if it still holds `text` */
