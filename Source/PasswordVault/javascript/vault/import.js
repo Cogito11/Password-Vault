@@ -19,6 +19,7 @@ function parseCsv(text) {
 	var row = [];
 	var field = '';
 	var inQuotes = false;
+	var quoteRow = 0; // data row (header = row 1) where the current quote was opened
 
 	text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
@@ -35,7 +36,7 @@ function parseCsv(text) {
 			continue;
 		}
 
-		if (c === '"') { inQuotes = true; continue; }
+		if (c === '"') { inQuotes = true; quoteRow = rows.length + 1; continue; }
 		if (c === ',') { row.push(field); field = ''; continue; }
 
 		if (c === '\n') {
@@ -45,6 +46,12 @@ function parseCsv(text) {
 		}
 
 		field += c;
+	}
+
+	// A quote that was opened and never closed would swallow the rest of the file
+	// into one giant field without any sign that something was wrong
+	if (inQuotes) {
+		throw new Error('Row ' + quoteRow + ' has a quote that is never closed, so the rest of the file cannot be read. Check the file and try again.');
 	}
 
 	// Final field/row - files don't always end with a trailing newline
@@ -59,7 +66,10 @@ function parseCsv(text) {
 		.filter(function (r) { return r.some(function (v) { return v.trim() !== ''; }); })
 		.map(function (r) {
 			var obj = {};
-			headers.forEach(function (h, idx) { obj[h] = (r[idx] || '').trim(); });
+			// Values are kept exactly as exported: a password may legitimately start or
+			// end with a space. Fields that should never carry stray whitespace are
+			// trimmed where they're used (see csvRowsToEntries).
+			headers.forEach(function (h, idx) { obj[h] = r[idx] || ''; });
 			return obj;
 		});
 
@@ -87,17 +97,21 @@ function titleCaseHeader(h) {
 // gets dropped just because it isn't one of the columns we anticipated.
 function csvRowsToEntries(rows, headers) {
 	return rows.map(function (r) {
-		var name = r.name || r.title || r.url || 'Imported Password';
+		var name = (r.name || r.title || r.url || '').trim() || 'Imported Password';
 		var attrs = [];
 
-		if (r.url)      attrs.push({ key: 'URL', val: r.url });
-		if (r.username) attrs.push({ key: 'Username', val: r.username });
+		var url = (r.url || '').trim();
+		var username = (r.username || '').trim();
+		var note = (r.note || '').trim();
+
+		if (url)        attrs.push({ key: 'URL', val: url });
+		if (username)   attrs.push({ key: 'Username', val: username });
 		if (r.password) attrs.push({ key: 'Password', val: r.password });
-		if (r.note)     attrs.push({ key: 'Note', val: r.note });
+		if (note)       attrs.push({ key: 'Note', val: note });
 
 		(headers || []).forEach(function (h) {
 			if (!h || KNOWN_CSV_COLUMNS.indexOf(h) !== -1) return;
-			var val = r[h];
+			var val = (r[h] || '').trim();
 			if (!val) return;
 			attrs.push({ key: titleCaseHeader(h), val: val });
 		});
@@ -147,91 +161,67 @@ function populateCsvImportBookOptions() {
 // Write a freshly-imported collection into the named book, whether or not
 // it's the book currently open in the sidebar. Returns the filename used.
 //
-// HOW: temporarily points the shared "active book" accessors (collections /
-// vaultKey / isEncryptedVault / activeBookName / activeBookHandle) at the
-// target book, reuses the exact same save path every other flow in this app
-// uses (bookWriteFile for plain books, reEncryptVault for encrypted ones),
-// then restores whatever was actually active before. This mirrors the
-// pattern already used by doEncryptBook / doChangeBookPassword in books.js,
-// which operate on a named book's own `info.collections` directly.
+// This works on the target book directly instead of temporarily re-pointing the
+// shared "active book" globals: those swaps spanned several awaits, so anything
+// the user did in that window (clicking a collection, say) would have acted on
+// the wrong book.
 async function writeImportedCollection(bookName, entries) {
 	var info = bookHandles[bookName];
 	if (!info) throw new Error('Book not found');
+	if (info.isEncrypted && !info.isUnlocked) throw new Error('Unlock "' + bookName + '" first.');
 
-	// In single-book mode there is only ever one book loaded, so it's
-	// always "active" - getBookPath() ignores activeBookName entirely in
-	// that mode, so no context swap is needed or possible.
+	// In single-book mode there is only ever one book loaded, so it's always "active"
 	var isTargetActive = isMultiBookMode ? (activeBookName === bookName) : true;
 
-	// A plain book that has never been opened this session only has an
-	// empty in-memory `collections` stub (see loader.js - multi-book plain
-	// books start as { isUnlocked: false, collections: {} } until clicked).
-	// Load its real files first so we don't clobber the in-memory record of
-	// its other collections with just the one we're about to add.
+	// A plain book that has never been opened this session only has an empty
+	// in-memory stub (see loader.js). Load its real files first so we don't
+	// clobber the record of its other collections with just the one we add.
 	if (!isTargetActive && !info.isEncrypted && !info.isUnlocked) {
 		await loadPlainBook(bookName);
 	}
 
-	var prev = {
-		collections: collections,
-		vaultKey: vaultKey,
-		isEncryptedVault: isEncryptedVault,
-		activeBookName: activeBookName,
-		activeBookHandle: activeBookHandle
-	};
+	// The active book's collections live in the global; other books keep theirs on their handle
+	var target = isTargetActive ? collections : info.collections;
+	var filename = nextImportFilename(target, info.path);
 
-	if (!isTargetActive) {
-		collections = info.collections || {};
-		vaultKey = info.key;
-		isEncryptedVault = info.isEncrypted;
-		activeBookName = bookName;
-		activeBookHandle = info.handle;
-	}
+	target[filename] = entries;
+	if (isMultiBookMode && isTargetActive) info.collections = collections;
 
 	try {
-		// Pick the filename now that `collections` genuinely reflects the
-		// target book's real contents (the live global if it was already
-		// active/loaded, or the freshly-loaded data above otherwise) -
-		// checking a cached/stale reference here could miss a same-day
-		// collision (this bit us in single-book mode, where
-		// bookHandles[name].collections is never kept in sync - the loader
-		// only ever populates the global `collections` var for that case).
-		var filename = nextImportFilename(collections);
-
-		collections[filename] = entries;
-		if (isMultiBookMode) bookHandles[bookName].collections = collections;
-
-		if (bookIsEncrypted()) {
-			await reEncryptVault();
+		if (info.isEncrypted) {
+			await reEncryptBook(bookName);
 		} else {
-			await bookWriteFile(filename, buildFileText(entries));
+			// exclusive: never overwrite a file we didn't know about
+			await namedBookWriteFile(bookName, filename, buildFileText(entries), { exclusive: true });
 		}
-
-		return filename;
-	} finally {
-		if (!isTargetActive) {
-			// Keep the target book's own record in sync before switching back
-			info.collections = collections;
-
-			collections = prev.collections;
-			vaultKey = prev.vaultKey;
-			isEncryptedVault = prev.isEncryptedVault;
-			activeBookName = prev.activeBookName;
-			activeBookHandle = prev.activeBookHandle;
-		}
+	} catch (err) {
+		// The write failed: keep memory in step with the disk
+		delete target[filename];
+		throw err;
 	}
+
+	return filename;
 }
 
-// Pick a collection filename that doesn't already collide with one that
-// genuinely exists in the given collections object, based on today's date.
-function nextImportFilename(existingCollections) {
+// Pick a collection filename that doesn't collide (ignoring case) with an existing
+// collection, or with a file already on disk, based on today's date.
+function nextImportFilename(existingCollections, folderPath) {
 	existingCollections = existingCollections || {};
+	var taken = Object.keys(existingCollections).map(nameKey);
+
 	var stamp = new Date().toISOString().slice(0, 10);
 	var base = 'Imported_' + stamp;
 	var filename = base + '.txt';
 	var n = 2;
 
-	while (existingCollections[filename]) {
+	function inUse(f) {
+		if (taken.indexOf(nameKey(f)) !== -1) return true;
+
+		try { return !!folderPath && window.vault.exists(window.vault.joinPath(folderPath, f)); }
+		catch (_) { return false; }
+	}
+
+	while (inUse(filename)) {
 		filename = base + '_' + n + '.txt';
 		n++;
 	}

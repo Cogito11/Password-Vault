@@ -100,9 +100,6 @@ async function loadFromElectronPath(vaultPath) {
 			// Multi-book mode
 			_electronVaultPath = vaultPath;
 			isMultiBookMode = true;
-			isElectronPathMode = true;
-			// unused in Electron, kept for compatibility
-			dirHandle = null;
 			bookHandles = {};
 
 			// Convert scan results into internal structure
@@ -117,7 +114,6 @@ async function loadFromElectronPath(vaultPath) {
 			// Initialize each "book"
 			subBooks.forEach(function (b) {
 				bookHandles[b.name] = {
-					handle: null,
 					path: b.path,
 					isEncrypted: b.isEncrypted,
 					isUnlocked: false,
@@ -135,14 +131,11 @@ async function loadFromElectronPath(vaultPath) {
 		{
 			
 			_electronVaultPath = vaultPath;
-			isElectronPathMode = true;
 			isMultiBookMode = false;
 			isEncryptedVault = false;
-			dirHandle = null;
 
 			bookHandles = {};
 			bookHandles[data.name] = {
-				handle: null,
 				path: vaultPath,
 				isEncrypted: false,
     			isUnlocked: true,
@@ -182,14 +175,11 @@ async function loadFromElectronPath(vaultPath) {
 		{
 
 			_electronVaultPath = vaultPath;
-			isElectronPathMode = true;
 			isMultiBookMode = false;
 			isEncryptedVault = true;
-			dirHandle = null;
 
 			bookHandles = {};
 			bookHandles[data.name] = {
-				handle: null,
 				path: vaultPath,
 				isEncrypted: true,
 				isUnlocked: false,
@@ -217,9 +207,7 @@ async function loadFromElectronPath(vaultPath) {
 
 			// No files or books, treat as empty multi-book container
 			_electronVaultPath = vaultPath;
-			isElectronPathMode = true;
 			isMultiBookMode = true;
-			dirHandle = null;
 			bookHandles = {};
 
 			enterMultiBookMode([]);
@@ -277,7 +265,6 @@ async function rescanVaultFolder() {
 			subBooks.push({
 				name: b.name,
 				path: b.path,
-				handle: null,
 				isEncrypted: b.isEncrypted
 			});
 		});
@@ -293,7 +280,6 @@ async function rescanVaultFolder() {
 
 		// Reuse existing state if present
 		bookHandles[b.name] = existing || {
-			handle: null,
 			path: b.path,
 			isEncrypted: b.isEncrypted,
 			isUnlocked: false,

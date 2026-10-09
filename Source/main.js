@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session, clipboard, powerMonitor } = require('electron');
 const fs   = require('fs');
 const path = require('path');
+const { writeFileAtomic } = require('./fs-atomic');
 
 const configPath = path.join(app.getPath('userData'), 'vault-config.json');
 
@@ -18,15 +19,103 @@ function getIconPath() {
 
 function getConfig() {
   if (_config) return _config;
-  try { _config = JSON.parse(fs.readFileSync(configPath, 'utf8')); }
-  catch(e) { _config = {}; }
+
+  let raw = null;
+  try { raw = fs.readFileSync(configPath, 'utf8'); }
+  catch (e) { /* no config yet, that's fine */ }
+
+  if (raw === null) {
+    _config = {};
+    return _config;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    _config = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  } catch (e) {
+    // The file exists but is unreadable. Keep a copy instead of silently
+    // starting over (the next save would otherwise overwrite it for good).
+    try { fs.copyFileSync(configPath, configPath + '.corrupt'); } catch (_) { /* best effort */ }
+    _config = {};
+  }
+
   return _config;
 }
 
 function setConfig(key, val) {
   const conf = getConfig();
   conf[key] = val;
-  fs.writeFileSync(configPath, JSON.stringify(conf));
+  writeFileAtomic(configPath, JSON.stringify(conf));
+}
+
+// Folders that should never be treated as password books
+function isIgnoredFolder(name) {
+  return name.startsWith('.') || name === '$RECYCLE.BIN' || name === 'System Volume Information' || name === 'node_modules';
+}
+
+let mainWindow = null;
+
+// ── Single instance ─────────────────────────────────────────────────
+// Only one copy of the app may run at a time. Two windows open on the same vault
+// would each write their own idea of its contents, and whichever saved last would
+// silently overwrite the other's changes. Launching the app again instead brings
+// the window that's already running to the front.
+const hasInstanceLock = app.requestSingleInstanceLock();
+
+if (!hasInstanceLock) {
+  app.quit();
+}
+
+app.on('second-instance', () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+});
+
+// Browser permissions the page may use (see the handlers in app.whenReady below).
+// None: copying goes through the native clipboard in preload.js, file access goes
+// through the Node bridge, and neither involves a browser permission. (Electron
+// asks for "clipboard-read" even when a page only WRITES with navigator.clipboard,
+// so allowing the browser clipboard API would also let the page read the clipboard.)
+const ALLOWED_PERMISSIONS = new Set([]);
+
+// ── Clipboard clearing ──────────────────────────────────────────────
+// After a value is copied (and the user has turned this on), the clipboard is
+// emptied again after a delay, but only if it still holds that same text, so
+// something the user copied afterwards is never wiped. This lives here rather
+// than in the page so it survives a page reload and can be flushed on quit.
+let clipboardTimer = null;
+let clipboardPending = null;
+
+function runClipboardClear() {
+  clearTimeout(clipboardTimer);
+  clipboardTimer = null;
+
+  if (clipboardPending !== null) {
+    try {
+      if (clipboard.readText() === clipboardPending) clipboard.clear();
+    } catch (e) { /* clipboard unavailable, nothing to do */ }
+  }
+
+  clipboardPending = null;
+}
+
+function scheduleClipboardClear(text, seconds) {
+  if (typeof text !== 'string' || !text) return false;
+
+  const secs = Math.min(600, Math.max(1, Math.round(Number(seconds)) || 30));
+
+  clearTimeout(clipboardTimer);
+  clipboardPending = text;
+  clipboardTimer = setTimeout(runClipboardClear, secs * 1000);
+  return true;
+}
+
+// Tell the page the computer was locked or is going to sleep (it decides what to do)
+function notifySystemLock(reason) {
+  runClipboardClear(); // leaving the computer: don't leave a copied password behind
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('system-lock', reason);
 }
 
 function createWindow() {
@@ -51,22 +140,35 @@ function createWindow() {
     },
   });
 
-  win.once('ready-to-show', () => {
-    console.log('ready-to-show fired at', Date.now());
-    win.show();
-  });
+  mainWindow = win;
+  win.on('closed', () => { if (mainWindow === win) mainWindow = null; });
 
-  win.webContents.on('did-finish-load', () => {
-    console.log('did-finish-load fired at', Date.now());
+  win.once('ready-to-show', () => {
+    win.show();
   });
 
   win.loadFile('PasswordVault/index.html');
 }
 
 app.whenReady().then(() => {
-  console.time('ready-to-createWindow');
+  // A second copy is on its way out (see above); don't build anything for it
+  if (!hasInstanceLock) return;
+
+  ipcMain.handle('schedule-clipboard-clear', (_event, text, seconds) => scheduleClipboardClear(text, seconds));
+
+  // 'lock-screen' is only emitted on Windows and macOS; 'suspend' on all platforms
+  powerMonitor.on('lock-screen', () => notifySystemLock('lock-screen'));
+  powerMonitor.on('suspend', () => notifySystemLock('suspend'));
+
+  // Only the permissions the app actually uses are granted (see ALLOWED_PERMISSIONS).
+  // Everything else (camera, microphone, location, notifications, ...) is refused:
+  // the app has no use for them, and "allow everything" would hand them to any page
+  // that ever got loaded into the window.
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    callback(true);
+    callback(ALLOWED_PERMISSIONS.has(permission));
+  });
+  session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+    return ALLOWED_PERMISSIONS.has(permission);
   });
 
   ipcMain.handle('get-default-path', () => {
@@ -103,6 +205,8 @@ app.whenReady().then(() => {
     for (const entry of entries) {
       if (entry.isDirectory()) 
       {
+        if (isIgnoredFolder(entry.name)) continue;
+
         const bookPath = path.join(vaultPath, entry.name);
         const isEncrypted = fs.existsSync(path.join(bookPath, 'vault.enc'));
         subBooks.push({ name: entry.name, path: bookPath, isEncrypted });
@@ -149,8 +253,10 @@ app.whenReady().then(() => {
   });
   
   createWindow();
-  console.timeEnd('ready-to-createWindow');
 });
+
+// Don't leave a copied value on the clipboard just because the app was closed
+app.on('before-quit', runClipboardClear);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

@@ -28,16 +28,16 @@ function openRenameCollModal(filename) {
 // Save
 
 renameCollSaveBtn.addEventListener('click', async function () {
-	var rawName = renameCollInput.value.trim();
-	if (!rawName) return;
+	if (!renameCollInput.value.trim()) return;
 
-	var newName = rawName.replace(/[^a-zA-Z0-9 _\-]/g, '').trim();
-	if (!newName) 
+	var san = sanitizeName(renameCollInput.value);
+	if (san.error) 
 	{
-		renameCollInfo.textContent = 'Invalid name.'; 
+		renameCollInfo.textContent = san.error; 
 		return; 
 	}
 
+	var newName = san.name;
 	var newFilename = newName + '.txt';
 	if (newFilename === renamingFile) 
 	{ 
@@ -45,9 +45,11 @@ renameCollSaveBtn.addEventListener('click', async function () {
 		return; 
 	}
 	
-	if (collections[newFilename]) 
+	// Case-insensitive, but the collection being renamed doesn't clash with itself,
+	// so changing only its capitalisation (Banking -> banking) is allowed
+	if (collectionNameTaken(newFilename, renamingFile)) 
 	{ 
-		renameCollInfo.textContent = 'A collection with that name already exists.'; 
+		renameCollInfo.textContent = 'A collection named "' + newName + '" already exists.'; 
 		return; 
 	}
 
@@ -76,14 +78,16 @@ renameCollSaveBtn.addEventListener('click', async function () {
 		} 
 		else 
 		{
-			await bookWriteFile(newFilename, buildFileText(entries));
-			await bookDeleteFile(renamingFile);
+			// A real rename, not write + delete: for a case-only change on Windows/macOS
+			// the "new" and "old" names are the same file, so deleting the old one
+			// after writing the new one would erase the collection.
+			bookRenameFile(renamingFile, newFilename);
 			collections[newFilename] = entries;
 			delete collections[renamingFile];
 		}
 
 		// Rewire the sidebar button by cloning it 
-		var sideBtn = collList.querySelector('[data-file="' + renamingFile + '"]');
+		var sideBtn = findByData(collList, 'file', renamingFile);
 		
 		if (sideBtn) 
 		{
@@ -134,4 +138,18 @@ renameCollSaveBtn.addEventListener('click', async function () {
 
 	renameCollSaveBtn.disabled = false;
 	renameCollSaveBtn.textContent = 'Rename';
+});
+
+// Live feedback while typing (the same rules are enforced again on save)
+renameCollInput.addEventListener('input', function () {
+	var typed = renameCollInput.value.trim();
+
+	if (!typed) { renameCollInfo.textContent = ''; return; }
+
+	var san = sanitizeName(typed);
+
+	if (san.error) renameCollInfo.textContent = san.error;
+	else if (collectionNameTaken(san.name + '.txt', renamingFile)) renameCollInfo.textContent = 'A collection named "' + san.name + '" already exists.';
+	else if (san.changed) renameCollInfo.textContent = 'Will be renamed to "' + san.name + '".';
+	else renameCollInfo.textContent = '';
 });

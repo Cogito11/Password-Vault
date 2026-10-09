@@ -19,6 +19,15 @@
 	var settingsSymbols = document.getElementById('settingsSymbols');
 	var settingsBookEncrypt = document.getElementById('settingsBookEncrypt');
 	var settingsThemeSelect = document.getElementById('settingsThemeSelect');
+	var settingsAutoLock = document.getElementById('settingsAutoLock');
+	var settingsAutoLockMinutes = document.getElementById('settingsAutoLockMinutes');
+	var settingsAutoLockMinutesValue = document.getElementById('settingsAutoLockMinutesValue');
+	var settingsAutoLockMinutesRow = document.getElementById('settingsAutoLockMinutesRow');
+	var settingsLockOnSystem = document.getElementById('settingsLockOnSystem');
+	var settingsClipClear = document.getElementById('settingsClipClear');
+	var settingsClipSeconds = document.getElementById('settingsClipSeconds');
+	var settingsClipSecondsValue = document.getElementById('settingsClipSecondsValue');
+	var settingsClipSecondsRow = document.getElementById('settingsClipSecondsRow');
 	var updateBtn = document.getElementById('settingsUpdateBtn');
 	var updateLabel = document.getElementById('settingsUpdateLabel');
 	var updateDownload = document.getElementById('settingsUpdateDownload');
@@ -41,6 +50,13 @@
 		settingsBookEncrypt.checked = settings.defaultBookEncrypted;
 		settingsThemeSelect.value = settings.theme || 'classic';
 		applyAppTheme(settingsThemeSelect.value || 'classic');
+
+		settingsAutoLock.checked = settings.autoLockEnabled;
+		settingsAutoLockMinutes.value = settings.autoLockMinutes;
+		settingsLockOnSystem.checked = settings.lockOnSystemLock;
+		settingsClipClear.checked = settings.clearClipboardEnabled;
+		settingsClipSeconds.value = settings.clearClipboardSeconds;
+		syncSecurityRows();
 		if (settingsVersion) {
 			settingsVersion.textContent = 'Loading…';
 			try {
@@ -63,8 +79,21 @@
 			generatorNumbers: settingsNumbers.checked,
 			generatorSymbols: settingsSymbols.checked,
 			defaultBookEncrypted: settingsBookEncrypt.checked,
-			theme: settingsThemeSelect.value || 'classic'
+			theme: settingsThemeSelect.value || 'classic',
+			autoLockEnabled: settingsAutoLock.checked,
+			autoLockMinutes: parseInt(settingsAutoLockMinutes.value, 10) || DEFAULT_APP_SETTINGS.autoLockMinutes,
+			lockOnSystemLock: settingsLockOnSystem.checked,
+			clearClipboardEnabled: settingsClipClear.checked,
+			clearClipboardSeconds: parseInt(settingsClipSeconds.value, 10) || DEFAULT_APP_SETTINGS.clearClipboardSeconds
 		};
+	}
+
+	// Slider values and the rows that only make sense when their switch is on
+	function syncSecurityRows() {
+		settingsAutoLockMinutesValue.textContent = settingsAutoLockMinutes.value + ' min';
+		settingsClipSecondsValue.textContent = settingsClipSeconds.value + ' s';
+		settingsAutoLockMinutesRow.hidden = !settingsAutoLock.checked;
+		settingsClipSecondsRow.hidden = !settingsClipClear.checked;
 	}
 
 	// Brief "Saved" confirmation in the toolbar
@@ -80,6 +109,10 @@
 		var settings = collectSettingsFromForm();
 		applyAppTheme(settings.theme);
 		saveAppSettings(settings);
+
+		// Changing the auto-lock settings counts as activity: start the idle timer fresh
+		if (typeof noteActivity === 'function') noteActivity();
+
 		flashSaved();
 	}
 
@@ -189,6 +222,17 @@
 	});
 
 	if (settingsBookEncrypt) settingsBookEncrypt.addEventListener('change', persistSettings);
+
+	// Security: switches save immediately; sliders update their label while dragging
+	// and save once on release (like the password length slider)
+	[settingsAutoLock, settingsLockOnSystem, settingsClipClear].forEach(function (el) {
+		el.addEventListener('change', function () { syncSecurityRows(); persistSettings(); });
+	});
+
+	[settingsAutoLockMinutes, settingsClipSeconds].forEach(function (el) {
+		el.addEventListener('input', syncSecurityRows);
+		el.addEventListener('change', persistSettings);
+	});
 	if (settingsThemeSelect) settingsThemeSelect.addEventListener('change', persistSettings);
 
 	// ── Check for update ──────────────────────────────────────────────

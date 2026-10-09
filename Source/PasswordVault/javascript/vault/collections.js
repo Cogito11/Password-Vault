@@ -7,6 +7,14 @@
 // PURPOSE:
 // - Combine entries from ALL collections into one list
 // - Disable "new entry" (since this is not a real file)
+// True if the active book already has a collection with this file name, ignoring
+// case ("Banking.txt" and "banking.txt" are the same file on Windows and macOS).
+// exceptFilename lets a collection be compared against all the others.
+function collectionNameTaken(filename, exceptFilename) {
+	var key = nameKey(filename);
+	return Object.keys(collections).some(function (f) { return f !== exceptFilename && nameKey(f) === key; });
+}
+
 function openAllCollections(btn) {
 
 	// Leave the inline Settings view if it's open
@@ -167,7 +175,7 @@ async function deleteCollection(filename) {
 		// UI Updates
 
 		// Remove collection button from sidebar
-		var sideBtn = collList.querySelector('[data-file="' + filename + '"]');
+		var sideBtn = findByData(collList, 'file', filename);
 		if (sideBtn) sideBtn.remove();
 
 		// Update all passwords total count

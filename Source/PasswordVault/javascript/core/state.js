@@ -6,29 +6,21 @@
 // Vault / folder Values
 var collections = {};
 var activeFile = null;
-var dirHandle = null;
 var vaultKey = null; // CryptoKey when an encrypted vault is open
 var isEncryptedVault = false;
 
-// Electron path mode
-// When the vault is loaded by absolute path (Node fs) instead of a
-// FileSystemHandle, these flags are set and write operations use window.vault.
-var isElectronPathMode = false;
+// The vault folder is always opened by absolute path and read / written through
+// the Node fs bridge (window.vault).
 var _electronVaultPath = null;
 
 // Multi book mode
 var isMultiBookMode = false;
-var bookHandles = {};   // bookName -> { handle, path, isEncrypted, isUnlocked, key, collections }
-var activeBookHandle = null; // currently selected book's directory handle
+var bookHandles = {};   // bookName -> { path, isEncrypted, isUnlocked, key, salt, collections }
 var activeBookName = null; // currently selected book name
 var unlockingBookName = null; // book name currently pending unlock
 
 // Startup / default folder
 var _autoLoadDone = false;
-var _pendingDefaultHandle = null; // held for the quickstart banner click
-
-// Single book lock state 
-var singleBookLocked = false;
 
 // New collection / entry modal
 var modalEntryList = []; // [{ name, attrs: [{ key, val }] }]
@@ -44,5 +36,4 @@ var renamingFile = null; // current filename (with .txt) being renamed
 var editingBookName = null;
 
 // New book modal
-var chosenParentHandle = null;
-var chosenParentPath   = null; // Electron path mode alternative to chosenParentHandle
+var chosenParentPath   = null; // folder the new book will be created in

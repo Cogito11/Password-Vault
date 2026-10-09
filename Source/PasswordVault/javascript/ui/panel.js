@@ -107,6 +107,37 @@ function updateDefaultUI(name) {
 	}
 }
 
+// The entries currently drawn in the list. COPY / SHOW buttons carry an index into
+// this array rather than a copy of the value, so no password is kept as a
+// (hidden) attribute in the page; they're looked up here only when used, and
+// forgotten when the book is locked (see clearDecryptedView).
+var renderedEntries = [];
+
+// The attribute value a COPY / SHOW button refers to
+function attrValueFromButton(btn) {
+	var entry = renderedEntries[parseInt(btn.dataset.ri, 10)];
+	var attr = entry && entry.attrs[parseInt(btn.dataset.ai, 10)];
+	return attr ? String(attr.val == null ? '' : attr.val) : '';
+}
+
+// Removes everything decrypted from the page: the list of entries, the search
+// box, and anything half-typed in the add / edit dialogs. Used when a book is
+// locked, deleted or ejected so locking really does take the data off the screen
+// (and out of the page's memory), not just hide the panel.
+function clearDecryptedView() {
+	renderedEntries = [];
+	pwList.innerHTML = '';
+	searchInput.value = '';
+
+	modalEntryList = [];
+	closeModal();
+	editModalOverlay.classList.remove('open');
+	attrRows.innerHTML = '';
+	editAttrRows.innerHTML = '';
+	entryNameInput.value = '';
+	editEntryName.value = '';
+}
+
 // Reset ALL vault-related state back to "nothing loaded". 
 // This is used when:
 // - User clicks "Eject"
@@ -118,21 +149,21 @@ function updateDefaultUI(name) {
 // - Mode flags (multi-book, encryption...)
 function resetVaultState() {
 
+	// Take any decrypted data off the screen first
+	clearDecryptedView();
+
 	// Core Data
 	collections      = {};
 	activeFile       = null;
-	dirHandle        = null;
 	vaultKey         = null;
 	isEncryptedVault = false;
 
 	// Mode Flags
 	isMultiBookMode  = false;
-	isElectronPathMode  = false;
 	_electronVaultPath  = null;
 
 	// Multi Book State
 	bookHandles         = {};
-	activeBookHandle    = null;
 	activeBookName      = null;
 	unlockingBookName   = null;
 
@@ -158,9 +189,6 @@ function resetVaultState() {
 
 	// Hide eject button
 	ejectBtn.classList.remove('visible');
-
-	// Reset lock state
-	singleBookLocked = false;
 
 	// Hide new collection
 	newCollBtn.classList.add('hidden');
@@ -228,6 +256,9 @@ function renderPasswords(overrideEntries) {
 		entries = [];
 	}
 
+	// Remember what's on screen so COPY / SHOW can look their values up
+	renderedEntries = entries;
+
 	// Update panel count
 	panelCount.textContent = entries.length + ' password' + (entries.length === 1 ? '' : 's');
 
@@ -255,18 +286,21 @@ function renderPasswords(overrideEntries) {
 			var uid = 'f' + idx + '_' + ai;
 
 			// Detect sesitive fields (passwords, tokens...)
-			var isSecret = /pass(word)?|secret|pin|key|token/i.test(attr.key);
+			var isSecret = isSecretKey(attr.key);
 			
 			var safeVal = esc(attr.val);
 
+			// Values with line breaks (multi-line notes) are shown with their line breaks
+			var multiClass = String(attr.val).indexOf('\n') !== -1 ? ' multi' : '';
+
 			// Mask sensitive values by default
 			var valSpan = isSecret
-				? '<span class="pw-attr-val masked" id="v_' + uid + '">\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</span>'
-				: '<span class="pw-attr-val" id="v_' + uid + '">' + safeVal + '</span>';
+				? '<span class="pw-attr-val masked' + multiClass + '" id="v_' + uid + '">\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</span>'
+				: '<span class="pw-attr-val' + multiClass + '" id="v_' + uid + '">' + safeVal + '</span>';
 
 			// Add show button only for secrets
 			var showBtn = isSecret
-				? '<button class="act-btn" data-uid="' + uid + '" data-val="' + safeVal + '" onclick="toggleReveal(this)">SHOW</button>'
+				? '<button class="act-btn" data-uid="' + uid + '" data-ri="' + idx + '" data-ai="' + ai + '" onclick="toggleReveal(this)">SHOW</button>'
 				: '';
 
 			
@@ -276,7 +310,7 @@ function renderPasswords(overrideEntries) {
 				'<div class="attr-resize-handle" title="Drag to resize"></div>' +
 				valSpan +
 				'<div class="pw-attr-actions">' + showBtn +
-					'<button class="act-btn" data-val="' + safeVal + '" onclick="copyVal(this)">COPY</button>' +
+					'<button class="act-btn" data-ri="' + idx + '" data-ai="' + ai + '" onclick="copyVal(this)">COPY</button>' +
 				'</div></div>';
 		}).join('');
 
@@ -351,7 +385,7 @@ function toggleReveal(btn) {
 	if (el.classList.contains('masked')) {
 
 		// Reveal actual value
-		el.textContent = btn.dataset.val;
+		el.textContent = attrValueFromButton(btn);
 		el.classList.remove('masked');
 
 		btn.textContent = 'HIDE';

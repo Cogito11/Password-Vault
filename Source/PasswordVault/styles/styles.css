@@ -618,6 +618,12 @@ body.resizing-sidebar * { cursor: col-resize !important; }
   transition: opacity 0.13s;
   pointer-events: none;
 }
+/* Keyboard users: when one of the icons has focus, show them (and ring the focused one) */
+.book-btn:has(:focus-visible) .book-actions,
+.coll-btn:has(:focus-visible) .coll-actions { opacity: 1; pointer-events: auto; }
+.book-action-btn:focus-visible,
+.coll-action-btn:focus-visible { outline: 1px solid var(--amber); outline-offset: 1px; }
+
 /* Keep the lock / relock icon at the right edge visible: sit left of it */
 .book-btn:has(.book-lock) .book-actions { right: calc(8px + 14px + 9px); }
 .book-btn:has(.book-relock-btn) .book-actions { right: calc(8px + 24px + 9px); }
@@ -1148,6 +1154,14 @@ body.resizing-attr-col {
 
 .pw-attr-val.masked { color: var(--text-muted); letter-spacing: 0.1em; }
 
+/* A value with line breaks shows all of them instead of one clipped line */
+.pw-attr-val.multi {
+  white-space: pre-wrap;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
 .pw-attr-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
 .act-btn {
@@ -1507,6 +1521,8 @@ body.reordering-attr * { cursor: grabbing !important; }
 
 .attr-row .attr-val-wrap { flex: 1; position: relative; display: flex; align-items: center; }
 .attr-val-wrap .attr-val { width: 100%; padding-right: 30px; }
+.attr-val-wrap .attr-val-multi { resize: vertical; min-height: 58px; line-height: 1.4; }
+.attr-val-wrap:has(.attr-val-multi) .attr-gen-btn { top: 6px; }
 
 .attr-gen-btn {
   position: absolute;
@@ -1806,10 +1822,13 @@ body.reordering-attr * { cursor: grabbing !important; }
   padding-bottom: 14px;
   border-bottom: 1px solid var(--divider);
 }
-.settings-row:last-child {
+.settings-row:last-child,
+/* the row before a trailing slider row that is currently hidden */
+.settings-row:has(+ .settings-row[hidden]:last-child) {
   padding-bottom: 0;
   border-bottom: none;
 }
+.settings-row[hidden] { display: none; }
 .settings-row-text {
   flex: 1 1 260px;
   min-width: 0;
@@ -1832,6 +1851,7 @@ body.reordering-attr * { cursor: grabbing !important; }
 .settings-row-control .modal-input { width: 220px; max-width: 100%; }
 .settings-row-control .location-row .modal-input { width: 200px; }
 .settings-row-control .settings-length-row { width: 280px; max-width: 100%; }
+.settings-row-control .settings-length-row .gen-len-val { min-width: 48px; text-align: right; }
 .settings-hint.settings-warn { color: var(--amber); }
 .settings-hint[hidden],
 .settings-hint:empty { display: none; }

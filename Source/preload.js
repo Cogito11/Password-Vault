@@ -1,6 +1,7 @@
-const { contextBridge, ipcRenderer, shell } = require('electron');
+const { contextBridge, ipcRenderer, shell, clipboard } = require('electron');
 const fs = require('fs');
 const path = require('path');
+const { writeFileAtomic } = require('./fs-atomic');
 
 const packageJsonPath = path.join(__dirname, 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
@@ -18,6 +19,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // On-demand file reads
     readBookFiles: (bookPath)  => ipcRenderer.invoke('read-book-files', bookPath),
     readVaultFiles: (vaultPath) => ipcRenderer.invoke('read-vault-files', vaultPath),
+
+  // Clipboard
+  /**
+   * Put text on the system clipboard. This uses Electron's native clipboard, which
+   * needs no browser permission, so the page is never granted any (and can't read
+   * the clipboard back). navigator.clipboard can't be used for this: Electron asks
+   * for its "clipboard-read" permission even to WRITE.
+   */
+  copyText: (text) => { clipboard.writeText(String(text)); },
+
+  // Security
+  /** Ask the main process to empty the clipboard after `seconds`, if it still holds `text` */
+  scheduleClipboardClear: (text, seconds) => ipcRenderer.invoke('schedule-clipboard-clear', String(text), Number(seconds)),
+
+  /** Be told when the computer is locked or goes to sleep (cb receives the reason) */
+  onSystemLock: (cb) => {
+    if (typeof cb === 'function') ipcRenderer.on('system-lock', (_event, reason) => cb(String(reason)));
+  },
 });
 
 contextBridge.exposeInMainWorld('vault', {
@@ -40,23 +59,35 @@ contextBridge.exposeInMainWorld('vault', {
   /** Read a text file synchronously */
   readFile: (p) => fs.readFileSync(p, 'utf8'),
 
-  /** Write a text file synchronously */
-  writeFile: (p, data) => fs.writeFileSync(p, data),
+  /**
+   * Write a text file. Crash-safe: the new contents are written to a temp file
+   * and renamed over the destination, so a failed write never damages the
+   * existing file. opts: { exclusive } fail if the file already exists.
+   */
+  writeFile: (p, data, opts) => writeFileAtomic(p, String(data), opts),
 
-  /** Write a binary file synchronously (accepts Uint8Array / Buffer) */
-  writeFileBin: (p, buf) => fs.writeFileSync(p, Buffer.from(buf)),
+  /**
+   * Write a binary file (accepts Uint8Array / Buffer), crash-safe like writeFile.
+   * opts: { exclusive } fail if it already exists, { backup } keep the previous
+   * version as <file>.bak.
+   */
+  writeFileBin: (p, buf, opts) => writeFileAtomic(p, Buffer.from(buf), opts),
 
   /** Read a binary file synchronously; returns a Buffer */
   readFileBin: (p) => fs.readFileSync(p),
 
-  /** Create a directory (and any missing parents) synchronously */
-  mkdir: (p) => fs.mkdirSync(p, { recursive: true }),
+  /**
+   * Create a directory. Deliberately NOT recursive: it fails with EEXIST if the
+   * folder is already there, so creating a "new" book can never silently reuse
+   * (and then overwrite files in) an existing one.
+   */
+  mkdir: (p) => fs.mkdirSync(p),
 
   /** Delete a file */
   deleteFile: (p) => fs.unlinkSync(p),
 
-  /** Delete a directory recursively */
-  deleteDir: (p) => fs.rmSync(p, { recursive: true, force: true }),
+  /** Remove an EMPTY directory (fails if anything is still inside it) */
+  rmdir: (p) => fs.rmdirSync(p),
 
   /** Rename / move a file or directory */
   rename: (oldP, newP) => fs.renameSync(oldP, newP),

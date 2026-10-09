@@ -41,7 +41,6 @@ function activateBook(bookName, btn) {
 
 	// Set global active book state
 	activeBookName = bookName;
-	activeBookHandle = bookHandles[bookName].handle;
 
 	var info = bookHandles[bookName];
 
@@ -83,18 +82,19 @@ function activateBook(bookName, btn) {
 
 // Relock a book, wipe key and sensitive data from memory
 // Also resets UI if the book was active
-function relockBook(bookName) {
+function relockBook(bookName, options) {
 	var info = bookHandles[bookName];
 	// Only applies to encrypted books
 	if (!info || !info.isEncrypted) return;
 
 	// Clear sensitive data
 	info.key = null;
+	info.salt = null;
 	info.collections = {};
 	info.isUnlocked = false;
 
 	// Update UI button (add lock icon if missing)
-	var btn = booksList.querySelector('[data-book="' + bookName + '"]');
+	var btn = findByData(booksList, 'book', bookName);
 	if (btn) {
 		if (!btn.querySelector('.book-lock')) {
 			var lk = document.createElement('span');
@@ -114,8 +114,10 @@ function relockBook(bookName) {
 
 	// If this book was active, reset entire UI state
 	if (activeBookName === bookName) {
+		// Take its decrypted entries (and anything half-typed) off the screen too
+		clearDecryptedView();
+
 		activeBookName = null;
-		activeBookHandle = null;
 		collections = {};
 		vaultKey = null;
 		isEncryptedVault = false;
@@ -133,6 +135,8 @@ function relockBook(bookName) {
 	else if (!isMultiBookMode) 
 	{
 		// single book mode reset
+		clearDecryptedView();
+
 		collections = {};
 		vaultKey = null;
 		isEncryptedVault = false;
@@ -148,18 +152,44 @@ function relockBook(bookName) {
 		setCollSectionCount(0, null);
 	}
 
-	// Notify user
-	showToast(bookName + ' locked');
+	// Notify user (callers locking several books at once show one summary instead)
+	if (!(options && options.silent)) showToast(bookName + ' locked');
 }
 
-// Permanently delete a book and all its files
+// Permanently delete a book and the files this app created in it.
+//
+// A "book" is just a folder, and the folder may hold things that aren't ours.
+// So this never deletes recursively: if anything other than vault files is in
+// there, nothing is deleted at all and the user is told why. Only the app's own
+// files are removed, followed by the (then empty) folder.
 async function deleteBook(bookName) {
 	var info = bookHandles[bookName];
-	var collCount = Object.keys((info && info.collections) || {}).length;
+	if (!info) return;
+
+	var contents;
+	try {
+		contents = inspectBookFolder(info.path);
+	} catch (err) {
+		showToast('Error: ' + err.message);
+		return;
+	}
+
+	if (contents.others.length) {
+		var shown = contents.others.slice(0, 5).join(', ') + (contents.others.length > 5 ? ', \u2026' : '');
+		await showConfirm(
+			'Book Not Deleted',
+			'Other files were found in this book, so it was not deleted.\n\nMove or remove them first, then try again:\n' + shown,
+			'OK',
+			{ hideCancel: true }
+		);
+		return;
+	}
+
+	var collCount = Object.keys(info.collections || {}).length;
 
 	// Build confirmation message based on state
 	var msg = 'Delete book "' + bookName + '"';
-	if (info && info.isEncrypted && !info.isUnlocked) {
+	if (info.isEncrypted && !info.isUnlocked) {
 		msg += '?\n\nThis book is locked. All its data will be permanently deleted.';
 	} else {
 		msg += ' (' + collCount + ' collection' + (collCount !== 1 ? 's' : '') + ')?\n\nThis cannot be undone.';
@@ -169,14 +199,17 @@ async function deleteBook(bookName) {
 	if (!confirmed) return;
 
 	try {
-		// Delete directory
-		window.vault.deleteDir(bookHandles[bookName].path);
+		// Remove our own files, then the folder itself (fails safely if it isn't empty)
+		contents.removable.forEach(function (name) {
+			window.vault.deleteFile(window.vault.joinPath(info.path, name));
+		});
+		window.vault.rmdir(info.path);
 
 		// Remove from memory
 		delete bookHandles[bookName];
 
 		// Remove button from UI
-		var btn = booksList.querySelector('[data-book="' + bookName + '"]');
+		var btn = findByData(booksList, 'book', bookName);
 		if (btn) btn.remove();
 
 		// Update counts
@@ -193,8 +226,9 @@ async function deleteBook(bookName) {
 
 		// Reset UI if deleted book was active
 		if (activeBookName === bookName) {
+			clearDecryptedView();
+
 			activeBookName = null;
-			activeBookHandle = null;
 			collections = {};
 			vaultKey = null;
 			isEncryptedVault = false;
@@ -240,7 +274,7 @@ async function doRenameBook(oldName, newName) {
 	delete bookHandles[oldName];
 
 	// Update UI button and rebind events
-	var btn = booksList.querySelector('[data-book="' + oldName + '"]');
+	var btn = findByData(booksList, 'book', oldName);
 	if (btn) {
 		btn.dataset.book = newName;
 
@@ -286,11 +320,19 @@ async function doChangeBookPassword(bookName, newPassword) {
 
 	// Repack encrypted data with new password
 	var bytes = await packEncrypted({ collections: info.collections }, newPassword);
-	
+	var salt = bytes.slice(0, 16);
+	var newKey = await deriveKey(newPassword, salt);
+
+	// No .bak is made here (that copy would still open with the old password)
 	await namedBookWriteBin(bookName, 'vault.enc', bytes);
-	
-	// Derive and store new key
-	info.key = await deriveKey(newPassword, bytes.slice(0, 16));
+	await verifyEncryptedBook(bookName, newKey, info.collections);
+
+	// Any earlier backup is protected by the OLD password, so it has to go
+	namedBookRemoveBackup(bookName);
+
+	// Store the new key and salt
+	info.key = newKey;
+	info.salt = salt;
 }
 
 // Encrypt a plain book into vault.enc
@@ -306,7 +348,18 @@ async function doEncryptBook(bookName, password) {
 
 	// Encrypt collections
 	var bytes = await packEncrypted({ collections: info.collections }, password);
+	var salt = bytes.slice(0, 16);
+	var newKey = await deriveKey(password, salt);
 	await namedBookWriteBin(bookName, 'vault.enc', bytes);
+
+	// Prove the encrypted copy opens and matches BEFORE the plaintext originals
+	// are touched. If it doesn't, remove the bad file and leave everything as it was.
+	try {
+		await verifyEncryptedBook(bookName, newKey, info.collections);
+	} catch (err) {
+		try { namedBookDeleteFile(bookName, 'vault.enc'); } catch (_) { /* nothing to clean up */ }
+		throw new Error(err.message + ' Your original files were not changed.');
+	}
 
 	// Delete all plaintext files for security
 	var toDelete = (await namedBookListFiles(bookName))
@@ -317,14 +370,15 @@ async function doEncryptBook(bookName, password) {
 	}
 
 	// Update State
-	info.key = await deriveKey(password, bytes.slice(0, 16));
+	info.key = newKey;
+	info.salt = salt;
 	info.isEncrypted = true;
 	info.isUnlocked = true;
 
 	// Update UI
 	var cnt = Object.keys(info.collections).length;
 
-	var btn = booksList.querySelector('[data-book="' + bookName + '"]');
+	var btn = findByData(booksList, 'book', bookName);
 	if (btn) {
 		var meta = btn.querySelector('.book-meta');
 		if (meta) meta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + ' \xb7 encrypted';
@@ -349,15 +403,17 @@ async function doDecryptBook() {
 		await namedBookWriteFile(editingBookName, filename, buildFileText(info.collections[filename]));
 	}
 
-	// Remove encrypted vault file
+	// Remove encrypted vault file and its backup (both hold the data under the old password)
 	await namedBookDeleteFile(editingBookName, 'vault.enc');
+	namedBookRemoveBackup(editingBookName);
 
 	// Update State
 	info.isEncrypted = false;
 	info.key = null;
+	info.salt = null;
 
 	// Update UI
-	var btn = booksList.querySelector('[data-book="' + editingBookName + '"]');
+	var btn = findByData(booksList, 'book', editingBookName);
 	if (btn) {
 		var lk = btn.querySelector('.book-lock');
 		if (lk) lk.remove();

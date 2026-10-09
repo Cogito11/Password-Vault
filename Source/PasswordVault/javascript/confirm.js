@@ -38,10 +38,12 @@
     // Ignore key presses if modal is not open
     if (!overlay.classList.contains('open')) return;
 
-    // Enter key = confirm
-    if (e.key === 'Enter') { e.preventDefault(); close(true);  }
     // Escape key = cancel
     if (e.key === 'Escape') { e.preventDefault(); close(false); }
+
+    // Enter is deliberately NOT a global "confirm": it activates whichever button
+    // has focus, like any dialog. Otherwise an Enter key still held down from the
+    // action that opened a "Delete" dialog would instantly confirm the deletion.
   });
 
   
@@ -49,18 +51,23 @@
   // @param {string} title - dialog heading
   // @param {string} message - body text
   // @param {string} okLabel - confirm button label (default: "Delete")
+  // @param {object} options - { hideCancel: true } turns it into a plain notice
+  //                           with a single OK button
   // @returns {Promise<boolean>}
-  window.showConfirm = function (title, message, okLabel) {
+  window.showConfirm = function (title, message, okLabel, options) {
     // Set UI text (with defaults)
     titleEl.textContent = title || 'Confirm';
     msgEl.textContent = message || '';
     okBtn.textContent = okLabel || 'Delete';
+    cancelBtn.style.display = (options && options.hideCancel) ? 'none' : '';
 
     // Show modal
     overlay.classList.add('open');
 
-    // Focus the OK button for accessibility
-    okBtn.focus();
+    // Focus the SAFE choice. For a destructive confirmation that's Cancel, so
+    // pressing Enter (or Space) straight away can't delete anything. A plain
+    // notice has only an OK button, so that gets the focus.
+    ((options && options.hideCancel) ? okBtn : cancelBtn).focus();
     // Return a promise that resolves when the user acts
     return new Promise(function (resolve) { 
       _resolve = resolve; 

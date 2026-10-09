@@ -23,8 +23,6 @@ function openVaultUnlockModal(bookName) {
 
 vaultUnlockClose.addEventListener('click', function () {
 	vaultUnlockOverlay.classList.remove('open');
-
-	if (!isMultiBookMode) dirHandle = null;
 	unlockingBookName = null;
 });
 
@@ -32,8 +30,6 @@ vaultUnlockOverlay.addEventListener('click', function (e) {
 	if (e.target !== vaultUnlockOverlay) return;
 
 	vaultUnlockOverlay.classList.remove('open');
-
-	if (!isMultiBookMode) dirHandle = null;
 	unlockingBookName = null;
 });
 
@@ -51,30 +47,30 @@ vaultUnlockBtn.addEventListener('click', async function () {
 	vaultUnlockBtn.textContent = 'Unlocking\u2026';
 	vaultUnlockError.style.display = 'none';
 
+	// How far unlocking got, so a failure can be explained accurately
+	var stage = 'read';
+
 	try {
-		// Read vault.enc - supports Web FS API and Electron path mode
-		var buf;
+		// Read vault.enc
+		var encPath = isMultiBookMode
+			? window.vault.joinPath(bookHandles[unlockingBookName].path, 'vault.enc')
+			: window.vault.joinPath(_electronVaultPath, 'vault.enc');
 
-		if (isElectronPathMode) 
-		{
-			var encPath = isMultiBookMode
-				? window.vault.joinPath(bookHandles[unlockingBookName].path, 'vault.enc')
-				: window.vault.joinPath(_electronVaultPath, 'vault.enc');
+		var buf = new Uint8Array(window.vault.readFileBin(encPath));
 
-			buf = new Uint8Array(window.vault.readFileBin(encPath));
-		} 
-		else 
-		{
-			var targetHandle = isMultiBookMode ? bookHandles[unlockingBookName].handle : dirHandle;
-			var fh = await targetHandle.getFileHandle('vault.enc');
-			buf = new Uint8Array(await (await fh.getFile()).arrayBuffer());
-		}
+		stage = 'check';
+		// 16 byte salt + 12 byte IV + at least the 16 byte authentication tag
+		if (buf.length < 44) throw new Error('too short');
 
 		var salt = buf.slice(0, 16);
 		var iv = buf.slice(16, 28);
 		var ct = buf.slice(28);
+
+		stage = 'decrypt';
 		var key = await deriveKey(pw, salt);
 		var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct);
+
+		stage = 'parse';
 		var payload = JSON.parse(new TextDecoder().decode(pt));
 
 		vaultUnlockOverlay.classList.remove('open');
@@ -83,6 +79,7 @@ vaultUnlockBtn.addEventListener('click', async function () {
 		{
 			var info = bookHandles[unlockingBookName];
 			info.key = key;
+			info.salt = salt;
 			info.collections = payload.collections || {};
 			info.isUnlocked = true;
 
@@ -93,7 +90,7 @@ vaultUnlockBtn.addEventListener('click', async function () {
 				meta.textContent = cnt + ' collection' + (cnt !== 1 ? 's' : '') + ' \xb7 encrypted';
 			}
 
-			var bookBtn = booksList.querySelector('[data-book="' + unlockingBookName + '"]');
+			var bookBtn = findByData(booksList, 'book', unlockingBookName);
 			if (bookBtn) 
 			{
 				var lk = bookBtn.querySelector('.book-lock');
@@ -117,10 +114,11 @@ vaultUnlockBtn.addEventListener('click', async function () {
 			if (info) 
 			{
 				info.key = key;
+				info.salt = salt;
 				info.collections = collections;
 				info.isUnlocked = true;
 
-				var bookBtn = booksList.querySelector('[data-book="' + vaultName() + '"]');
+				var bookBtn = findByData(booksList, 'book', vaultName());
 				if (bookBtn) 
 				{
 					var lk = bookBtn.querySelector('.book-lock');
@@ -136,7 +134,15 @@ vaultUnlockBtn.addEventListener('click', async function () {
 			showToast(vaultName() + ' unlocked');
 		}
 		
-	} catch (_) {
+	} catch (err) {
+		// Mention the backup copy if there is one
+		var hasBackup = false;
+		try {
+			var folder = isMultiBookMode && bookHandles[unlockingBookName] ? bookHandles[unlockingBookName].path : _electronVaultPath;
+			hasBackup = !!folder && window.vault.exists(window.vault.joinPath(folder, 'vault.enc.bak'));
+		} catch (_) { /* can't tell, so don't mention it */ }
+
+		vaultUnlockError.textContent = unlockFailureMessage(stage, err, hasBackup);
 		vaultUnlockError.style.display = 'block';
 		vaultUnlockBtn.disabled = false;
 		vaultUnlockBtn.textContent = 'Unlock';
