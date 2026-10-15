@@ -28,7 +28,7 @@ The system is designed around loading and ejecting files directly from your file
 - **Search**: filter entries within a collection or across an entire password book
 - **Custom Fields**: create entries with any fields you need rather than being limited to predefined templates
 - **Copy to Clipboard**: copy any field value with one click while sensitive values remain masked by default
-- **Fully Offline**: no network calls, cloud synchronization, or external services
+- **Fully Offline**: no cloud synchronization or external services. The only network connection is the update check, and only when you click **Check for update**
 
 ---
 
@@ -52,6 +52,22 @@ Download the latest version from either:
 - Official Website: https://cogito11.github.io/Password-Vault/
 
 Choose the build that matches your operating system and follow the normal installation process.
+
+### Updating
+
+Open **Settings** and click **Check for update**. If there is a newer version, click **Download**, then **Restart to update**. There is no installer to download by hand, and your vault files are never touched. Restarting locks any unlocked books again.
+
+Nothing happens on its own. Password Vault never checks for updates in the background, never downloads one until you click, and never installs one until you choose to restart. An update you downloaded but did not install is left alone when you close the app.
+
+| Your install | Updates inside the app? |
+| --- | --- |
+| Windows installer | Yes |
+| Linux AppImage | Yes |
+| Linux `.deb` | Yes (still in beta; asks for your password) |
+| Windows portable | No. **Settings** links to the download page. |
+| macOS | Not yet. **Settings** links to the download page. |
+
+Versions released before this feature can't update themselves. Install a newer version once the usual way, and from then on you can update inside the app.
 
 ### Option 2: Build From Source
 
@@ -130,9 +146,24 @@ Key derivation uses PBKDF2-SHA256 with 200,000 iterations.
 - Encryption keys exist only in memory while a book is unlocked
 - Relocking a book immediately removes the key from memory
 - Password Vault never transmits vault data over the network
+- The only connection it makes is to GitHub, when you ask it to check for or download an update. No vault data is sent
+- Updates are checked against the checksum published with each release, but the builds are not code-signed yet, so that checksum comes from the same place as the download
 - Plain-text books rely entirely on filesystem permissions for protection and can be accessed by anyone with permission to do so
 - Clipboard contents are not cleared automatically after copying
 - This project has not been independently audited
+
+---
+
+## Publishing a release
+
+For maintainers.
+
+1. Set the new `version` in `Source/package.json`.
+2. Commit, then tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. The **Build and Release** workflow builds every platform and uploads the installers, along with the `latest*.yml` files that tell installed copies a new version exists.
+4. If GitHub creates the release as a draft, publish it. Installed copies only see published releases, and only offer a version higher than the one they're running.
+
+In-place updates on macOS need Apple code signing, which the builds don't have yet. Once they do, set `MAC_IN_PLACE_UPDATES` to `true` in `Source/updater.js`.
 
 ---
 
