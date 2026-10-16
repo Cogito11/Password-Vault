@@ -29,6 +29,8 @@
     "appId": "com.bishop.passwordvault.app",
     "artifactName": "PasswordVault_Setup_${version}_${os}_${arch}.${ext}",
     "asar": true,
+    "electronLanguages": ["en-US"],
+    "files": ["**/*", "!tests{,/**/*}"],
     "win": {
       "target": ["portable", "nsis"],
       "icon": "PasswordVault/assets/logos/Password Vault Logo.ico"

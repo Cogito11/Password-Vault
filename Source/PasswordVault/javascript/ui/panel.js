@@ -113,6 +113,10 @@ function updateDefaultUI(name) {
 // forgotten when the book is locked (see clearDecryptedView).
 var renderedEntries = [];
 
+// Pending (debounced) search re-render, see the search box listener in app.js
+var SEARCH_DEBOUNCE_MS = 120;
+var searchDebounceTimer = null;
+
 // The attribute value a COPY / SHOW button refers to
 function attrValueFromButton(btn) {
 	var entry = renderedEntries[parseInt(btn.dataset.ri, 10)];
@@ -125,6 +129,7 @@ function attrValueFromButton(btn) {
 // locked, deleted or ejected so locking really does take the data off the screen
 // (and out of the page's memory), not just hide the panel.
 function clearDecryptedView() {
+	clearTimeout(searchDebounceTimer);
 	renderedEntries = [];
 	pwList.innerHTML = '';
 	searchInput.value = '';

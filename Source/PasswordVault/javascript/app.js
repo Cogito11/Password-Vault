@@ -185,7 +185,18 @@ function refreshActiveView() {
 	renderPasswords(filtered);
 }
 
-searchInput.addEventListener('input', refreshActiveView);
+// Typing in the search box: wait for a short pause before re-rendering, so a
+// large collection isn't rebuilt on every single keystroke. Clearing the box
+// re-renders straight away. The pending timer is cancelled when a book is locked
+// (see clearDecryptedView), so a search can never run against a locked vault.
+searchInput.addEventListener('input', function () {
+	clearTimeout(searchDebounceTimer);
+	if (!searchInput.value) {
+		refreshActiveView();
+		return;
+	}
+	searchDebounceTimer = setTimeout(refreshActiveView, SEARCH_DEBOUNCE_MS);
+});
 
 // Resume Banner, now used to create default folder
 document.getElementById('resumeBanner').addEventListener('click', async function (e) {
