@@ -8,6 +8,21 @@ const crypto = require('crypto');
 const appDataPath = process.platform === 'win32' ? (process.env.APPDATA || '') : process.platform === 'darwin' ? path.join(os.homedir(), 'Library', 'Application Support') : (process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'));
 const configPaths = process.env.PASSWORD_VAULT_CONFIG_PATH ? [process.env.PASSWORD_VAULT_CONFIG_PATH] : [path.join(appDataPath, 'password-vault', 'vault-config.json'), path.join(appDataPath, 'Password Vault', 'vault-config.json')];
 const bookPasswords = new Map();
+// The AES key for each unlocked book, derived once (when the book is unlocked) so the 200,000-round
+// PBKDF2 doesn't run again on every autofill lookup and save. It is only ever used with the salt it was
+// derived from, lives exactly as long as the password above, and is wiped when the books are locked.
+const bookKeys = new Map();
+function deriveKey(password, salt) { return crypto.pbkdf2Sync(password, salt, 200000, 32, 'sha256'); }
+function keyFor(item, password, salt) {
+  const cached = bookKeys.get(item.id);
+  if (cached && cached.salt.equals(salt) && bookPasswords.get(item.id) === password) return cached.key;
+  return deriveKey(password, salt);
+}
+function rememberKey(item, salt, key) {
+  const old = bookKeys.get(item.id); if (old) old.key.fill(0);
+  bookKeys.set(item.id, { salt: Buffer.from(salt), key });
+}
+function forgetKeys() { bookKeys.forEach(entry => entry.key.fill(0)); bookKeys.clear(); }
 
 function config() { const file = configPaths.find(candidate => fs.existsSync(candidate)); try { return file ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}; } catch (_) { return {}; } }
 function origin(url) { try { return new URL(url).origin; } catch (_) { return ''; } }
@@ -49,11 +64,14 @@ function books() {
   return dirs.map(item => { const bookPath = path.join(root, item.name); return { id: item.name, name: item.name, path: bookPath, encrypted: isEncryptedBook(bookPath) }; });
 }
 function book(id) { const result = books().find(item => item.id === id); if (!result) throw new Error('Password book not found.'); return result; }
-function decryptBook(item, password) {
+// remember: keep the derived key for this book (pass true once the password is the one stored for it)
+function decryptBook(item, password, remember) {
   const encrypted = fs.readFileSync(path.join(item.path, 'vault.enc')); const salt = encrypted.subarray(0, 16); const iv = encrypted.subarray(16, 28);
-  const key = crypto.pbkdf2Sync(password, salt, 200000, 32, 'sha256'); const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv); decipher.setAuthTag(encrypted.subarray(encrypted.length - 16));
+  const key = keyFor(item, password, salt); const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv); decipher.setAuthTag(encrypted.subarray(encrypted.length - 16));
   try {
-    return JSON.parse(Buffer.concat([decipher.update(encrypted.subarray(28, -16)), decipher.final()]).toString('utf8'));
+    const contents = JSON.parse(Buffer.concat([decipher.update(encrypted.subarray(28, -16)), decipher.final()]).toString('utf8'));
+    if (remember) { const cached = bookKeys.get(item.id); if (!cached || cached.key !== key) rememberKey(item, salt, key); }
+    return contents;
   } catch (_) {
     // Wrong password and a corrupted/truncated vault.enc both fail GCM auth the same way,
     // so we can't tell them apart here — surface a single, clear message either way.
@@ -61,14 +79,14 @@ function decryptBook(item, password) {
   }
 }
 function encryptBook(item, contents) {
-  const file = path.join(item.path, 'vault.enc'); const old = fs.readFileSync(file); const salt = old.subarray(0, 16); const key = crypto.pbkdf2Sync(bookPasswords.get(item.id), salt, 200000, 32, 'sha256'); const iv = crypto.randomBytes(12);
+  const file = path.join(item.path, 'vault.enc'); const old = fs.readFileSync(file); const salt = old.subarray(0, 16); const key = keyFor(item, bookPasswords.get(item.id), salt); const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv); const ciphertext = Buffer.concat([cipher.update(Buffer.from(JSON.stringify(contents))), cipher.final()]); fs.writeFileSync(file, Buffer.concat([salt, iv, ciphertext, cipher.getAuthTag()]));
 }
 function entriesForBook(item) {
   if (item.encrypted && !bookPasswords.has(item.id)) return { locked: true, entries: [] };
   const entries = [];
   if (item.encrypted) {
-    const contents = decryptBook(item, bookPasswords.get(item.id));
+    const contents = decryptBook(item, bookPasswords.get(item.id), true);
     Object.keys(contents.collections || {}).forEach(collection => (contents.collections[collection] || []).forEach(entry => { const vaultEntry = vaultEntryFrom(entry, item.id + collection); if (vaultEntry) entries.push(vaultEntry); }));
   } else {
     fs.readdirSync(item.path, { withFileTypes: true }).filter(file => file.isFile() && file.name.endsWith('.txt')).forEach(file => parseFile(fs.readFileSync(path.join(item.path, file.name), 'utf8')).forEach(entry => { const vaultEntry = vaultEntryFrom(entry, item.id + file.name); if (vaultEntry) entries.push(vaultEntry); }));
@@ -81,7 +99,7 @@ function saveCredential(message) {
   const update = entries => { const existing = entries.find(entryMatches); const entry = existing || { name: message.name || new URL(site).hostname, attrs: [] }; entry.attrs = [{ key: 'URL', val: site }, { key: 'Username', val: message.username }, { key: 'Password', val: message.password }]; if (!existing) entries.push(entry); };
   if (item.encrypted) {
     if (!bookPasswords.has(item.id)) throw new Error('Unlock this password book before saving to it.');
-    const contents = decryptBook(item, bookPasswords.get(item.id)); const collection = 'Browser Extension.txt'; const entries = contents.collections[collection] || []; update(entries); contents.collections[collection] = entries; encryptBook(item, contents);
+    const contents = decryptBook(item, bookPasswords.get(item.id), true); const collection = 'Browser Extension.txt'; const entries = contents.collections[collection] || []; update(entries); contents.collections[collection] = entries; encryptBook(item, contents);
   } else {
     const file = path.join(item.path, 'Browser Extension.txt'); const entries = fs.existsSync(file) ? parseFile(fs.readFileSync(file, 'utf8')) : []; update(entries); fs.writeFileSync(file, buildFile(entries), 'utf8');
   }
@@ -90,8 +108,8 @@ function saveCredential(message) {
 function handle(message) {
   if (message.type === 'status') { try { return { ok: true, hasVault: Boolean(vaultPath()) }; } catch (_) { return { ok: true, hasVault: false }; } }
   if (message.type === 'listBooks') return { ok: true, books: books().map(({ id, name, encrypted }) => ({ id, name, encrypted, unlocked: bookPasswords.has(id) })) };
-  if (message.type === 'unlockBook') { const item = book(message.bookId); if (!item.encrypted) return { ok: true }; decryptBook(item, message.password || ''); bookPasswords.set(item.id, message.password || ''); return { ok: true }; }
-  if (message.type === 'lock') { bookPasswords.clear(); return { ok: true }; }
+  if (message.type === 'unlockBook') { const item = book(message.bookId); if (!item.encrypted) return { ok: true }; decryptBook(item, message.password || '', true); bookPasswords.set(item.id, message.password || ''); return { ok: true }; }
+  if (message.type === 'lock') { bookPasswords.clear(); forgetKeys(); return { ok: true }; }
   if (message.type === 'getBookEntries') return { ok: true, ...entriesForBook(book(message.bookId)) };
   if (message.type === 'saveCredential') return saveCredential(message);
   throw new Error('Unknown request.');

@@ -268,6 +268,10 @@
                     <svg class="ico-check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                     <span id="settingsUpdateLabel">Check for update</span>
                   </button>
+                  <button type="button" class="settings-action-btn primary" id="settingsUpdateInstall" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    <span id="settingsUpdateInstallLabel">Download</span>
+                  </button>
                   <a class="settings-action-btn primary" id="settingsUpdateDownload" href="https://cogito11.github.io/Password-Vault/#download" data-external-link="https://cogito11.github.io/Password-Vault/#download" hidden>
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                     <span id="settingsUpdateDownloadLabel">Download</span>
@@ -725,6 +729,7 @@
   <script src="javascript/core/utils.js"></script>
   <script src="javascript/core/generator.js"></script>
   <script src="javascript/core/updates.js"></script>
+  <script src="javascript/core/update-state.js"></script>
 
   <script src="javascript/storage/db.js"></script>
   <script src="javascript/storage/crypto.js"></script>

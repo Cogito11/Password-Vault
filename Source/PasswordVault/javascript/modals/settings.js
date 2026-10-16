@@ -32,6 +32,8 @@
 	var updateLabel = document.getElementById('settingsUpdateLabel');
 	var updateDownload = document.getElementById('settingsUpdateDownload');
 	var updateDownloadLabel = document.getElementById('settingsUpdateDownloadLabel');
+	var updateInstall = document.getElementById('settingsUpdateInstall');
+	var updateInstallLabel = document.getElementById('settingsUpdateInstallLabel');
 	var updateHint = document.getElementById('settingsUpdateHint');
 	var restoreActiveBtn = null; // sidebar button that was highlighted before settings opened
 	var savedTimer = null;
@@ -141,7 +143,7 @@
 
 		await populateSettingsForm(getAppSettings());
 		if (typeof populateCsvImportBookOptions === 'function') populateCsvImportBookOptions();
-		setUpdateState({ status: 'idle' });
+		syncing = syncUpdateState();
 
 		// Only one thing should look selected in the sidebar: Settings
 		restoreActiveBtn = document.querySelector('.coll-btn.active');
@@ -236,39 +238,67 @@
 	if (settingsThemeSelect) settingsThemeSelect.addEventListener('change', persistSettings);
 
 	// ── Check for update ──────────────────────────────────────────────
-	// States: idle | checking | current | available | error
+	// Two flows share this row, and neither does anything until the person clicks:
+	//  - In-place: on installs that can update themselves, the main process does the work through
+	//    window.vaultUpdater. Check for update, then Download, then Restart to update.
+	//  - Website: on installs that can't (portable build, macOS, ...), check GitHub here and link
+	//    to the download page.
+	// What each state looks like lives in core/update-state.js (describeUpdateState).
+	// States: idle | checking | current | available | downloading | downloaded | error
+
+	var updater = window.vaultUpdater || null;
+	var inPlaceState = null; // the main process's latest state, once we know this install can update itself
+	var syncing = Promise.resolve(); // resolves once we know which of the two flows applies
 
 	function setUpdateState(state) {
-		var status = state.status;
-		var v = state.version;
+		var view = describeUpdateState(state);
 
-		updateBtn.dataset.state = status;
-		updateBtn.disabled = status === 'checking';
-		updateBtn.hidden = status === 'available';
-		updateDownload.hidden = status !== 'available';
+		updateBtn.dataset.state = state.status;
+		updateBtn.disabled = view.check.disabled;
+		updateBtn.hidden = view.check.hidden;
+		updateLabel.textContent = view.check.label;
 
-		updateLabel.textContent = {
-			idle: 'Check for update',
-			checking: 'Checking…',
-			current: 'Up to date',
-			available: 'Check for update',
-			error: 'Check failed'
-		}[status];
+		if (updateInstall) {
+			updateInstall.hidden = view.install.hidden;
+			updateInstallLabel.textContent = view.install.label;
+		}
 
-		if (status === 'available') updateDownloadLabel.textContent = 'Download v' + v;
+		updateDownload.hidden = view.website.hidden;
+		updateDownloadLabel.textContent = view.website.label;
+		updateHint.textContent = view.hint;
+	}
 
-		var reason = state.reason;
-		updateHint.textContent = {
-			idle: '',
-			checking: 'Checking for updates…',
-			current: 'You\'re on the latest version (v' + state.current + ').',
-			available: 'A newer version (v' + v + ') is available.',
-			error: reason === 'no-release'
-				? 'No published release found on GitHub.'
-				: reason === 'rate-limited'
-					? 'GitHub\'s API rate limit was hit. Try again in a few minutes.'
-					: 'Couldn\'t check for updates right now.'
-		}[status];
+	// Show whatever the main process reports
+	function showInPlaceState(s) {
+		inPlaceState = s;
+		setUpdateState({
+			status: s.status === 'unsupported' ? 'idle' : s.status,
+			inPlace: true,
+			version: s.version,
+			current: s.currentVersion,
+			percent: s.percent,
+			message: s.error ? s.error.message : null,
+			errorPhase: s.error ? s.error.phase : null
+		});
+	}
+
+	// Runs each time Settings opens: ask the main process whether this install can update itself, and
+	// pick up where it left off (an update may have finished downloading while Settings was closed).
+	async function syncUpdateState() {
+		inPlaceState = null;
+		setUpdateState({ status: 'idle' });
+		if (!updater) return;
+
+		try {
+			var s = await updater.getState();
+			if (s && s.supported) showInPlaceState(s);
+		} catch (err) { /* keep the website flow */ }
+	}
+
+	if (updater && typeof updater.onStateChange === 'function') {
+		updater.onStateChange(function (s) {
+			if (s && s.supported) showInPlaceState(s);
+		});
 	}
 
 	async function getCurrentVersion() {
@@ -279,6 +309,17 @@
 	}
 
 	async function handleCheckForUpdate() {
+		await syncing; // by now we know whether this install can update itself
+
+		if (inPlaceState) {
+			try {
+				showInPlaceState(await updater.check());
+			} catch (err) {
+				setUpdateState({ status: 'error', inPlace: true, message: 'Couldn\'t check for updates right now.' });
+			}
+			return;
+		}
+
 		setUpdateState({ status: 'checking' });
 
 		try {
@@ -297,6 +338,17 @@
 		}
 	}
 
+	// The in-place button is "Download" first, then "Restart to update" once the download has finished
+	async function handleInstallStep() {
+		if (!inPlaceState) return;
+
+		try {
+			var s = inPlaceState.status === 'downloaded' ? await updater.install() : await updater.download();
+			if (s) showInPlaceState(s);
+		} catch (err) { /* the main process reports failures through its state */ }
+	}
+
 	if (updateBtn) updateBtn.addEventListener('click', handleCheckForUpdate);
+	if (updateInstall) updateInstall.addEventListener('click', handleInstallStep);
 
 })();

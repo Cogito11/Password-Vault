@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, session, clipboard, powerMonitor } 
 const fs   = require('fs');
 const path = require('path');
 const { writeFileAtomic } = require('./fs-atomic');
+const { createUpdater, registerUpdaterIpc } = require('./updater');
 
 const configPath = path.join(app.getPath('userData'), 'vault-config.json');
 
@@ -118,6 +119,19 @@ function notifySystemLock(reason) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('system-lock', reason);
 }
 
+// In-place updates (see updater.js). Created once the app is ready so electron-updater is only
+// loaded when it will actually be used, and never in a dev run or a build that can't update itself.
+// Nothing here talks to the network: that only happens when the person clicks "Check for update".
+function setupUpdater() {
+  const updater = createUpdater({
+    app,
+    BrowserWindow,
+    loadAutoUpdater: () => require('electron-updater').autoUpdater,
+    log: (...args) => console.error('[updater]', ...args),
+  });
+  registerUpdaterIpc({ ipcMain, updater });
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
@@ -155,6 +169,8 @@ app.whenReady().then(() => {
   if (!hasInstanceLock) return;
 
   ipcMain.handle('schedule-clipboard-clear', (_event, text, seconds) => scheduleClipboardClear(text, seconds));
+
+  setupUpdater(); // registers its IPC handlers before the window asks for them
 
   // 'lock-screen' is only emitted on Windows and macOS; 'suspend' on all platforms
   powerMonitor.on('lock-screen', () => notifySystemLock('lock-screen'));
